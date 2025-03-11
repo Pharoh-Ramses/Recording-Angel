@@ -1,0 +1,33 @@
+# Go backend ignores
+/api/tmp/
+/api/.env
+/api/vendor/
+/api/*.exe
+/api/*.exe~
+/api/*.dll
+/api/*.so
+/api/*.dylib
+/api/*.test
+/api/*.out
+
+# NextJS frontend ignores
+/client/.next/
+/client/out/
+/client/node_modules/
+/client/.env*.local
+/client/npm-debug.log*
+/client/yarn-debug.log*
+/client/yarn-error.log*
+/client/.pnpm-debug.log*
+/client/.vercel
+/client/.env
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
