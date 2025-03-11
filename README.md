@@ -2,6 +2,15 @@
 
 A real-time audio transcription service built with Golang, OpenAI Whisper, and PostgreSQL.
 
+## Application
+
+The idea for this came after a church meeting where the speaker/presenter did not speak the language of the congregation. Normally, a translator from the congregation is selected and the individual helps the speaker by repeating the words of the speaker in the language of the congregation. This works... until the best translator is out of town and the inexperienced translator is doubting whether he can speak any language at all!
+
+The intent of this application is to eventaully replace the need for a translator, or at least be a good contigency plan for when one is not around.
+
+The idea is that the speaker would start a session (like an excalidraw presenting session). The congregation will then join the session with their phone. On the phone the client application displays live captions in the selected language.
+
+Maybe down the line I can implement one of those natural speaking AI voices to read the captions to the user. This would be useful to those who have a hard time seeing text on phones and the blind.
 
 ## Overview
 
