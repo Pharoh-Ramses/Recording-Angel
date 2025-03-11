@@ -1,6 +1,7 @@
-# Audio Transcription Service
+# Recording Angel: Audio Transcription and Translation Service
 
 A real-time audio transcription service built with Golang, OpenAI Whisper, and PostgreSQL.
+
 
 ## Overview
 
