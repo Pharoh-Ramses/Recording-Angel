@@ -1,6 +1,10 @@
 # Recording Angel Service
 
-A real-time audio transcription & translation service built with Golang, OpenAI Whisper, and PostgreSQL.
+A real-time audio transcription & translation service built with Golang, OpenAI Whisper, and PostgreSQL. The idea came to me while in a church meeting. The speaker did not speak the language of the congregation, the speaker would say a few words and pause to allow the translator to relate what was said to the congregation. This is easier said than done, and the translator struggled throughout the meeting.
+
+I thought, don't we have the technological means to do this better. I had used an llm to translate a talk I had written to spanish and I thought it had done an amazing job, there were no corrections for me to make when I read over it. And thus this idea was born. The goal is to create a web based zoom type meeting where the congregation would join a session and see live captions on their phones as the speaker gives their talk. There will be no video streaming, just captions in their desired language in a nice ui. I still want the congregation to look up at the speaker as much as possible.
+
+Down the line I plan on implementing ai voices like sesame ai to read the translation to those who have a hard time reading on phones.
 
 ## Overview
 
@@ -10,7 +14,7 @@ This project provides a backend system for capturing, processing, and transcribi
 
 - **Backend**: Golang with Gorilla WebSocket
 - **AI Services**: OpenAI Whisper API
-- **Database**: PostgreSQL
+- **Database**: Convex PostgreSQL
 - **Frontend** (planned): NextJS
 
 ## Features
