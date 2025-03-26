@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recording Angel Service</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <div class="logo">
+                <span>Recording Angel Service</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">Welcome to the Recording Angel Service</h2>
+            <p style="margin-bottom: 2rem;">Please select a view to explore:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                <!-- Audience Views -->
+                <div class="view-card">
+                    <h3>Audience Views</h3>
+                    <p>Experience what attendees see during a meeting</p>
+                    <div class="view-buttons">
+                        <a href="views/audience-view-desktop.html" class="btn">Desktop</a>
+                        <a href="views/audience-view-mobile.html" class="btn btn-outline">Mobile</a>
+                    </div>
+                </div>
+                
+                <!-- Speaker View -->
+                <div class="view-card">
+                    <h3>Speaker View</h3>
+                    <p>The interface for active speakers during a meeting</p>
+                    <div class="view-buttons">
+                        <a href="views/speaker-view.html" class="btn">Open</a>
+                    </div>
+                </div>
+                
+                <!-- Leadership Views -->
+                <div class="view-card">
+                    <h3>Leadership Dashboards</h3>
+                    <p>Management tools for church leaders</p>
+                    <div class="view-buttons">
+                        <a href="views/bishop-view.html" class="btn">Bishop</a>
+                        <a href="views/stake-president-view.html" class="btn btn-outline">Stake President</a>
+                    </div>
+                </div>
+                
+                <!-- Admin View -->
+                <div class="view-card">
+                    <h3>Administration</h3>
+                    <p>Technical administration interface</p>
+                    <div class="view-buttons">
+                        <a href="views/admin-view.html" class="btn">Open</a>
+                    </div>
+                </div>
+                
+                <!-- Session Management -->
+                <div class="view-card">
+                    <h3>Session Management</h3>
+                    <p>Live session control interface for meeting conductors</p>
+                    <div class="view-buttons">
+                        <a href="views/session-management.html" class="btn">Open</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <h3>Project Documentation</h3>
+            <div style="margin-top: 1rem;">
+                <a href="project-notes.md" class="btn btn-outline">View Project Notes</a>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .view-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .view-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .view-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .view-card p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .view-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+    </style>
+</body>
+</html> 

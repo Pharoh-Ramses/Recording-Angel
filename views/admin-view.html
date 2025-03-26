@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin View - Recording Angel Service</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Admin view specific styles */
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .admin-header {
+            padding: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-header-info h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-header-info p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .admin-sections {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 1.5rem;
+        }
+        
+        .admin-sidebar {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--bg-color);
+        }
+        
+        .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .sidebar-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .admin-content {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            min-height: 600px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table th {
+            font-weight: 500;
+            color: var(--text-muted);
+            background-color: var(--bg-color);
+        }
+        
+        .data-table tr:hover td {
+            background-color: #f8fafc;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .action-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: var(--radius);
+            background-color: var(--bg-color);
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .action-btn-sm:hover {
+            background-color: #e2e8f0;
+            color: var(--text-color);
+        }
+        
+        .action-btn-sm.edit {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: #0EA5E9;
+        }
+        
+        .action-btn-sm.delete {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+        
+        .action-btn-sm.view {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            background-color: white;
+        }
+        
+        .filter-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            background-color: white;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+        
+        .page-info {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .page-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .page-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+            background-color: var(--bg-color);
+            border: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .page-btn:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .page-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Media queries */
+        @media (max-width: 1024px) {
+            .admin-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                margin-bottom: 1.5rem;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            
+            .sidebar-menu-item {
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+            }
+            
+            .sidebar-menu-item:last-child {
+                border-right: none;
+            }
+            
+            .sidebar-link {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="admin-view">
+        <div class="admin-container">
+            <div class="top-nav">
+                <div class="logo">
+                    <span>Recording Angel Service</span>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar">SA</div>
+                </div>
+            </div>
+            
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <div class="admin-header-info">
+                    <h1>Admin Dashboard</h1>
+                    <p>System Administration</p>
+                </div>
+            </div>
+            
+            <div class="admin-sections">
+                <!-- Admin Sidebar -->
+                <div class="admin-sidebar">
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link active">
+                                <span class="sidebar-icon">📊</span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">👥</span>
+                                <span>Users</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">🏢</span>
+                                <span>Organizations</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">🎙️</span>
+                                <span>Sessions</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">📝</span>
+                                <span>Transcripts</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">🔧</span>
+                                <span>System</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">📈</span>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">⚙️</span>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Admin Content -->
+                <div class="admin-content">
+                    <h2 class="section-title">Active Sessions</h2>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label class="filter-label">Organization:</label>
+                            <select class="filter-select">
+                                <option value="all">All</option>
+                                <option value="mountain-view">Mountain View Stake</option>
+                                <option value="highland">Highland Stake</option>
+                                <option value="central">Central Stake</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">Status:</label>
+                            <select class="filter-select">
+                                <option value="all">All</option>
+                                <option value="live" selected>Live</option>
+                                <option value="scheduled">Scheduled</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">Search:</label>
+                            <input type="text" class="filter-input" placeholder="Search sessions...">
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Session ID</th>
+                                <th>Organization</th>
+                                <th>Type</th>
+                                <th>Start Time</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CPW618</td>
+                                <td>Covenant Path Ward</td>
+                                <td>Sacrament Meeting</td>
+                                <td>Today, 10:00 AM</td>
+                                <td>212</td>
+                                <td><span class="badge badge-success">Live</span></td>
+                                <td class="action-cell">
+                                    <button class="action-btn-sm view">View</button>
+                                    <button class="action-btn-sm edit">Manage</button>
+                                    <button class="action-btn-sm delete">End</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>RVW618</td>
+                                <td>Riverview Ward</td>
+                                <td>Sacrament Meeting</td>
+                                <td>Today, 1:00 PM</td>
+                                <td>0</td>
+                                <td><span class="badge badge-primary">Scheduled</span></td>
+                                <td class="action-cell">
+                                    <button class="action-btn-sm view">View</button>
+                                    <button class="action-btn-sm edit">Edit</button>
+                                    <button class="action-btn-sm">Cancel</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>MVS625</td>
+                                <td>Mountain View Stake</td>
+                                <td>Stake Conference</td>
+                                <td>June 25, 10:00 AM</td>
+                                <td>0</td>
+                                <td><span class="badge badge-primary">Scheduled</span></td>
+                                <td class="action-cell">
+                                    <button class="action-btn-sm view">View</button>
+                                    <button class="action-btn-sm edit">Edit</button>
+                                    <button class="action-btn-sm">Cancel</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>LKW611</td>
+                                <td>Lakeside Ward</td>
+                                <td>Sacrament Meeting</td>
+                                <td>June 11, 9:00 AM</td>
+                                <td>201</td>
+                                <td><span class="badge">Completed</span></td>
+                                <td class="action-cell">
+                                    <button class="action-btn-sm view">View</button>
+                                    <button class="action-btn-sm">Export</button>
+                                    <button class="action-btn-sm delete">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>EVW611</td>
+                                <td>Evergreen Ward</td>
+                                <td>Sacrament Meeting</td>
+                                <td>June 11, 1:00 PM</td>
+                                <td>183</td>
+                                <td><span class="badge">Completed</span></td>
+                                <td class="action-cell">
+                                    <button class="action-btn-sm view">View</button>
+                                    <button class="action-btn-sm">Export</button>
+                                    <button class="action-btn-sm delete">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        <div class="page-info">
+                            Showing 1-5 of 24 sessions
+                        </div>
+                        <div class="page-controls">
+                            <button class="page-btn">◀</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">4</button>
+                            <button class="page-btn">5</button>
+                            <button class="page-btn">▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../scripts/main.js"></script>
+    <script>
+        // Show admin view by default
+        document.getElementById('admin-view').style.display = 'block';
+    </script>
+</body>
+</html> 

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audience View (Mobile) - Recording Angel Service</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .mobile-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .mobile-header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: white;
+        }
+        
+        .mobile-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            padding-bottom: 5rem; /* Space for bottom navigation */
+        }
+        
+        .speaker-small {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .speaker-image-small {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+        
+        .speaker-name-small {
+            font-weight: 600;
+        }
+        
+        .speaker-title-small {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .transcript-message {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="audience-view-mobile">
+        <div class="mobile-container">
+            <div class="mobile-header">
+                <div class="logo" style="font-size: 1rem;">Recording Angel</div>
+                <div class="session-badge" style="margin: 0; font-size: 0.8rem;">
+                    <span class="live-indicator">
+                        <span class="live-dot"></span>
+                        Live
+                    </span>
+                </div>
+            </div>
+            
+            <div class="mobile-content">
+                <div class="speaker-small">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Speaker" class="speaker-image-small">
+                    <div>
+                        <div class="speaker-name-small">Elder James P. Wilson</div>
+                        <div class="speaker-title-small">High Council Speaker • 14:23</div>
+                    </div>
+                </div>
+                
+                <div class="transcript-container">
+                    <div class="transcript-message">
+                        <div class="timestamp">10:01 AM</div>
+                        <div class="message-content">
+                            Good morning, brothers and sisters. I'm grateful for the opportunity to speak with you today about faith in Jesus Christ.
+                        </div>
+                    </div>
+                    
+                    <div class="transcript-message">
+                        <div class="timestamp">10:02 AM</div>
+                        <div class="message-content">
+                            In <span class="scripture-reference" data-reference="Hebrews 11:1" data-text="Now faith is the substance of things hoped for, the evidence of things not seen.">Hebrews 11:1</span>, we learn that "faith is the substance of things hoped for, the evidence of things not seen."
+                        </div>
+                    </div>
+                    
+                    <div class="transcript-message">
+                        <div class="timestamp">10:03 AM</div>
+                        <div class="message-content">
+                            This definition helps us understand that faith is both a principle of action and of power. When we exercise faith, we are willing to act on our beliefs without having a perfect knowledge.
+                        </div>
+                    </div>
+                    
+                    <div class="transcript-message">
+                        <div class="timestamp">10:05 AM</div>
+                        <div class="message-content">
+                            The Savior taught in <span class="scripture-reference" data-reference="Matthew 17:20" data-text="And Jesus said unto them, Because of your unbelief: for verily I say unto you, If ye have faith as a grain of mustard seed, ye shall say unto this mountain, Remove hence to yonder place; and it shall remove; and nothing shall be impossible unto you.">Matthew 17:20</span> that even faith as small as a mustard seed can move mountains. This isn't necessarily about physical mountains, but about the mountains of challenges and trials we face in our lives.
+                        </div>
+                    </div>
+                    
+                    <div class="transcript-message">
+                        <div class="timestamp">10:07 AM</div>
+                        <div class="message-content">
+                            I'd like to share a personal experience that strengthened my faith...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-bar">
+                    <div class="status">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                    <div class="control-group">
+                        <button class="btn btn-outline">Auto-Scroll</button>
+                        <button class="btn">Audio</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Drawers -->
+        <div class="mobile-drawer" id="announcements-drawer">
+            <div class="drawer-content">
+                <div class="drawer-title">
+                    <div>
+                        <span class="btn-icon">📢</span>
+                        <span>Announcements</span>
+                    </div>
+                    <button class="drawer-close" id="close-announcements-drawer">&times;</button>
+                </div>
+                <div class="announcements-list">
+                    <div class="announcement-item">
+                        <div class="announcement-header">
+                            <div class="announcement-title">Youth Group Meeting</div>
+                            <div class="announcement-time">Posted 10 minutes ago</div>
+                        </div>
+                        <div class="announcement-content">
+                            Youth group will meet this Wednesday at 6:30 PM in the fellowship hall. This week's topic: "Finding Your Purpose."
+                        </div>
+                    </div>
+                    <div class="announcement-item">
+                        <div class="announcement-header">
+                            <div class="announcement-title">Community Service Day</div>
+                            <div class="announcement-time">Posted 25 minutes ago</div>
+                        </div>
+                        <div class="announcement-content">
+                            Join us this Saturday for our monthly community service day. We'll be cleaning up Central Park and serving at the downtown shelter. Sign up at the welcome desk.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-drawer" id="hymns-drawer">
+            <div class="drawer-content">
+                <div class="drawer-title">
+                    <div>
+                        <span class="btn-icon">🎼</span>
+                        <span>Hymns</span>
+                    </div>
+                    <button class="drawer-close" id="close-hymns-drawer">&times;</button>
+                </div>
+                <div class="hymn-item hymn-completed">
+                    <div class="hymn-number">142</div>
+                    <div class="hymn-info">
+                        <div class="hymn-name">Sweet Hour of Prayer</div>
+                        <div class="hymn-type">Opening Hymn • Completed</div>
+                    </div>
+                </div>
+                <div class="hymn-item hymn-current">
+                    <div class="hymn-number">86</div>
+                    <div class="hymn-info">
+                        <div class="hymn-name">How Great Thou Art</div>
+                        <div class="hymn-type">Sacrament Hymn • Current</div>
+                    </div>
+                </div>
+                <div class="hymn-item">
+                    <div class="hymn-number">301</div>
+                    <div class="hymn-info">
+                        <div class="hymn-name">I Am a Child of God</div>
+                        <div class="hymn-type">Closing Hymn • Upcoming</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Bottom Navigation -->
+        <div class="mobile-bottom-nav">
+            <div class="nav-item" id="transcript-nav">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Transcript</div>
+            </div>
+            <div class="nav-item" id="announcements-nav">
+                <div class="nav-icon">📢</div>
+                <div class="nav-label">Announcements</div>
+            </div>
+            <div class="nav-item" id="hymns-nav">
+                <div class="nav-icon">🎼</div>
+                <div class="nav-label">Hymns</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripture Reference Modal -->
+    <div class="modal-overlay" id="scripture-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="scripture-reference-title">Scripture Reference</div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="scripture-reference-text"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn">Study in Gospel Library</button>
+                <button class="btn btn-outline close-modal">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../scripts/main.js"></script>
+    <script>
+        // Show mobile view by default
+        document.getElementById('audience-view-mobile').style.display = 'block';
+    </script>
+</body>
+</html> 

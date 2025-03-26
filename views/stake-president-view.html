@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stake President Dashboard - Recording Angel Service</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Stake president dashboard specific styles */
+        .stake-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .stake-header {
+            padding: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stake-header-info h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stake-header-info p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .ward-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ward-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .ward-item {
+            background-color: var(--bg-color);
+            border-radius: var(--radius);
+            padding: 1rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ward-item:hover {
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+        
+        .ward-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ward-bishop {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+        
+        .meeting-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .meeting-label {
+            color: var(--text-muted);
+        }
+        
+        .meeting-value {
+            font-weight: 500;
+        }
+        
+        .meeting-live {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+        }
+        
+        .analytics-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat-column {
+            flex: 1;
+            min-width: 130px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .calendar-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .calendar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .calendar-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .calendar-control {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .calendar-control:hover {
+            color: var(--primary-color);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            padding: 0.5rem 0;
+        }
+        
+        .calendar-day {
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: var(--radius);
+            min-height: 75px;
+            position: relative;
+        }
+        
+        .calendar-date {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .calendar-event {
+            font-size: 0.7rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0.25rem;
+            margin-bottom: 0.25rem;
+            border-radius: 2px;
+            text-align: left;
+        }
+        
+        .event-sacrament {
+            background-color: rgba(204, 180, 118, 0.2);
+            color: var(--primary-color);
+        }
+        
+        .event-council {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: #0EA5E9;
+        }
+        
+        .event-other {
+            background-color: rgba(154, 52, 18, 0.1);
+            color: #9A3412;
+        }
+        
+        .event-stake {
+            background-color: rgba(30, 58, 138, 0.1);
+            color: #1E3A8A;
+        }
+        
+        .activity-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--bg-color);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.25rem;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .activity-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        /* Media queries */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stake-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .quick-actions {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .quick-actions .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="stake-president-view">
+        <div class="stake-container">
+            <div class="top-nav">
+                <div class="logo">
+                    <span>Recording Angel Service</span>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar">JR</div>
+                </div>
+            </div>
+            
+            <!-- Stake Header -->
+            <div class="stake-header">
+                <div class="stake-header-info">
+                    <h1>Mountain View Stake</h1>
+                    <p>President Jonathan Richards</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="btn btn-outline">
+                        <span class="btn-icon">📋</span>
+                        View Records
+                    </button>
+                    <button class="btn btn-outline">
+                        <span class="btn-icon">📅</span>
+                        Stake Calendar
+                    </button>
+                    <button class="btn">
+                        <span class="btn-icon">➕</span>
+                        New Session
+                    </button>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Ward Meetings Panel -->
+                    <div class="ward-card">
+                        <div class="card-header">
+                            <div class="card-title">Ward Meetings</div>
+                        </div>
+                        
+                        <div class="ward-grid">
+                            <div class="ward-item">
+                                <div class="meeting-live">
+                                    <span class="live-dot"></span>
+                                    <span>Live</span>
+                                </div>
+                                <div class="ward-name">Covenant Path Ward</div>
+                                <div class="ward-bishop">Bishop David Anderson</div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Currently:</span>
+                                    <span class="meeting-value">Sacrament Meeting</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Participants:</span>
+                                    <span class="meeting-value">212</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Started:</span>
+                                    <span class="meeting-value">10:00 AM (45m ago)</span>
+                                </div>
+                                <div style="text-align: center; margin-top: 1rem;">
+                                    <button class="btn btn-outline btn-sm">Join Session</button>
+                                </div>
+                            </div>
+                            
+                            <div class="ward-item">
+                                <div class="ward-name">Evergreen Ward</div>
+                                <div class="ward-bishop">Bishop Michael Thompson</div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Last Meeting:</span>
+                                    <span class="meeting-value">June 11, 2023</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Participants:</span>
+                                    <span class="meeting-value">183</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Next Meeting:</span>
+                                    <span class="meeting-value">June 18, 2023 (1:00 PM)</span>
+                                </div>
+                                <div style="text-align: center; margin-top: 1rem;">
+                                    <button class="btn btn-outline btn-sm">View Details</button>
+                                </div>
+                            </div>
+                            
+                            <div class="ward-item">
+                                <div class="ward-name">Riverview Ward</div>
+                                <div class="ward-bishop">Bishop Thomas Garcia</div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Last Meeting:</span>
+                                    <span class="meeting-value">June 11, 2023</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Participants:</span>
+                                    <span class="meeting-value">156</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Next Meeting:</span>
+                                    <span class="meeting-value">June 18, 2023 (1:00 PM)</span>
+                                </div>
+                                <div style="text-align: center; margin-top: 1rem;">
+                                    <button class="btn btn-outline btn-sm">View Details</button>
+                                </div>
+                            </div>
+                            
+                            <div class="ward-item">
+                                <div class="ward-name">Lakeside Ward</div>
+                                <div class="ward-bishop">Bishop Robert Wilson</div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Last Meeting:</span>
+                                    <span class="meeting-value">June 11, 2023</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Participants:</span>
+                                    <span class="meeting-value">201</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Next Meeting:</span>
+                                    <span class="meeting-value">June 18, 2023 (9:00 AM)</span>
+                                </div>
+                                <div style="text-align: center; margin-top: 1rem;">
+                                    <button class="btn btn-outline btn-sm">View Details</button>
+                                </div>
+                            </div>
+                            
+                            <div class="ward-item">
+                                <div class="ward-name">Highland Park Ward</div>
+                                <div class="ward-bishop">Bishop James Peterson</div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Last Meeting:</span>
+                                    <span class="meeting-value">June 11, 2023</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Participants:</span>
+                                    <span class="meeting-value">172</span>
+                                </div>
+                                <div class="meeting-info">
+                                    <span class="meeting-label">Next Meeting:</span>
+                                    <span class="meeting-value">June 18, 2023 (11:00 AM)</span>
+                                </div>
+                                <div style="text-align: center; margin-top: 1rem;">
+                                    <button class="btn btn-outline btn-sm">View Details</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stake Analytics Panel -->
+                    <div class="analytics-card">
+                        <div class="card-header">
+                            <div class="card-title">Stake Analytics</div>
+                        </div>
+                        
+                        <div class="stats-row">
+                            <div class="stat-column">
+                                <div class="stat-value">5</div>
+                                <div class="stat-label">Wards</div>
+                            </div>
+                            <div class="stat-column">
+                                <div class="stat-value">924</div>
+                                <div class="stat-label">Average Weekly Attendance</div>
+                            </div>
+                            <div class="stat-column">
+                                <div class="stat-value">98%</div>
+                                <div class="stat-label">Transcription Quality</div>
+                            </div>
+                            <div class="stat-column">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Languages Used</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <div style="font-weight: 500; margin-bottom: 0.5rem;">Participation by Ward (Avg. Last 4 Weeks)</div>
+                            <div style="height: 20px; background-color: #f1f5f9; border-radius: 50px; overflow: hidden; margin-bottom: 0.5rem;">
+                                <div style="width: 85%; height: 100%; background-color: var(--accent-color);"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                                <span>Covenant Path: 85%</span>
+                                <span>Evergreen: 76%</span>
+                                <span>Riverview: 72%</span>
+                                <span>Lakeside: 89%</span>
+                                <span>Highland: 81%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Upcoming Schedule -->
+                    <div class="calendar-card">
+                        <div class="calendar-header">
+                            <div class="calendar-title">Upcoming Schedule</div>
+                            <div class="calendar-controls">
+                                <button class="calendar-control">◀</button>
+                                <span style="font-size: 0.9rem;">June 2023</span>
+                                <button class="calendar-control">▶</button>
+                            </div>
+                        </div>
+                        
+                        <div class="calendar-grid">
+                            <div class="calendar-day-header">Sun</div>
+                            <div class="calendar-day-header">Mon</div>
+                            <div class="calendar-day-header">Tue</div>
+                            <div class="calendar-day-header">Wed</div>
+                            <div class="calendar-day-header">Thu</div>
+                            <div class="calendar-day-header">Fri</div>
+                            <div class="calendar-day-header">Sat</div>
+                            
+                            <!-- Week 1 -->
+                            <div class="calendar-day" style="background-color: #f8fafc;">
+                                <div class="calendar-date">18</div>
+                                <div class="calendar-event event-sacrament">All Wards: SM</div>
+                                <div class="calendar-event event-council">SP Council</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">19</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">20</div>
+                                <div class="calendar-event event-other">Lakeside: YM</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">21</div>
+                                <div class="calendar-event event-other">Highland: RS</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">22</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">23</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">24</div>
+                                <div class="calendar-event event-stake">Stake Activity</div>
+                            </div>
+                            
+                            <!-- Week 2 -->
+                            <div class="calendar-day" style="background-color: #f8fafc;">
+                                <div class="calendar-date">25</div>
+                                <div class="calendar-event event-sacrament">All Wards: SM</div>
+                                <div class="calendar-event event-stake">Stake Conf</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">26</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">27</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">28</div>
+                                <div class="calendar-event event-other">YM/YW</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">29</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="calendar-date">30</div>
+                            </div>
+                            <div class="calendar-day" style="color: #94A3B8;">
+                                <div class="calendar-date">1</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="activity-card">
+                        <div class="card-header">
+                            <div class="card-title">Recent Activity</div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon" style="color: #10B981;">🎙️</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Covenant Path Ward started a live session</div>
+                                <div class="activity-meta">
+                                    <span>10:00 AM</span>
+                                    <span>212 participants</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon" style="color: #0EA5E9;">📝</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Highland Park Ward finalized next week's program</div>
+                                <div class="activity-meta">
+                                    <span>Yesterday, 8:45 PM</span>
+                                    <span>4 speakers</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon" style="color: var(--accent-color);">📊</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Monthly ward attendance report generated</div>
+                                <div class="activity-meta">
+                                    <span>Yesterday, 10:00 AM</span>
+                                    <span>All wards</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon" style="color: #9A3412;">🔄</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Evergreen Ward completed Sunday meetings</div>
+                                <div class="activity-meta">
+                                    <span>June 11, 1:15 PM</span>
+                                    <span>183 participants</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon" style="color: #1E3A8A;">📅</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Stake Conference scheduled</div>
+                                <div class="activity-meta">
+                                    <span>June 10, 2:30 PM</span>
+                                    <span>June 25, 10:00 AM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../scripts/main.js"></script>
+    <script>
+        // Show stake president view by default
+        document.getElementById('stake-president-view').style.display = 'block';
+    </script>
+</body>
+</html> 

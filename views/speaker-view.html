@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaker View - Recording Angel Service</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Speaker view specific styles */
+        .speaker-view-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .speaker-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .speaker-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .speaking-card {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        
+        .time-display {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .speaking-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            width: fit-content;
+            margin-bottom: 1rem;
+        }
+        
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background-color: #10B981;
+            animation: pulse 2s infinite;
+        }
+        
+        .speaker-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .speaker-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .speaker-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .speaker-notes-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .notes-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .notes-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        /* Media queries */
+        @media (max-width: 768px) {
+            .speaker-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="speaker-view">
+        <div class="speaker-view-container">
+            <div class="top-nav">
+                <div class="logo">
+                    <span>Recording Angel Service</span>
+                </div>
+                <div class="user-menu">
+                    <span class="session-badge">
+                        <span class="live-indicator">
+                            <span class="live-dot"></span>
+                            Live
+                        </span>
+                        <span>Covenant Path Ward • Sacrament Meeting</span>
+                    </span>
+                    <div class="avatar">JW</div>
+                </div>
+            </div>
+            
+            <div class="speaker-layout">
+                <!-- Speaking Notes -->
+                <div class="speaker-notes-card">
+                    <div class="notes-header">
+                        <div class="notes-title">Your Speaking Notes</div>
+                        <div>
+                            <button class="btn btn-outline">Full Screen</button>
+                        </div>
+                    </div>
+                    <div class="notes-content">
+                        <h2>Faith in Jesus Christ</h2>
+                        <p>Good morning, brothers and sisters. I'm grateful for the opportunity to speak with you today about faith in Jesus Christ.</p>
+                        
+                        <p>In <strong>Hebrews 11:1</strong>, we learn that "faith is the substance of things hoped for, the evidence of things not seen."</p>
+                        
+                        <p>This definition helps us understand that faith is both a principle of action and of power. When we exercise faith, we are willing to act on our beliefs without having a perfect knowledge.</p>
+                        
+                        <p>The Savior taught in <strong>Matthew 17:20</strong> that even faith as small as a mustard seed can move mountains. This isn't necessarily about physical mountains, but about the mountains of challenges and trials we face in our lives.</p>
+                        
+                        <h3>Personal Experience</h3>
+                        <p>I'd like to share a personal experience that strengthened my faith...</p>
+                        
+                        <ul>
+                            <li>Difficult health challenge last year</li>
+                            <li>Prayers and priesthood blessings</li>
+                            <li>Family support and service</li>
+                            <li>Unexpected spiritual insights</li>
+                        </ul>
+                        
+                        <h3>Three Ways to Increase Faith</h3>
+                        <ol>
+                            <li>Regular scripture study</li>
+                            <li>Heartfelt prayer</li>
+                            <li>Service to others</li>
+                        </ol>
+                        
+                        <p>As we nurture our faith through these simple actions, we will feel closer to the Savior and more capable of following His example.</p>
+                        
+                        <p>I testify that Jesus Christ lives and loves each one of us. He is aware of our struggles and stands ready to help us as we place our faith in Him.</p>
+                        
+                        <p>In the name of Jesus Christ, amen.</p>
+                    </div>
+                </div>
+                
+                <!-- Speaker Sidebar -->
+                <div class="speaker-sidebar">
+                    <!-- Speaking Timer Card -->
+                    <div class="speaking-card">
+                        <div class="speaking-status">
+                            <span class="status-dot"></span>
+                            <span>Currently Speaking</span>
+                        </div>
+                        
+                        <h2>Your Speaking Time</h2>
+                        <div class="time-display">14:23</div>
+                        
+                        <div class="speaker-controls">
+                            <button class="speaker-btn">
+                                Pause Transcription
+                            </button>
+                            <button class="speaker-btn">
+                                Request Time Extension
+                            </button>
+                            <button class="speaker-btn">
+                                End Talk
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Transcript Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Your Live Transcript</div>
+                        </div>
+                        
+                        <div class="transcript-container" style="max-height: 280px;">
+                            <div class="transcript-message">
+                                <div class="timestamp">10:01 AM</div>
+                                <div class="message-content">
+                                    Good morning, brothers and sisters. I'm grateful for the opportunity to speak with you today about faith in Jesus Christ.
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-message">
+                                <div class="timestamp">10:02 AM</div>
+                                <div class="message-content">
+                                    In Hebrews 11:1, we learn that "faith is the substance of things hoped for, the evidence of things not seen."
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-message">
+                                <div class="timestamp">10:03 AM</div>
+                                <div class="message-content">
+                                    This definition helps us understand that faith is both a principle of action and of power. When we exercise faith, we are willing to act on our beliefs without having a perfect knowledge.
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-message">
+                                <div class="timestamp">10:05 AM</div>
+                                <div class="message-content">
+                                    The Savior taught in Matthew 17:20 that even faith as small as a mustard seed can move mountains. This isn't necessarily about physical mountains, but about the mountains of challenges and trials we face in our lives.
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-message">
+                                <div class="timestamp">10:07 AM</div>
+                                <div class="message-content">
+                                    I'd like to share a personal experience that strengthened my faith...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Session Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Session Information</div>
+                        </div>
+                        <div class="session-info">
+                            <div class="session-title">Covenant Path Ward • Sacrament Meeting</div>
+                            <div class="session-meta">
+                                <div class="session-detail">
+                                    <span class="detail-icon">👥</span>
+                                    <span>212 Participants</span>
+                                </div>
+                                <div class="session-detail">
+                                    <span class="detail-icon">🌐</span>
+                                    <span>2 Languages</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../scripts/main.js"></script>
+    <script>
+        // Show speaker view by default
+        document.getElementById('speaker-view').style.display = 'block';
+    </script>
+</body>
+</html> 

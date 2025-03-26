@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bishop Dashboard - Recording Angel Service</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Bishop dashboard specific styles */
+        .bishop-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .bishop-header {
+            padding: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bishop-header-info h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .bishop-header-info p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .meeting-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .meeting-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .meeting-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .meeting-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .meeting-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+        }
+        
+        .meeting-content {
+            padding: 1.5rem;
+        }
+        
+        .meeting-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .meeting-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .hymn-row {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .hymn-row:last-child {
+            border-bottom: none;
+        }
+        
+        .hymn-number {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--bg-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+        
+        .hymn-info {
+            flex: 1;
+        }
+        
+        .hymn-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .hymn-type {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .speakers-list {
+            margin-top: 1.5rem;
+        }
+        
+        .speaker-row {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .speaker-row:last-child {
+            border-bottom: none;
+        }
+        
+        .speaker-info {
+            flex: 1;
+        }
+        
+        .speaker-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .speaker-detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .speaker-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            background-color: var(--bg-color);
+        }
+        
+        .status-confirmed {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+        
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+        }
+        
+        .stats-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat-item {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .recent-meetings {
+            margin-top: 1rem;
+        }
+        
+        .meeting-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .meeting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .meeting-item-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .meeting-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* Media queries */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bishop-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .quick-actions {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .quick-actions .btn {
+                flex: 1;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="bishop-view">
+        <div class="bishop-container">
+            <div class="top-nav">
+                <div class="logo">
+                    <span>Recording Angel Service</span>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar">DA</div>
+                </div>
+            </div>
+            
+            <!-- Bishop Header -->
+            <div class="bishop-header">
+                <div class="bishop-header-info">
+                    <h1>Covenant Path Ward</h1>
+                    <p>Bishop David Anderson</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="btn btn-outline">
+                        <span class="btn-icon">📋</span>
+                        View Records
+                    </button>
+                    <button class="btn btn-outline">
+                        <span class="btn-icon">📅</span>
+                        Schedule Meeting
+                    </button>
+                    <button class="btn">
+                        <span class="btn-icon">➕</span>
+                        New Session
+                    </button>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Current Meeting Card -->
+                    <div class="meeting-card">
+                        <div class="meeting-header">
+                            <div class="meeting-title">Sacrament Meeting</div>
+                            <div class="meeting-status">
+                                <span class="live-dot"></span>
+                                <span>Live Now</span>
+                            </div>
+                        </div>
+                        <div class="meeting-content">
+                            <div class="meeting-meta">
+                                <div class="meeting-detail">
+                                    <span>📅</span>
+                                    <span>June 18, 2023</span>
+                                </div>
+                                <div class="meeting-detail">
+                                    <span>⏱️</span>
+                                    <span>Started 10:00 AM (45m elapsed)</span>
+                                </div>
+                                <div class="meeting-detail">
+                                    <span>👥</span>
+                                    <span>212 Participants</span>
+                                </div>
+                            </div>
+                            
+                            <h3>Hymns</h3>
+                            <div style="margin-top: 0.5rem;">
+                                <div class="hymn-row">
+                                    <div class="hymn-number">142</div>
+                                    <div class="hymn-info">
+                                        <div class="hymn-title">Sweet Hour of Prayer</div>
+                                        <div class="hymn-type">Opening Hymn • Completed</div>
+                                    </div>
+                                </div>
+                                <div class="hymn-row">
+                                    <div class="hymn-number">86</div>
+                                    <div class="hymn-info">
+                                        <div class="hymn-title">How Great Thou Art</div>
+                                        <div class="hymn-type">Sacrament Hymn • Current</div>
+                                    </div>
+                                </div>
+                                <div class="hymn-row">
+                                    <div class="hymn-number">301</div>
+                                    <div class="hymn-info">
+                                        <div class="hymn-title">I Am a Child of God</div>
+                                        <div class="hymn-type">Closing Hymn • Upcoming</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h3 style="margin-top: 1.5rem;">Speakers Program</h3>
+                            <div class="speakers-list">
+                                <div class="speaker-row">
+                                    <div class="speaker-info">
+                                        <div class="speaker-name">Sister Emily Johnson</div>
+                                        <div class="speaker-detail">Opening Prayer • 2:15 • Completed</div>
+                                    </div>
+                                </div>
+                                <div class="speaker-row">
+                                    <div class="speaker-info">
+                                        <div class="speaker-name">Elder James P. Wilson</div>
+                                        <div class="speaker-detail">High Council Speaker • 14:23 • Speaking</div>
+                                    </div>
+                                    <span class="speaker-status status-confirmed">Live</span>
+                                </div>
+                                <div class="speaker-row">
+                                    <div class="speaker-info">
+                                        <div class="speaker-name">Brother Michael Chen</div>
+                                        <div class="speaker-detail">Youth Speaker • 10 min • Next</div>
+                                    </div>
+                                </div>
+                                <div class="speaker-row">
+                                    <div class="speaker-info">
+                                        <div class="speaker-name">Bishop David Anderson</div>
+                                        <div class="speaker-detail">Bishopric Message • 15 min</div>
+                                    </div>
+                                </div>
+                                <div class="speaker-row">
+                                    <div class="speaker-info">
+                                        <div class="speaker-name">Brother Robert Martinez</div>
+                                        <div class="speaker-detail">Closing Prayer</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                                <button class="btn">
+                                    <span class="btn-icon">🎙️</span>
+                                    Manage Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Meeting Card -->
+                    <div class="meeting-card">
+                        <div class="meeting-header" style="background-color: #64748b;">
+                            <div class="meeting-title">Upcoming Meetings</div>
+                        </div>
+                        <div class="meeting-content">
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Ward Council</div>
+                                <div class="meeting-item-meta">
+                                    <span>Sunday, June 25 • 8:30 AM</span>
+                                    <span>12 participants</span>
+                                </div>
+                            </div>
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Sacrament Meeting</div>
+                                <div class="meeting-item-meta">
+                                    <span>Sunday, June 25 • 10:00 AM</span>
+                                    <span>Program finalized</span>
+                                </div>
+                            </div>
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Young Men/Young Women Activity</div>
+                                <div class="meeting-item-meta">
+                                    <span>Wednesday, June 28 • 7:00 PM</span>
+                                    <span>Planning in progress</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Ward Statistics Card -->
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <div class="card-title">Ward Statistics</div>
+                        </div>
+                        
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">24</div>
+                                <div class="stat-label">Meetings YTD</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">87</div>
+                                <div class="stat-label">Speakers YTD</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">18.5</div>
+                                <div class="stat-label">Avg. Meeting Length</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">98%</div>
+                                <div class="stat-label">Transcription Quality</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Meetings Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Recent Meetings</div>
+                        </div>
+                        
+                        <div class="recent-meetings">
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Sacrament Meeting</div>
+                                <div class="meeting-item-meta">
+                                    <span>June 11, 2023</span>
+                                    <span>178 participants</span>
+                                </div>
+                            </div>
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Ward Council</div>
+                                <div class="meeting-item-meta">
+                                    <span>June 11, 2023</span>
+                                    <span>14 participants</span>
+                                </div>
+                            </div>
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Sacrament Meeting</div>
+                                <div class="meeting-item-meta">
+                                    <span>June 4, 2023</span>
+                                    <span>192 participants</span>
+                                </div>
+                            </div>
+                            <div class="meeting-item">
+                                <div class="meeting-item-title">Fast & Testimony Meeting</div>
+                                <div class="meeting-item-meta">
+                                    <span>June 4, 2023</span>
+                                    <span>12 testimonies</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <button class="btn btn-outline" style="width: 100%;">
+                                View All Meeting Records
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../scripts/main.js"></script>
+    <script>
+        // Show bishop view by default
+        document.getElementById('bishop-view').style.display = 'block';
+    </script>
+</body>
+</html> 
