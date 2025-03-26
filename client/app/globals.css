@@ -1,129 +1,6 @@
-@import "tailwindcss";
-
-@plugin "tailwindcss-animate";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --breakpoint-xs: 480px;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-bebas-neue: bebas-neue, sans-serif;
-  --font-ibm-plex-sans: ibm-plex-sans, sans-serif;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-dark-100: hsl(var(--dark-100));
-  --color-dark-200: hsl(var(--dark-200));
-  --color-dark-300: hsl(var(--dark-300));
-  --color-dark-400: hsl(var(--dark-400));
-  --color-dark-500: hsl(var(--dark-500));
-  --color-dark-600: hsl(var(--dark-600));
-  --color-dark-700: hsl(var(--dark-700));
-  --color-dark-800: hsl(var(--dark-800));
-  --color-light-100: hsl(var(--light-100));
-  --color-light-200: hsl(var(--light-200));
-  --color-light-300: hsl(var(--light-300));
-  --color-light-400: hsl(var(--light-400));
-  --color-light-500: hsl(var(--light-500));
-  --color-light-600: hsl(var(--light-600));
-  --color-light-700: hsl(var(--light-700));
-  --color-light-800: hsl(var(--light-800));
-}
-
-:root {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --card: hsl(var(--card));
-  --card-foreground: hsl(var(--card-foreground));
-  --popover: hsl(var(--popover));
-  --popover-foreground: hsl(var(--popover-foreground));
-  --primary: hsl(var(--primary));
-  --primary-foreground: hsl(var(--primary-foreground));
-  --secondary: hsl(var(--secondary));
-  --secondary-foreground: hsl(var(--secondary-foreground));
-  --muted: hsl(var(--muted));
-  --muted-foreground: hsl(var(--muted-foreground));
-  --accent: hsl(var(--accent));
-  --accent-foreground: hsl(var(--accent-foreground));
-  --destructive: hsl(var(--destructive));
-  --destructive-foreground: hsl(var(--destructive-foreground));
-  --border: hsl(var(--border));
-  --input: hsl(var(--input));
-  --ring: hsl(var(--ring));
-  --chart-1: hsl(var(--chart-1));
-  --chart-2: hsl(var(--chart-2));
-  --chart-3: hsl(var(--chart-3));
-  --chart-4: hsl(var(--chart-4));
-  --chart-5: hsl(var(--chart-5));
-  --primary-admin: #25388c;
-  --color-green: #027a48;
-  --color-green-100: #ecfdf3;
-  --color-green-400: #4c7b62;
-  --color-green-500: #2cc171;
-  --color-green-800: #027a48;
-  --color-red: #ef3a4b;
-  --color-red-400: #f46f70;
-  --color-red-500: #e27233;
-  --color-red-800: #ef3a4b;
-  --color-blue: #0089f1;
-  --color-gray: #cbd5e1;
-  --border-radius-lg: var(--radius);
-  --border-radius-md: calc(var(--radius) - 2px);
-  --border-radius-sm: calc(var(--radius) - 4px);
-  --background-image-pattern: url("/images/pattern.webp");
-}
-.light {
-  --color-100: #d6e0ff;
-  --color-200: #eed1ac;
-  --color-300: #f8f8ff;
-  --color-400: #edf1f1;
-  --color-500: #8d8d8d;
-  --color-600: #f9fafb;
-  --color-700: #e2e8f0;
-  --color-800: #f8fafc;
-}
-
-.dark {
-  --color-100: #16191e;
-  --color-200: #3a354e;
-  --color-300: #232839;
-  --color-400: #1e293b;
-  --color-500: #0f172a;
-  --color-600: #333c5c;
-  --color-700: #464f6f;
-  --color-800: #1e2230;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
@@ -152,11 +29,11 @@
 
 @layer components {
   .form-btn {
-    @apply bg-primary text-dark-100 hover:bg-primary inline-flex min-h-14 w-full items-center justify-center rounded-md px-6 py-2 font-bold text-base;
+    @apply bg-primary text-dark-100 hover:bg-primary inline-flex min-h-14 w-full items-center justify-center rounded-md px-6 py-2 font-bold text-base !important;
   }
 
   .form-input {
-    @apply w-full min-h-14 border-none text-base font-bold placeholder:font-normal text-white placeholder:text-light-100 focus-visible:ring-0 focus-visible:shadow-none bg-dark-300;
+    @apply w-full min-h-14 border-none text-base font-bold placeholder:font-normal text-white placeholder:text-light-100 focus-visible:ring-0 focus-visible:shadow-none bg-dark-300 !important;
   }
 
   /* Book Card */
@@ -178,8 +55,7 @@
 
   /* Borrowed Book */
   .borrowed-book {
-    @apply p-5 rounded-2xl xs:w-min w-full relative;
-    background: linear-gradient(180deg, #12141d 0%, #12151f 100%);
+    @apply gradient-vertical p-5 rounded-2xl xs:w-min w-full relative;
   }
 
   .borrowed-book_cover {
@@ -242,7 +118,7 @@
   }
 
   .book-overview_btn {
-    @apply mt-4 min-h-14 w-fit bg-primary text-dark-100 hover:bg-primary/90 max-md:w-full;
+    @apply mt-4 min-h-14 w-fit bg-primary text-dark-100 hover:bg-primary/90 max-md:w-full !important;
   }
 
   /* File Upload */
@@ -264,12 +140,12 @@
   }
 
   .search-input {
-    @apply w-full border-none font-bold placeholder:font-normal text-white placeholder:text-light-100 focus-visible:ring-0 focus-visible:shadow-none;
+    @apply w-full border-none font-bold placeholder:font-normal text-white placeholder:text-light-100 focus-visible:ring-0 focus-visible:shadow-none !important;
   }
 
   /* Book Receipt */
   .book-receipt_admin-btn {
-    @apply bg-light-300 rounded-md text-primary font-semibold hover:bg-light-300/80;
+    @apply bg-light-300 rounded-md text-primary-admin font-semibold hover:bg-light-300/80 !important;
   }
 
   /* Book Ticket */
@@ -315,7 +191,7 @@
   }
 
   .not-found-btn {
-    @apply bg-primary font-bebas-neue min-w-[360px] mt-6 text-dark-100 text-xl hover:bg-primary/90 min-h-12;
+    @apply bg-primary font-bebas-neue min-w-[360px] mt-6 text-dark-100 text-xl hover:bg-primary/90 min-h-12 !important;
   }
 
   /* Pagination */
@@ -324,11 +200,11 @@
   }
 
   .pagination-btn_light {
-    @apply bg-light-300 text-dark-300 hover:bg-light-300/70;
+    @apply bg-light-300 text-dark-300 hover:bg-light-300/70 !important;
   }
 
   .pagination-btn_dark {
-    @apply bg-dark-300 hover:bg-dark-100;
+    @apply bg-dark-300 hover:bg-dark-100 !important;
   }
 
   #pagination p {
@@ -337,15 +213,15 @@
 
   /* Sort */
   .select-trigger {
-    @apply w-40 h-10 px-4 bg-dark-300 text-light-100 border-dark-100;
+    @apply w-40 h-10 px-4 bg-dark-300 text-light-100 border-dark-100 !important;
   }
 
   .select-content {
-    @apply bg-dark-300 text-light-100 border-dark-100;
+    @apply bg-dark-300 text-light-100 border-dark-100 !important;
   }
 
   .select-item {
-    @apply focus:bg-dark-600 focus:text-light-100;
+    @apply focus:bg-dark-600 focus:text-light-100 !important;
   }
 }
 
@@ -368,13 +244,11 @@
   }
 
   .auth-form {
-    @apply my-auto flex h-full min-h-screen flex-1 items-center bg-cover bg-top bg-dark-100 px-5 py-10;
-    background-image: url("/images/pattern.webp");
+    @apply my-auto flex h-full min-h-screen flex-1 items-center bg-pattern bg-cover bg-top bg-dark-100 px-5 py-10;
   }
 
   .auth-box {
-    @apply mx-auto flex max-w-xl flex-col gap-6 rounded-lg p-10;
-    background: linear-gradient(180deg, #12141d 0%, #12151f 100%);
+    @apply gradient-vertical mx-auto flex max-w-xl flex-col gap-6 rounded-lg p-10;
   }
 
   .auth-illustration {
@@ -383,8 +257,7 @@
 
   /* Root */
   .root-container {
-    @apply flex min-h-screen flex-1 flex-col bg-cover bg-top bg-dark-100 px-5 xs:px-10 md:px-16;
-    background-image: url("/images/pattern.webp");
+    @apply flex min-h-screen flex-1 flex-col bg-pattern bg-cover bg-top bg-dark-100 px-5 xs:px-10 md:px-16;
   }
 
   /* Book Details */
