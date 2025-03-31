@@ -282,7 +282,6 @@
     @apply mt-2 text-3xl font-semibold text-white xs:text-5xl;
   }
 }
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -338,3 +337,4 @@
     --chart-5: 340 75% 55%;
   }
 }
+

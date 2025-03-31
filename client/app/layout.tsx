@@ -7,9 +7,9 @@ import { ReactNode } from "react";
 const ibmPlexSans = localFont({
   src: [
     { path: "/fonts/IBMPlexSans-Regular.ttf", weight: "400", style: "normal" },
-    { path: "/fonts/IBMPlexSans-Bold.ttf", weight: "700", style: "normal" },
-    { path: "/fonts/IBMPlexSans-SemiBold.ttf", weight: "600", style: "normal" },
     { path: "/fonts/IBMPlexSans-Medium.ttf", weight: "500", style: "normal" },
+    { path: "/fonts/IBMPlexSans-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "/fonts/IBMPlexSans-Bold.ttf", weight: "700", style: "normal" },
   ],
 });
 
@@ -21,20 +21,22 @@ const bebasNeue = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Recording Angel",
-  description: "The record keeper of sacrament meetings",
+  title: "Recording Angel Service",
+  description: "Streamline your church meetings with real-time transcription and speaker management.",
 };
 
-const RootLayout = ({ children }: { children: ReactNode }) => {
+const RootLayout = async ({ children }: { children: ReactNode }) => {
+
   return (
     <html lang="en">
-      <body
-        className={`${ibmPlexSans.className} ${bebasNeue.variable} antialiased`}
-      >
-        {children}
-      </body>
+        <body
+          className={`${ibmPlexSans.className} ${bebasNeue.variable} antialiased`}
+        >
+          {children}
+
+        </body>
     </html>
   );
-}
+};
 
 export default RootLayout;
