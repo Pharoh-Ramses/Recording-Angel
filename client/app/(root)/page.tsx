@@ -94,12 +94,12 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Link href="/sign-in">
+              <Link href="/sign-up">
                 <Button size="lg" className="bg-primary text-dark-100 hover:bg-primary/90">
                   Create Account
                 </Button>
               </Link>
-              <Link href="/sign-up">
+              <Link href="/sign-in">
                 <Button size="lg" variant="outline" className="border-primary/30 text-dark-100 hover:bg-primary/10">
                   Login
                 </Button>
