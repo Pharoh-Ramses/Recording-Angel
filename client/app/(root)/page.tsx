@@ -1,122 +1,132 @@
+'use client'
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Mic2, Users, Globe, Shield, Clock } from "lucide-react"
-import Link from "next/link"
+import { Mic2, Globe2, Users, Shield, BarChart3, BookOpen, BookMarked } from "lucide-react"
+import { TranslationDemo } from "@/components/TranslationDemo"
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col bg-dark-300">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <Badge variant="secondary" className="mb-4">
-              Now Available for Church Meetings
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6">
+      <section className="container mx-auto flex min-h-[80vh] flex-col items-center justify-center px-4">
+        <div className="flex w-full flex-col items-center lg:flex-row lg:justify-between">
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+            <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary hover:bg-primary/30">
               Recording Angel Service
+            </Badge>
+            <h1 className="font-bebas-neue text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+              Enhance Your <br />
+              Church Meetings
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Streamline your church meetings with real-time transcription, multi-language support, and seamless speaker management.
+            <p className="mt-6 max-w-xl text-lg text-light-100">
+              Seamlessly manage speakers, transcribe talks in real-time, and provide instant translations for your congregation.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/login">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Button size="lg" className="bg-primary text-dark-100 hover:bg-primary/90">
+                Start Session
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/demo">
-                  Watch Demo
-                </Link>
+              <Button size="lg" variant="outline" className="border-primary/30 text-light-100 hover:bg-primary/10">
+                Join Meeting
               </Button>
             </div>
+          </div>
+
+          <div className="mt-12 flex flex-col gap-6 lg:mt-0">
+            <div className="mb-6 w-full">
+              <TranslationDemo />
+            </div>
+            <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20">
+              <CardHeader className="flex flex-row items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <BookOpen className="size-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-white">Sacrament Meeting</CardTitle>
+                  <CardDescription className="text-light-100">Live Now • 3 Speakers</CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20">
+              <CardHeader className="flex flex-row items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <BookMarked className="size-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-white">Stake Conference</CardTitle>
+                  <CardDescription className="text-light-100">Starting in 2 Hours</CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight mb-4">
-              Everything you need for church meetings
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Powerful features designed for church leaders and members
-            </p>
-          </div>
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
+            <CardHeader>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <Mic2 className="size-6 text-primary" />
+              </div>
+              <CardTitle className="text-xl text-white">Real-time Transcription</CardTitle>
+              <CardDescription className="text-light-100">
+                Instant transcription of speakers with high accuracy
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card>
-              <CardHeader>
-                <Mic2 className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Real-time Transcription</CardTitle>
-                <CardDescription>
-                  Accurate, instant transcription of all speakers and announcements
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
+            <CardHeader>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <Globe2 className="size-6 text-primary" />
+              </div>
+              <CardTitle className="text-xl text-white">Multi-language Support</CardTitle>
+              <CardDescription className="text-light-100">
+                Automatic translation to multiple languages
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <Globe className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Multi-language Support</CardTitle>
-                <CardDescription>
-                  Automatic translation into multiple languages for all participants
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Users className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Speaker Management</CardTitle>
-                <CardDescription>
-                  Easy speaker tracking and program management for leaders
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Shield className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Secure & Private</CardTitle>
-                <CardDescription>
-                  Enterprise-grade security with end-to-end encryption
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Clock className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Meeting Analytics</CardTitle>
-                <CardDescription>
-                  Track attendance, participation, and meeting statistics
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
+          <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
+            <CardHeader>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <Users className="size-6 text-primary" />
+              </div>
+              <CardTitle className="text-xl text-white">Speaker Management</CardTitle>
+              <CardDescription className="text-light-100">
+                Easy control of speakers and meeting flow
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary/5">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight mb-4">
-            Ready to transform your church meetings?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of church leaders who trust Recording Angel Service
-          </p>
-          <Button size="lg" asChild>
-            <Link href="/sign-up">
-              Start Free Trial
-            </Link>
-          </Button>
-        </div>
+      <section className="container mx-auto px-4 py-16">
+        <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20">
+          <CardContent className="flex flex-col items-center justify-center gap-6 px-4 py-16 text-center lg:flex-row lg:text-left">
+            <div className="flex-1">
+              <h2 className="font-bebas-neue text-3xl font-bold text-white">
+                Ready to Get Started?
+              </h2>
+              <p className="mt-2 text-lg text-light-100">
+                Join thousands of congregations using Recording Angel Service
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <Button size="lg" className="bg-primary text-dark-100 hover:bg-primary/90">
+                Create Account
+              </Button>
+              <Button size="lg" variant="outline" className="border-primary/30 text-light-100 hover:bg-primary/10">
+                Learn More
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </section>
     </div>
   )
