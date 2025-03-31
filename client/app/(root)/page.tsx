@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Mic2, Globe2, Users, Shield, BarChart3, BookOpen, BookMarked } from "lucide-react"
 import { TranslationDemo } from "@/components/TranslationDemo"
+import Link from "next/link"
 
 export default function Home() {
   return (
@@ -27,7 +28,7 @@ export default function Home() {
               <Button size="lg" className="bg-primary text-dark-100 hover:bg-primary/90">
                 Start Session
               </Button>
-              <Button size="lg" variant="outline" className="border-primary/30 text-light-100 hover:bg-primary/10">
+              <Button size="lg" variant="outline" className="border-primary/30 text-dark-100 hover:bg-primary/10">
                 Join Meeting
               </Button>
             </div>
@@ -118,12 +119,16 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Button size="lg" className="bg-primary text-dark-100 hover:bg-primary/90">
-                Create Account
-              </Button>
-              <Button size="lg" variant="outline" className="border-primary/30 text-light-100 hover:bg-primary/10">
-                Learn More
-              </Button>
+              <Link href="/sign-in">
+                <Button size="lg" className="bg-primary text-dark-100 hover:bg-primary/90">
+                  Create Account
+                </Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button size="lg" variant="outline" className="border-primary/30 text-dark-100 hover:bg-primary/10">
+                  Login
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

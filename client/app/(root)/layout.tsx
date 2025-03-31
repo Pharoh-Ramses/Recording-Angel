@@ -3,10 +3,9 @@ import Header from '@/components/Header'
 
 const layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className="root-container">
-      <div className="mx-auto max-w-7xl">
-        <Header />
-        <div className="mt-20 pb-20">
+    <main >
+      <div >
+        <div >
           {children}
         </div>
       </div>
