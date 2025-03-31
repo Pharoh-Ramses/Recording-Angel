@@ -51,9 +51,27 @@ export const FIELD_NAMES = {
 export const FIELD_TYPES = {
   fullName: "text",
   email: "email",
-  universityId: "number",
+  stake: "text",
   password: "password",
+  ward: "text",
 };
+export const STAKES = [
+  { value: "salt-lake", label: "Salt Lake Stake" },
+  { value: "provo", label: "Provo Stake" },
+  { value: "bountiful", label: "Bountiful Stake" },
+  { value: "ogden", label: "Ogden Stake" },
+  { value: "layton", label: "Layton Stake" },
+  // Add more stakes as needed
+];
+
+export const WARDS = [
+  { value: "first-ward", label: "First Ward" },
+  { value: "second-ward", label: "Second Ward" },
+  { value: "third-ward", label: "Third Ward" },
+  { value: "fourth-ward", label: "Fourth Ward" },
+  { value: "fifth-ward", label: "Fifth Ward" },
+  // Add more wards as needed
+];
 
 export const sampleBooks = [
   {

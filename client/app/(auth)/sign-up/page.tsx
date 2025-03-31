@@ -6,7 +6,7 @@ import React from 'react'
 
 const Page = () => {
   return (
-    <AuthForm 
+    <AuthForm
       type="SIGN_UP"
       schema={singUpSchema}
       defaultValues={{
@@ -16,7 +16,11 @@ const Page = () => {
         ward: '',
         fullName: '',
       }}
-      onSubmit={() => {}}
+      onSubmit={async (data) => {
+        console.log(data)
+        return { success: true }
+      }}
+
     />
   )
 }

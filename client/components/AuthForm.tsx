@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { FIELD_NAMES } from '@/constants'
+import { FIELD_NAMES, FIELD_TYPES } from '@/constants'
+import Selection from './Selection'
 
 
 interface Props<T extends FieldValues> {
@@ -61,11 +62,9 @@ const AuthForm = <T extends FieldValues>({
                 <FormItem>
                   <FormLabel className="capitalize">{FIELD_NAMES[field.name as keyof typeof FIELD_NAMES]}</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    {field.name === "stake" || field.name === "ward" ? <Selection fieldName={field.name} value={field.value} onChange={field.onChange} /> :
+                      <Input required type={FIELD_TYPES[field.name as keyof typeof FIELD_TYPES]} {...field} className="form-input" />}
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -73,7 +72,7 @@ const AuthForm = <T extends FieldValues>({
 
           ))}
 
-          <Button type="submit">Submit</Button>
+          <Button type="submit" className="form-btn">{isSignIn ? "Sign in" : "Sign up"}</Button>
         </form>
       </Form>
       <p className="text-center text-base font-medium">
