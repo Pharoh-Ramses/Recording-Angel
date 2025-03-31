@@ -12,8 +12,8 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-dark-300">
       {/* Hero Section */}
       <section className="container mx-auto flex min-h-[80vh] flex-col items-center justify-center px-4">
-        <div className="flex w-full flex-col items-center lg:flex-row lg:justify-between">
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+        <div className="flex w-full flex-col items-center lg:flex-row lg:justify-between lg:gap-12">
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left lg:w-1/2">
             <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary hover:bg-primary/30">
               Recording Angel Service
             </Badge>
@@ -34,33 +34,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col gap-6 lg:mt-0">
-            <div className="mb-6 w-full">
-              <TranslationDemo />
-            </div>
-            <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20">
-              <CardHeader className="flex flex-row items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <BookOpen className="size-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl text-white">Sacrament Meeting</CardTitle>
-                  <CardDescription className="text-light-100">Live Now • 3 Speakers</CardDescription>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20">
-              <CardHeader className="flex flex-row items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <BookMarked className="size-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl text-white">Stake Conference</CardTitle>
-                  <CardDescription className="text-light-100">Starting in 2 Hours</CardDescription>
-                </div>
-              </CardHeader>
-            </Card>
+          <div className="mt-12 lg:mt-0 lg:w-1/2">
+            <TranslationDemo />
           </div>
         </div>
       </section>
