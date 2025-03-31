@@ -9,7 +9,7 @@ import Link from "next/link"
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-dark-300">
+    <div className="flex min-h-screen flex-col root-container">
       {/* Hero Section */}
       <section className="container mx-auto flex min-h-[80vh] flex-col items-center justify-center px-4">
         <div className="flex w-full flex-col items-center lg:flex-row lg:justify-between lg:gap-12">
