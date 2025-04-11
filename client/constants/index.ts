@@ -43,33 +43,35 @@ export const adminSideBarLinks = [
 export const FIELD_NAMES = {
   fullName: "Full name",
   email: "Email",
-  stake: "Stake",
   password: "Password",
+  stake: "Stake",
   ward: "Ward",
+  profilePicture: "Profile Picture",
 };
 
 export const FIELD_TYPES = {
   fullName: "text",
   email: "email",
-  stake: "text",
   password: "password",
+  stake: "text",
   ward: "text",
+  profilePicture: "text",
 };
 export const STAKES = [
-  { value: "salt-lake", label: "Salt Lake Stake" },
-  { value: "provo", label: "Provo Stake" },
-  { value: "bountiful", label: "Bountiful Stake" },
-  { value: "ogden", label: "Ogden Stake" },
-  { value: "layton", label: "Layton Stake" },
+  { value: "1", label: "Salt Lake Stake" },
+  { value: "2", label: "Provo Stake" },
+  { value: "3", label: "Bountiful Stake" },
+  { value: "4", label: "Ogden Stake" },
+  { value: "5", label: "Layton Stake" },
   // Add more stakes as needed
 ];
 
 export const WARDS = [
-  { value: "first-ward", label: "First Ward" },
-  { value: "second-ward", label: "Second Ward" },
-  { value: "third-ward", label: "Third Ward" },
-  { value: "fourth-ward", label: "Fourth Ward" },
-  { value: "fifth-ward", label: "Fifth Ward" },
+  { value: "1", label: "First Ward" },
+  { value: "2", label: "Second Ward" },
+  { value: "3", label: "Third Ward" },
+  { value: "4", label: "Fourth Ward" },
+  { value: "5", label: "Fifth Ward" },
   // Add more wards as needed
 ];
 

@@ -6,6 +6,7 @@ export const singUpSchema = z.object({
   stake: z.string().nonempty('Stake is required'),
   ward: z.string().nonempty('Ward is required'),  
   password: z.string().min(8),
+  profilePicture: z.string().optional(),
 })
 
 export const singInSchema = z.object({

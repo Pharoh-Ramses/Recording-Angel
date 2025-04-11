@@ -15,6 +15,7 @@ const Page = () => {
         stake: '',
         ward: '',
         fullName: '',
+        profilePicture: '',
       }}
       onSubmit={async (data) => {
         console.log(data)

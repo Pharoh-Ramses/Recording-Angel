@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { FIELD_NAMES, FIELD_TYPES } from '@/constants'
 import Selection from './Selection'
+import ImageUpload from './ImageUpload'
 
 
 interface Props<T extends FieldValues> {
@@ -40,7 +41,7 @@ const AuthForm = <T extends FieldValues>({
     resolver: zodResolver(schema),
     defaultValues: defaultValues as DefaultValues<T>,
   })
-// TODO: Implament Convex For DB
+  // TODO: Implament Convex For DB
   const handleSubmit: SubmitHandler<T> = async (data) => { }
 
   return (
@@ -62,8 +63,11 @@ const AuthForm = <T extends FieldValues>({
                 <FormItem>
                   <FormLabel className="capitalize">{FIELD_NAMES[field.name as keyof typeof FIELD_NAMES]}</FormLabel>
                   <FormControl>
-                    {field.name === "stake" || field.name === "ward" ? <Selection fieldName={field.name} value={field.value} onChange={field.onChange} /> :
-                      <Input required type={FIELD_TYPES[field.name as keyof typeof FIELD_TYPES]} {...field} className="form-input" />}
+                    {field.name === "profilePicture" ? (
+                      <ImageUpload onFileChange={field.onChange} />
+                    ) : field.name === "stake" || field.name === "ward" ? (
+                      <Selection fieldName={field.name} value={field.value} onChange={field.onChange} />) : (
+                      <Input required type={FIELD_TYPES[field.name as keyof typeof FIELD_TYPES]} {...field} className="form-input" />)}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
