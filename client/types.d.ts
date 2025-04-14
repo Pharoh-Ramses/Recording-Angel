@@ -4,5 +4,5 @@ interface AuthCredentials {
   password: string
   stake: number
   ward: number
-  profilePicture: string
+  profilePicture?: string
 }

@@ -53,25 +53,25 @@ export const FIELD_TYPES = {
   fullName: "text",
   email: "email",
   password: "password",
-  stake: "text",
-  ward: "text",
+  stake: "number",
+  ward: "number",
   profilePicture: "text",
 };
 export const STAKES = [
-  { value: "1", label: "Salt Lake Stake" },
-  { value: "2", label: "Provo Stake" },
-  { value: "3", label: "Bountiful Stake" },
-  { value: "4", label: "Ogden Stake" },
-  { value: "5", label: "Layton Stake" },
+  { value: 1, label: "Salt Lake Stake" },
+  { value: 2, label: "Provo Stake" },
+  { value: 3, label: "Bountiful Stake" },
+  { value: 4, label: "Ogden Stake" },
+  { value: 5, label: "Layton Stake" },
   // Add more stakes as needed
 ];
 
 export const WARDS = [
-  { value: "1", label: "First Ward" },
-  { value: "2", label: "Second Ward" },
-  { value: "3", label: "Third Ward" },
-  { value: "4", label: "Fourth Ward" },
-  { value: "5", label: "Fifth Ward" },
+  { value: 1, label: "First Ward" },
+  { value: 2, label: "Second Ward" },
+  { value: 3, label: "Third Ward" },
+  { value: 4, label: "Fourth Ward" },
+  { value: 5, label: "Fifth Ward" },
   // Add more wards as needed
 ];
 

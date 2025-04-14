@@ -1,22 +1,20 @@
 'use client'
 
 import AuthForm from '@/components/AuthForm'
-import { singInSchema } from '@/lib/validations'
+import { signInWithCredentials } from '@/lib/actions/auth'
+import { signInSchema } from '@/lib/validations'
 import React from 'react'
 
 const Page = () => {
   return (
     <AuthForm 
       type="SIGN_IN"
-      schema={singInSchema}
+      schema={signInSchema}
       defaultValues={{
         email: '',
         password: '',
       }}
-      onSubmit={async (data) => {
-        console.log(data)
-        return { success: true }
-      }}
+      onSubmit={signInWithCredentials}
     />
   )
 }

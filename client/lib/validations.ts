@@ -1,15 +1,15 @@
 import { z } from 'zod'
 
-export const singUpSchema = z.object({
+export const signUpSchema = z.object({
   fullName: z.string().min(3),
   email: z.string().email(),
-  stake: z.string().nonempty('Stake is required'),
-  ward: z.string().nonempty('Ward is required'),  
+  stake: z.number().nonnegative().int().refine(value => value !== undefined, { message: 'Stake is required' }),
+  ward: z.number().nonnegative().int().refine(value => value !== undefined, { message: 'Ward is required' }),
   password: z.string().min(8),
   profilePicture: z.string().optional(),
 })
 
-export const singInSchema = z.object({
+export const signInSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
 })

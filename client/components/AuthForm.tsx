@@ -19,12 +19,14 @@ import Link from "next/link"
 import { FIELD_NAMES, FIELD_TYPES } from '@/constants'
 import Selection from './Selection'
 import ImageUpload from './ImageUpload'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 
 interface Props<T extends FieldValues> {
   schema: ZodType<T>;
   defaultValues: T;
-  onSubmit: (data: T) => Promise<{ success: boolean, errror?: string }>;
+  onSubmit: (data: T) => Promise<{ success: boolean, error?: string }>;
   type: 'SIGN_UP' | 'SIGN_IN';
 }
 
@@ -35,14 +37,28 @@ const AuthForm = <T extends FieldValues>({
   onSubmit,
   type
 }: Props<T>) => {
+  const router = useRouter()
   const isSignIn = type === 'SIGN_IN'
 
   const form: UseFormReturn<T> = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues as DefaultValues<T>,
   })
-  // TODO: Implament Convex For DB
-  const handleSubmit: SubmitHandler<T> = async (data) => { }
+  const handleSubmit: SubmitHandler<T> = async (data) => {
+    const result = await onSubmit(data);
+    if (result.success) {
+      toast("Success", {
+        description: isSignIn ? 'You have successfully signed in.' : 'You have successfully signed up.'
+      });
+      router.push('/dashboard')
+
+    } else {
+      toast.error(`Error ${isSignIn ? 'Signing in' : 'Signing up'}`, {
+        description: result.error ?? "An error occured"
+      });
+    }
+  }
+
 
   return (
     <div className="flex flex-col gap-4">
