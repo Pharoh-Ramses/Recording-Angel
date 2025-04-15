@@ -7,10 +7,14 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Session } from 'next-auth'
-
+import config from '@/lib/config'
 
 const Header = ({session}: {session: Session}) => {
   const pathname = usePathname();
+  const imageUrl = session?.user?.profilePicture 
+    ? `${config.env.imagekit.urlEndpoint}/tr:h-100,w-100,c-at_max/${session.user.profilePicture}`
+    : '';
+
   return (
     <header className="my-10 flex justify-between gap-5">
       <Link href="/">
@@ -24,7 +28,7 @@ const Header = ({session}: {session: Session}) => {
         <li>
           <Link href='/my-profile'>
             <Avatar>
-              <AvatarImage src={session?.user?.profilePicture} alt="profile picture" />
+              <AvatarImage src={imageUrl} alt="profile picture" />
               <AvatarFallback>{session?.user?.name}</AvatarFallback>
             </Avatar>
           </Link>
