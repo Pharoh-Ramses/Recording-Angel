@@ -9,9 +9,9 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
   if(!session) redirect('/sign-in')
 
   return (
-    <main className="root-container">
+    <main className="bg-[#e8eaec]">
       <div className="mx-auto max-w-7xl">
-        <Header session={session} />
+        
         <div >
           {children}
         </div>

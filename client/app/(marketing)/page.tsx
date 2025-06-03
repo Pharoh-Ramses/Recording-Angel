@@ -17,7 +17,7 @@ export default function Home() {
             <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary hover:bg-primary/30">
               Recording Angel Service
             </Badge>
-            <h1 className="font-bebas-neue text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
               Enhance Your <br />
               Church Meetings
             </h1>
@@ -86,7 +86,7 @@ export default function Home() {
         <Card className="bg-dark-300/60 backdrop-blur-sm border-primary/20">
           <CardContent className="flex flex-col items-center justify-center gap-6 px-4 py-16 text-center lg:flex-row lg:text-left">
             <div className="flex-1">
-              <h2 className="font-bebas-neue text-3xl font-bold text-white">
+              <h2 className="text-3xl font-bold text-white">
                 Ready to Get Started?
               </h2>
               <p className="mt-2 text-lg text-light-100">
