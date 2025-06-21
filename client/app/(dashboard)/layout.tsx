@@ -10,7 +10,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
 
   return (
     <main className="bg-[#e8eaec]">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto">
         
         <div >
           {children}

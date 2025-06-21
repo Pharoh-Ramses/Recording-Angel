@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744149497206,
-      "tag": "0000_bitter_big_bertha",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1744671963948,
-      "tag": "0001_empty_blob",
+      "when": 1750219949549,
+      "tag": "0000_big_deathstrike",
       "breakpoints": true
     }
   ]
