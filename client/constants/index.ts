@@ -1,9 +1,21 @@
 export const navigationLinks = [
-  {
-    href: "/library",
-    label: "Library",
-  },
 
+  {
+    href: "/join",
+    label: "Join",
+  },
+  {
+    href: "/how",
+    label: "How it works",
+  },
+  {
+    href: "/features",
+    label: "Features",
+  },
+  {
+    href: "/missions",
+    label: "For Missions",
+  },
   {
     img: "/icons/user.svg",
     selectedImg: "/icons/user-fill.svg",
@@ -37,6 +49,41 @@ export const adminSideBarLinks = [
     img: "/icons/admin/user.svg",
     route: "/admin/account-requests",
     text: "Account Requests",
+  },
+];
+
+export const DashboardSidebarLinks = [
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    iconName: "RiHomeSmileFill",
+  },
+  {
+    label: "Sessions",
+    iconName: "RiVideoLine",
+    expandable: true,
+    subMenus: [
+      {
+        href: "/sessions",
+        label: "All Sessions",
+        iconName: "RiListUnordered",
+      },
+      {
+        href: "/sessions/new",
+        label: "Create Session",
+        iconName: "RiAddLine",
+      },
+      {
+        href: "/sessions/active",
+        label: "Active Sessions",
+        iconName: "RiPlayCircleLine",
+      },
+    ],
+  },
+  {
+    href: "/my-profile",
+    label: "My Profile",
+    iconName: "RiUserLine",
   },
 ];
 

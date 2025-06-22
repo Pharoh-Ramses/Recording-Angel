@@ -1,5 +1,5 @@
 import React from 'react'
-import Header from '@/components/Header'
+import Header from '@/components/MarketingHeader'
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 

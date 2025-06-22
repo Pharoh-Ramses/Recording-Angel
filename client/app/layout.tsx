@@ -7,6 +7,15 @@ import localFont from "next/font/local";
 import { ReactNode } from "react";
 import { auth } from "@/auth";
 
+const IBM_Plex_Sans = localFont({
+  src: [
+    { path: "/fonts/IBMPlexSans-Regular.ttf", weight: "400", style: "normal" },
+    { path: "/fonts/IBMPlexSans-Medium.ttf", weight: "500", style: "normal" },
+    { path: "/fonts/IBMPlexSans-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "/fonts/IBMPlexSans-Bold.ttf", weight: "700", style: "normal" },
+  ],
+});
+
 const palatinoSans = localFont({
   src: [
     { path: "/fonts/Palatino LT Light.ttf", weight: "300", style: "normal" },
@@ -15,6 +24,7 @@ const palatinoSans = localFont({
     { path: "/fonts/Palatino LT Bold.ttf", weight: "600", style: "normal" },
     { path: "/fonts/Palatino LT Black.ttf", weight: "700", style: "normal" },
   ],
+  variable: "--font-palatino",
 });
 
 const bebasNeue = localFont({
@@ -36,7 +46,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
     <html lang="en">
       <SessionProvider session={session}>
         <body
-          className={`${palatinoSans.className} ${bebasNeue.variable} antialiased`}
+          className={`${IBM_Plex_Sans.className} ${palatinoSans.variable} ${bebasNeue.variable} antialiased`}
         >
           {children}
           <Toaster />

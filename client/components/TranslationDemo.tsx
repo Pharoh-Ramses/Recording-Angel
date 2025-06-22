@@ -64,7 +64,7 @@ export function TranslationDemo() {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="relative h-64 w-full overflow-hidden rounded-lg bg-dark-300/40 p-6 ring-1 ring-primary/10">
+        <div className="font-palatino relative h-64 w-full overflow-hidden rounded-lg bg-dark-300/40 p-6 ring-1 ring-primary/10">
           <div 
             ref={scrollContainerRef}
             className="absolute inset-0 flex flex-col overflow-y-auto hide-scrollbar px-2"
@@ -72,7 +72,7 @@ export function TranslationDemo() {
             {translationHistory.map((phrase) => (
               <div 
                 key={phrase.id}
-                className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                className=" animate-in fade-in slide-in-from-bottom-4 duration-500"
               >
                 <div className="flex gap-4">
                   <div className="flex-1 text-white font-medium">{phrase.english}</div>

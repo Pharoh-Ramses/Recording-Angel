@@ -17,7 +17,7 @@ export default function Home() {
             <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary hover:bg-primary/30">
               Recording Angel Service
             </Badge>
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+            <h1 className="font-bebas-neue text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
               Enhance Your <br />
               Church Meetings
             </h1>
