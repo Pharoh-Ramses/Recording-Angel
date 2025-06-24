@@ -8,7 +8,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
 
   return (
     <main className="root-container">
-      <div className="mx-auto max-w-7xl">
+      <div className="container mx-auto max-w-7xl">
         <Header session={session} />
         <div>
           {children}

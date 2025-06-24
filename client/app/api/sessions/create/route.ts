@@ -14,7 +14,7 @@ export async function POST() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const sessionCode = nanoid(6);
+        const sessionCode = nanoid(6).toLowerCase();
 
         const [newSession] = await db
             .insert(sessions)

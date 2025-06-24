@@ -1,17 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 export default function NewSessionPage() {
+  const router = useRouter();
   const [sessionCode, setSessionCode] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +23,7 @@ export default function NewSessionPage() {
       }
       const data = await res.json();
       setSessionCode(data.code);
+      setSessionId(data.id);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -45,9 +43,17 @@ export default function NewSessionPage() {
             {loading ? "Creating..." : "Create Session"}
           </Button>
           {sessionCode && (
-            <div className="text-center mt-4">
-              <div className="text-lg font-semibold">Session Code:</div>
-              <div className="text-3xl font-mono font-bold tracking-wider text-orange-600 mt-2">{sessionCode}</div>
+            <div className="text-center mt-4 space-y-4">
+              <div>
+                <div className="text-lg font-semibold">Session Code:</div>
+                <div className="text-3xl font-mono font-bold tracking-wider text-orange-600 mt-2">{sessionCode}</div>
+              </div>
+              <Button 
+                onClick={() => router.push(`/sessions/${sessionId}`)}
+                className="w-full"
+              >
+                Enter Session Room
+              </Button>
             </div>
           )}
           {error && <div className="text-red-500 mt-2">{error}</div>}
