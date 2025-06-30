@@ -9,8 +9,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -19,26 +21,38 @@ import (
 
 var db *sql.DB
 
-type SessionData struct {
-	SessionID string
-	UserID    string
-	StartTime time.Time
-	EndTime   time.Time
-}
-
-type TranscriptChunk struct {
-	Text      string    `json:"text"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
 }
 
-func main() {
+// Verse and Paragraph structures for real-time formatting
+type Verse struct {
+	VerseNumber int       `json:"verse_number"`
+	Text        string    `json:"text"`
+	Timestamp   time.Time `json:"timestamp"`
+	SpeakerID   string    `json:"speaker_id"`
+}
 
+type ParagraphData struct {
+	SessionID       string    `json:"session_id"`
+	ParagraphNumber int       `json:"paragraph_number"`
+	Verses          []Verse   `json:"verses"`
+	CompletedAt     time.Time `json:"completed_at"`
+}
+
+type StreamingSession struct {
+	SessionID       string
+	UserID          string
+	CurrentParagraph ParagraphData
+	VerseNumber     int
+	ParagraphNumber int
+	LastActivity    time.Time
+	SilenceStart    *time.Time
+}
+
+func main() {
 	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
@@ -54,7 +68,7 @@ func main() {
 	var dbErr error
 	db, dbErr = sql.Open("postgres", connStr)
 	if dbErr != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Fatal("Error connecting to database:", dbErr)
 	}
 
 	// Test database connection
@@ -64,15 +78,36 @@ func main() {
 	}
 	log.Println("Database connection successful")
 
-	// Initialize database tables
-	err = initDB()
-	if err != nil {
-		log.Fatal("Error initializing database:", err)
-	}
+	// Setup router
+	r := mux.NewRouter()
 
-	// Setup http server
-	http.HandleFunc("/health", handleHealthCheck)
-	http.HandleFunc("ws", handleWebSocket)
+	// Health check
+	r.HandleFunc("/health", handleHealthCheck).Methods("GET")
+
+	// User routes
+	r.HandleFunc("/api/users", handleCreateUser).Methods("POST")
+	r.HandleFunc("/api/users/{id}", handleGetUser).Methods("GET")
+
+	// Session routes
+	r.HandleFunc("/api/sessions", handleCreateSession).Methods("POST")
+	r.HandleFunc("/api/sessions/{id}", handleGetSession).Methods("GET")
+	r.HandleFunc("/api/sessions/{id}/end", handleEndSession).Methods("POST")
+	r.HandleFunc("/api/sessions/join", handleJoinSession).Methods("GET")
+
+	// Transcription routes
+	r.HandleFunc("/api/sessions/{sessionId}/transcriptions", handleCreateTranscription).Methods("POST")
+	r.HandleFunc("/api/sessions/{sessionId}/transcriptions", handleGetTranscriptions).Methods("GET")
+
+	// Participant routes
+	r.HandleFunc("/api/sessions/{sessionId}/participants", handleAddParticipant).Methods("POST")
+	r.HandleFunc("/api/sessions/{sessionId}/participants", handleGetParticipants).Methods("GET")
+
+	// Translation routes
+	r.HandleFunc("/api/transcriptions/{transcriptionId}/translations", handleCreateTranslation).Methods("POST")
+	r.HandleFunc("/api/transcriptions/{transcriptionId}/translations", handleGetTranslations).Methods("GET")
+
+	// WebSocket route for real-time transcription with verse formatting
+	r.HandleFunc("/ws", handleWebSocket)
 
 	// Start server
 	port := os.Getenv("PORT")
@@ -80,33 +115,7 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Server starting on port %s...\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
-}
-
-// initDB initializes the database tables
-func initDB() error {
-	// Create sessions table
-	_, err := db.Exec(`
-    CREATE TABLE IF NOT EXISTS sessions (
-      id VARCHAR(50) PRIMARY KEY,
-      user_id VARCHAR(50) NOT NULL,
-      start_time timestamp NOT NULL,
-      end_time timestamp
-  )`)
-	if err != nil {
-		return err
-	}
-
-	// Create transcritps_chunks table
-	_, err = db.Exec(`
-    CREATE TABLE IF NOT EXISTS transcript_chunks (
-      id SERIAL PRIMARY KEY,
-      session_id VARCHAR(50) REFERENCES sessions(id),
-      text text NOT NULL,
-      start_time timestamp NOT NULL
-  )`)
-	return err
-
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
 // Health check handler
@@ -118,7 +127,7 @@ func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// WebSocket handler
+// WebSocket handler for real-time transcription with verse formatting
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -127,29 +136,31 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	// Create a new session in the database
-	sessionID := fmt.Sprintf("session_%d", time.Now().Unix())
+	sessionID := r.URL.Query().Get("session_id")
 	userID := r.URL.Query().Get("user_id")
-	if userID == "" {
-		userID = "anonymous"
-	}
-
-	session := SessionData{
-		SessionID: sessionID,
-		UserID:    userID,
-		StartTime: time.Now(),
-	}
-
-	err = createSession(session)
-	if err != nil {
-		log.Println("error creating session:", err)
+	
+	if sessionID == "" || userID == "" {
+		log.Println("session_id and user_id required for websocket connection")
 		return
 	}
 
-	log.Printf("WebSocket connection established for session %s\n", sessionID)
+	log.Printf("WebSocket connection established for session %s, user %s\n", sessionID, userID)
+
+	// Initialize streaming session
+	streamSession := &StreamingSession{
+		SessionID:       sessionID,
+		UserID:          userID,
+		VerseNumber:     1,
+		ParagraphNumber: 1,
+		LastActivity:    time.Now(),
+		CurrentParagraph: ParagraphData{
+			SessionID:       sessionID,
+			ParagraphNumber: 1,
+			Verses:          []Verse{},
+		},
+	}
 
 	// Process incoming audio chunks
-
 	for {
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
@@ -158,6 +169,12 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if messageType == websocket.BinaryMessage {
+			// Check for silence (empty or very small audio chunk)
+			if len(p) < 1024 { // Threshold for silence detection
+				handleSilence(streamSession, conn)
+				continue
+			}
+
 			// Process audio chunk
 			text, err := processAudioChunk(p)
 			if err != nil {
@@ -165,64 +182,149 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			// Store the transcript chunk
-			chunk := TranscriptChunk{
-				Text:      text,
-				Timestamp: time.Now(),
+			// Skip if no meaningful text
+			if len(strings.TrimSpace(text)) < 3 {
+				continue
 			}
 
-			// Save to database
-			err = saveTranscriptChunk(sessionID, chunk)
+			// Process the transcribed text into verses
+			err = processTranscribedText(streamSession, text, conn)
 			if err != nil {
-				log.Println("error creating transcript chunk:", err)
+				log.Println("error processing transcribed text:", err)
 			}
 
-			// Send basck to client
-			err = conn.WriteJSON(chunk)
-			if err != nil {
-				log.Println("error writing websocket message:", err)
-				break
-			}
+			streamSession.LastActivity = time.Now()
+			streamSession.SilenceStart = nil
 		}
 	}
 
-	// End the session
-	session.EndTime = time.Now()
-	err = updateSessionEndTime(session)
-	if err != nil {
-		log.Println("error updating session end time:", err)
+	// Save any remaining paragraph when connection closes
+	if len(streamSession.CurrentParagraph.Verses) > 0 {
+		saveParagraphToDatabase(streamSession)
 	}
+
 	log.Printf("WebSocket connection closed for session %s\n", sessionID)
 }
 
-// Database functions
-
-func createSession(session SessionData) error {
-	query := `
-    INSERT INTO sessions (id, user_id, start_time)
-    VALUES ($1, $2, $3)
-`
-	_, err := db.Exec(query, session.SessionID, session.UserID, session.StartTime)
-	return err
+func handleSilence(session *StreamingSession, conn *websocket.Conn) {
+	now := time.Now()
+	
+	// Start tracking silence
+	if session.SilenceStart == nil {
+		session.SilenceStart = &now
+		return
+	}
+	
+	// Check if silence has lasted long enough to trigger paragraph break
+	silenceDuration := now.Sub(*session.SilenceStart)
+	if silenceDuration > 2*time.Second && len(session.CurrentParagraph.Verses) > 0 {
+		// Complete current paragraph
+		session.CurrentParagraph.CompletedAt = now
+		
+		// Save to database
+		err := saveParagraphToDatabase(session)
+		if err != nil {
+			log.Println("error saving paragraph to database:", err)
+		}
+		
+		// Send complete paragraph to client
+		err = conn.WriteJSON(map[string]interface{}{
+			"type": "paragraph_complete",
+			"data": session.CurrentParagraph,
+		})
+		if err != nil {
+			log.Println("error sending paragraph to client:", err)
+		}
+		
+		log.Printf("Paragraph %d completed with %d verses", 
+			session.CurrentParagraph.ParagraphNumber, 
+			len(session.CurrentParagraph.Verses))
+		
+		// Start new paragraph
+		session.ParagraphNumber++
+		session.CurrentParagraph = ParagraphData{
+			SessionID:       session.SessionID,
+			ParagraphNumber: session.ParagraphNumber,
+			Verses:          []Verse{},
+		}
+		
+		session.SilenceStart = nil
+	}
 }
 
-func updateSessionEndTime(session SessionData) error {
-	query := `
-    UPDATE sessions
-    SET end_time = $1
-    WHERE id = $2
-  `
-	_, err := db.Exec(query, session.EndTime, session.SessionID)
-	return err
+func processTranscribedText(session *StreamingSession, text string, conn *websocket.Conn) error {
+	// Split text into sentences (verses)
+	sentences := splitIntoSentences(text)
+	
+	for _, sentence := range sentences {
+		if len(strings.TrimSpace(sentence)) == 0 {
+			continue
+		}
+		
+		// Create verse
+		verse := Verse{
+			VerseNumber: session.VerseNumber,
+			Text:        strings.TrimSpace(sentence),
+			Timestamp:   time.Now(),
+			SpeakerID:   session.UserID,
+		}
+		
+		// Add to current paragraph
+		session.CurrentParagraph.Verses = append(session.CurrentParagraph.Verses, verse)
+		session.VerseNumber++
+		
+		// Send verse to client in real-time
+		err := conn.WriteJSON(map[string]interface{}{
+			"type": "verse",
+			"data": verse,
+		})
+		if err != nil {
+			return err
+		}
+		
+		log.Printf("Verse %d: %s", verse.VerseNumber, verse.Text)
+	}
+	
+	return nil
 }
 
-func saveTranscriptChunk(sessionId string, chunk TranscriptChunk) error {
-	query := `
-    INSERT INTO transcript_chunks (session_id, text, start_time)
-    VALUES ($1, $2, $3)
-  `
-	_, err := db.Exec(query, sessionId, chunk.Text, chunk.Timestamp)
-	return err
+func saveParagraphToDatabase(session *StreamingSession) error {
+	// Convert paragraph to JSON for storage
+	jsonData, err := json.Marshal(session.CurrentParagraph)
+	if err != nil {
+		return err
+	}
+	
+	// Create transcription record
+	transcription := Transcription{
+		ID:        GenerateUUID(),
+		SessionID: session.SessionID,
+		Text:      string(jsonData),
+		Language:  "en",
+		Timestamp: session.CurrentParagraph.CompletedAt,
+		SpeakerID: session.UserID,
+	}
+	
+	return CreateTranscription(transcription)
+}
+
+func splitIntoSentences(text string) []string {
+	// Simple sentence splitting
+	sentences := strings.FieldsFunc(text, func(c rune) bool {
+		return c == '.' || c == '!' || c == '?'
+	})
+	
+	var result []string
+	for _, sentence := range sentences {
+		cleaned := strings.TrimSpace(sentence)
+		if len(cleaned) > 0 {
+			if !strings.HasSuffix(cleaned, ".") && !strings.HasSuffix(cleaned, "!") && !strings.HasSuffix(cleaned, "?") {
+				cleaned += "."
+			}
+			result = append(result, cleaned)
+		}
+	}
+	return result
 }
 
 func processAudioChunk(audioData []byte) (string, error) {
@@ -257,12 +359,10 @@ func processAudioChunk(audioData []byte) (string, error) {
 	}
 
 	// Set a timeout for the API Call
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Call the Whisper API
-
 	resp, err := client.CreateTranscription(ctx, req)
 	if err != nil {
 		return "", fmt.Errorf("error calling whisper api: %w", err)

@@ -1,17 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/database/drizzle';
-import { sessions } from '@/database/schema';
-import { eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/database/drizzle";
+import { sessions } from "@/database/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const sessionId = params.id;
-    
+    const { id: sessionId } = await params;
+
     if (!sessionId) {
-      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Session ID is required" },
+        { status: 400 },
+      );
     }
 
     const session = await db
@@ -21,12 +24,15 @@ export async function GET(
       .limit(1);
 
     if (session.length === 0) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
     return NextResponse.json(session[0]);
   } catch (error) {
-    console.error('Error fetching session:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error fetching session:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

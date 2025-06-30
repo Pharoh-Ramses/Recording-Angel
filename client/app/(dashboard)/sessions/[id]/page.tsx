@@ -3,18 +3,20 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Mic, 
-  MicOff, 
-  Play, 
-  Square, 
-  Users, 
+import {
+  Mic,
+  MicOff,
+  Play,
+  Pause,
+  Square,
+  Users,
   Volume2,
   Wifi,
-  WifiOff
+  WifiOff,
 } from "lucide-react";
+import TranscriptionDisplay from "@/components/sessions/transcription-display";
+import { useTranscription } from "@/lib/hooks/use-transcription";
 
 interface SessionData {
   id: string;
@@ -27,21 +29,38 @@ interface SessionData {
 export default function SessionRoomPage() {
   const params = useParams();
   const sessionId = params.id as string;
-  
+
   const [session, setSession] = useState<SessionData | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const [audioLevel, setAudioLevel] = useState(0);
-  const [transcriptText, setTranscriptText] = useState("");
   const [currentSpeaker, setCurrentSpeaker] = useState("Unknown Speaker");
   const [participantCount, setParticipantCount] = useState(1);
-  
+
+  // Use the transcription hook for verse numbering
+  const {
+    chunks,
+    currentText,
+    isPaused,
+    updateCurrentText,
+    startRecording: startTranscription,
+    pauseRecording,
+    resumeRecording,
+    endSession,
+  } = useTranscription();
+
   // Audio-related state
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [isMicrophoneEnabled, setIsMicrophoneEnabled] = useState(false);
   const [microphoneError, setMicrophoneError] = useState<string | null>(null);
+
+  // Transcription-related state
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null,
+  );
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
 
   useEffect(() => {
     // Fetch session data
@@ -64,45 +83,62 @@ export default function SessionRoomPage() {
   const initializeMicrophone = async () => {
     try {
       setMicrophoneError(null);
-      
+
       // Step 1: Request microphone permission
       // This prompts the user for microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,  // Reduces echo
-          noiseSuppression: true,  // Reduces background noise
-          autoGainControl: true,   // Automatically adjusts volume
-        } 
+          echoCancellation: true, // Reduces echo
+          noiseSuppression: true, // Reduces background noise
+          autoGainControl: true, // Automatically adjusts volume
+        },
       });
-      
+
       setMediaStream(stream);
-      
+
       // Step 2: Create AudioContext (the main audio processing interface)
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioCtx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
       setAudioContext(audioCtx);
-      
+
       // Step 3: Create audio source from microphone stream
       const source = audioCtx.createMediaStreamSource(stream);
-      
+
       // Step 4: Create AnalyserNode to analyze audio levels
       const analyserNode = audioCtx.createAnalyser();
       analyserNode.fftSize = 256; // Size of frequency analysis (smaller = faster)
       analyserNode.smoothingTimeConstant = 0.8; // Smooths out rapid changes
-      
+
       // Step 5: Connect source to analyser
       source.connect(analyserNode);
-      
+
       setAnalyser(analyserNode);
+
+      // Step 6: Set up MediaRecorder for audio chunking
+      let mimeType = "audio/webm;codecs=opus";
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "audio/webm";
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "audio/mp4";
+      }
+
+      const recorder = new MediaRecorder(stream, { mimeType });
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          setAudioChunks((prev) => [...prev, event.data]);
+        }
+      };
+
+      setMediaRecorder(recorder);
       setIsMicrophoneEnabled(true);
-      
-      console.log("🎤 Microphone initialized successfully");
-      
+
+      console.log("🎤 Microphone and recorder initialized successfully");
     } catch (error) {
       console.error("Microphone access failed:", error);
       setMicrophoneError(
-        error instanceof Error 
-          ? error.message 
-          : "Failed to access microphone"
+        error instanceof Error ? error.message : "Failed to access microphone",
       );
     }
   };
@@ -112,54 +148,152 @@ export default function SessionRoomPage() {
     if (isRecording && analyser && isMicrophoneEnabled) {
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
-      
+
       const updateAudioLevel = () => {
         // Get frequency data from the analyser
         analyser.getByteFrequencyData(dataArray);
-        
+
         // Calculate average amplitude across all frequencies
         let sum = 0;
         for (let i = 0; i < bufferLength; i++) {
           sum += dataArray[i];
         }
         const average = sum / bufferLength;
-        
+
         // Convert to percentage (0-100) and apply some scaling
         const level = Math.min((average / 128) * 100, 100);
         setAudioLevel(level);
       };
-      
+
       // Update audio levels 60 times per second for smooth animation
       const intervalId = setInterval(updateAudioLevel, 16);
-      
+
       return () => clearInterval(intervalId);
     } else {
       setAudioLevel(0);
     }
   }, [isRecording, analyser, isMicrophoneEnabled]);
 
+  // Send audio chunk to transcription API
+  const transcribeAudioChunk = async (audioBlob: Blob) => {
+    try {
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "audio.webm");
+      formData.append("sessionId", sessionId);
+
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const { text } = await response.json();
+        console.log("📝 Received transcription:", text);
+        if (text.trim()) {
+          // Update current text for real-time display by appending new text
+          updateCurrentText((prev) => {
+            const newText = prev + (prev ? " " : "") + text;
+            console.log("🔄 Updating currentText:", newText);
+            return newText;
+          });
+        }
+      } else {
+        console.error("❌ Transcription API error:", response.status);
+      }
+    } catch (error) {
+      console.error("Transcription failed:", error);
+    }
+  };
+
+  // Process audio chunks for transcription
+  useEffect(() => {
+    if (audioChunks.length > 0 && isRecording && mediaRecorder) {
+      // Process chunks every 3 seconds for real-time transcription
+      // Continue processing even when paused to maintain audio flow
+      const timer = setTimeout(() => {
+        const mimeType = mediaRecorder.mimeType || "audio/webm";
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
+        console.log(
+          "🎵 Processing audio chunk:",
+          audioBlob.size,
+          "bytes, isPaused:",
+          isPaused,
+        );
+
+        if (!isPaused) {
+          // Only transcribe when not paused
+          transcribeAudioChunk(audioBlob);
+        } else {
+          console.log("⏸️ Skipping transcription while paused");
+        }
+        setAudioChunks([]); // Clear processed chunks regardless
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [audioChunks, isRecording, mediaRecorder, isPaused]);
+
   const handleStartRecording = async () => {
     // Initialize microphone if not already done
     if (!isMicrophoneEnabled) {
       await initializeMicrophone();
     }
-    
-    if (isMicrophoneEnabled) {
+
+    if (isMicrophoneEnabled && mediaRecorder) {
       setIsRecording(true);
-      setTranscriptText("🎤 Recording started... Audio will be transcribed here in real-time.");
+      startTranscription(); // Reset transcription state
+
+      // Start recording audio chunks
+      mediaRecorder.start(1000); // Record in 1-second chunks
+
+      console.log("🔴 Started recording for transcription");
     }
   };
 
-  const handleStopRecording = () => {
+  const handlePauseRecording = () => {
+    // Don't actually pause MediaRecorder, just finalize current verse
+    // Process any remaining audio chunks and finalize current verse
+    if (audioChunks.length > 0 && mediaRecorder) {
+      const mimeType = mediaRecorder.mimeType || "audio/webm";
+      const audioBlob = new Blob(audioChunks, { type: mimeType });
+      transcribeAudioChunk(audioBlob);
+      setAudioChunks([]);
+    }
+
+    pauseRecording(session?.host_id || "unknown");
+    console.log("⏸️ Paused recording (verse finalized)");
+  };
+
+  const handleResumeRecording = () => {
+    // Just update state, MediaRecorder keeps running
+    resumeRecording();
+    console.log("▶️ Resumed recording (new verse started)");
+  };
+
+  const handleEndSession = () => {
     setIsRecording(false);
-    setTranscriptText(prev => prev + "\n\n⏹️ Recording stopped.");
+
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+    }
+
+    // Process any remaining audio chunks
+    if (audioChunks.length > 0 && mediaRecorder) {
+      const mimeType = mediaRecorder.mimeType || "audio/webm";
+      const audioBlob = new Blob(audioChunks, { type: mimeType });
+      transcribeAudioChunk(audioBlob);
+      setAudioChunks([]);
+    }
+
+    endSession(session?.host_id || "unknown");
+    console.log("🛑 Ended session");
   };
 
   // Cleanup function to stop microphone when component unmounts
   useEffect(() => {
     return () => {
       if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream.getTracks().forEach((track) => track.stop());
       }
       if (audioContext) {
         audioContext.close();
@@ -186,10 +320,10 @@ export default function SessionRoomPage() {
           </div>
           <Badge variant="outline" className="flex items-center gap-1">
             <Users className="w-3 h-3" />
-            {participantCount} participant{participantCount !== 1 ? 's' : ''}
+            {participantCount} participant{participantCount !== 1 ? "s" : ""}
           </Badge>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             {isConnected ? (
@@ -212,36 +346,13 @@ export default function SessionRoomPage() {
 
       {/* Main Content Area - Transcript Stream */}
       <div className="flex-1 overflow-hidden p-6">
-        <Card className="h-full p-6 overflow-y-auto border-0 shadow-none bg-white">
-          <div className="space-y-4">
-            {transcriptText ? (
-              <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                {transcriptText}
-                {isRecording && (
-                  <span className="inline-block w-2 h-5 bg-gray-400 ml-1 animate-pulse"></span>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                <div className="text-center">
-                  <Mic className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg mb-2">Ready to record</p>
-                  <p className="text-sm">Click "Start Recording" to begin transcription</p>
-                  {microphoneError && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-red-600 text-sm">
-                        🚫 Microphone Error: {microphoneError}
-                      </p>
-                      <p className="text-red-500 text-xs mt-1">
-                        Please check your microphone permissions and try again.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
+        <TranscriptionDisplay
+          chunks={chunks}
+          currentText={currentText}
+          isRecording={isRecording}
+          isPaused={isPaused}
+          microphoneError={microphoneError}
+        />
       </div>
 
       {/* Footer Row - Session Controls & Audio Indicator */}
@@ -250,7 +361,7 @@ export default function SessionRoomPage() {
           {/* Session Controls */}
           <div className="flex items-center gap-3">
             {!isRecording ? (
-              <Button 
+              <Button
                 onClick={handleStartRecording}
                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
               >
@@ -258,30 +369,57 @@ export default function SessionRoomPage() {
                 Start Recording
               </Button>
             ) : (
-              <Button 
-                onClick={handleStopRecording}
-                variant="outline"
-                className="flex items-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
-              >
-                <Square className="w-4 h-4" />
-                Stop Recording
-              </Button>
+              <>
+                {!isPaused ? (
+                  <Button
+                    onClick={handlePauseRecording}
+                    variant="outline"
+                    className="flex items-center gap-2 border-yellow-600 text-yellow-600 hover:bg-yellow-50"
+                  >
+                    <Pause className="w-4 h-4" />
+                    Pause
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleResumeRecording}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <Play className="w-4 h-4" />
+                    Resume
+                  </Button>
+                )}
+
+                <Button
+                  onClick={handleEndSession}
+                  variant="outline"
+                  className="flex items-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
+                >
+                  <Square className="w-4 h-4" />
+                  End Session
+                </Button>
+              </>
             )}
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => {
                 if (isMicrophoneEnabled && mediaStream) {
                   // Mute microphone
-                  mediaStream.getAudioTracks().forEach(track => {
+                  mediaStream.getAudioTracks().forEach((track) => {
                     track.enabled = !track.enabled;
                   });
                 }
               }}
-              className={isMicrophoneEnabled ? "text-green-600" : "text-red-600"}
+              className={
+                isMicrophoneEnabled ? "text-green-600" : "text-red-600"
+              }
             >
-              {isMicrophoneEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+              {isMicrophoneEnabled ? (
+                <Mic className="w-4 h-4" />
+              ) : (
+                <MicOff className="w-4 h-4" />
+              )}
             </Button>
           </div>
 
@@ -300,8 +438,8 @@ export default function SessionRoomPage() {
                       ? i < 6
                         ? "bg-green-500"
                         : i < 8
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
                       : "bg-gray-200"
                   }`}
                 />
