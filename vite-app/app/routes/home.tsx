@@ -1,13 +1,26 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { AudioTranscription } from "../components/AudioTranscription";
+import { useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Recording Angel - Live Transcription" },
+    { name: "description", content: "Real-time audio transcription and translation" },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  // For demo purposes - in a real app, these would come from routing/auth
+  const [sessionId] = useState(() => `session-${Date.now()}`);
+  const [userId] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`);
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <AudioTranscription 
+        sessionId={sessionId}
+        userId={userId}
+        serverUrl="ws://localhost:8080"
+      />
+    </div>
+  );
 }
