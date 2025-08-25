@@ -1,12 +1,12 @@
 # Recording Angel Service
 
-A modern web application for enhancing church meetings by providing real-time transcription and congregation engagement tools using AI-powered speech recognition.
+A modern web application for enhancing church meetings by providing real-time transcription, translation, and congregation engagement tools using AI-powered speech recognition.
 
 ## Overview
 
-The Recording Angel Service provides real-time transcription and engagement tools for various church roles:
+The Recording Angel Service provides real-time transcription, translation, and engagement tools for various church roles:
 
-- **Audience Members**: Follow along with live transcriptions and view meeting materials
+- **Audience Members**: Follow along with live transcriptions in multiple languages and view meeting materials
 - **Speakers**: Access timing cues and speaking aids
 - **Leadership**: Manage meetings, track participation, and access analytics
 - **Technical Staff**: Monitor transcription quality and manage sessions
@@ -22,6 +22,7 @@ The Recording Angel Service provides real-time transcription and engagement tool
 ## Features
 
 - Real-time audio transcription using AssemblyAI
+- Multi-language translation for global accessibility
 - WebSocket-based live updates
 - Session management and participant tracking
 - Mobile-responsive React interface
