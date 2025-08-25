@@ -19,6 +19,15 @@ class Config:
     ASSEMBLYAI_API_KEY: str = os.getenv("ASSEMBLYAI_API_KEY", "")
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     
+    # Authentication configuration
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+    
+    # Database configuration
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/recording_angel")
+    
     # Paragraphizer configuration
     PARAGRAPHIZER_PROVIDER: Literal["lemur", "http", "gemini"] = os.getenv(
         "PARAGRAPHIZER_PROVIDER", "gemini"
@@ -48,6 +57,9 @@ class Config:
         
         if self.PARAGRAPHIZER_PROVIDER == "gemini" and not self.GOOGLE_API_KEY:
             print("Warning: GOOGLE_API_KEY not set but Gemini provider selected")
+        
+        if self.SECRET_KEY == "your-secret-key-change-in-production":
+            print("Warning: Using default SECRET_KEY - change in production")
     
     def _configure_ai_providers(self) -> None:
         """Configure AI providers based on settings."""

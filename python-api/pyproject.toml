@@ -26,6 +26,12 @@ dependencies = [
     "websockets==12.0",
     "assemblyai==0.34.0",
     "google-generativeai==0.8.3",
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+    "python-multipart==0.0.9",
+    "sqlalchemy==2.0.43",
+    "alembic==1.13.1",
+    "email-validator==2.1.0",
 ]
 
 [project.optional-dependencies]
@@ -39,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/recording-angel"
-Repository = "https://github.com/your-username/recording-angel"
-Issues = "https://github.com/your-username/recording-angel/issues"
+Homepage = "https://recordingangel.org"
+Repository = "https://github.com/Pharoh-Ramses/Recording-Angel"
+Issues = "https://github.com/Pharoh-Ramses/Recording-Angel/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]

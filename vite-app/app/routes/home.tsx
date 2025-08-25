@@ -1,6 +1,9 @@
 import type { Route } from "./+types/home";
 import { AudioTranscription } from "../components/AudioTranscription";
+import { AppHeader } from "../components/AppHeader";
 import { useState } from "react";
+import { RequireAuth } from "../components/ProtectedRoute";
+import { useSession } from "../lib/auth/client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,17 +13,20 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  // For demo purposes - in a real app, these would come from routing/auth
+  const { data: session } = useSession();
+  const user = session?.user;
   const [sessionId] = useState(() => `session-${Date.now()}`);
-  const [userId] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <AudioTranscription 
-        sessionId={sessionId}
-        userId={userId}
-        serverUrl="ws://localhost:8080"
-      />
-    </div>
+    <RequireAuth>
+      <div className="min-h-screen bg-gray-100">
+        <AppHeader />
+        <AudioTranscription 
+          sessionId={sessionId}
+          userId={user?.id || 'unknown'}
+          serverUrl="ws://localhost:8080"
+        />
+      </div>
+    </RequireAuth>
   );
 }
