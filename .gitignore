@@ -31,3 +31,16 @@
 *.sln
 *.sw?
 .DS_Store
+
+# Python ignores
+/python-api/.env
+/python-api/.venv/
+/python-api/__pycache__/
+/python-api/**/__pycache__/
+/python-api/*.pyc
+/python-api/*.pyo
+/python-api/*.pyd
+/python-api/.pytest_cache/
+/python-api/dist/
+/python-api/build/
+/python-api/*.egg-info/
