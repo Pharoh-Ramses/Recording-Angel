@@ -7,6 +7,7 @@ from typing import Optional, Dict, Set
 from urllib.parse import urlencode
 
 import httpx
+import google.generativeai as genai
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -23,17 +24,28 @@ def now_utc() -> datetime:
 
 
 ASSEMBLYAI_API_KEY = os.getenv("ASSEMBLYAI_API_KEY")
-# Paragraphizer config (lemur | http)
-PARAGRAPHIZER_PROVIDER = os.getenv("PARAGRAPHIZER_PROVIDER", "lemur").lower()
+# Paragraphizer config (lemur | http | gemini)
+PARAGRAPHIZER_PROVIDER = os.getenv("PARAGRAPHIZER_PROVIDER", "gemini").lower()
 PARAGRAPHIZER_HTTP_URL = os.getenv("PARAGRAPHIZER_HTTP_URL", "")
 PARAGRAPHIZER_HTTP_AUTH_HEADER = os.getenv("PARAGRAPHIZER_HTTP_AUTH_HEADER", "")
-PARAGRAPHIZER_MODEL = os.getenv("PARAGRAPHIZER_MODEL", "anthropic/claude-sonnet-4-20250514")
-PARAGRAPHIZER_COOLDOWN_SECONDS = int(os.getenv("PARAGRAPHIZER_COOLDOWN_SECONDS", "20"))
-PARAGRAPHIZER_RETRY_BACKOFF_SECONDS = int(os.getenv("PARAGRAPHIZER_RETRY_BACKOFF_SECONDS", "30"))
+PARAGRAPHIZER_MODEL = os.getenv("PARAGRAPHIZER_MODEL", "gemini-2.0-flash-exp")
+PARAGRAPHIZER_COOLDOWN_SECONDS = int(os.getenv("PARAGRAPHIZER_COOLDOWN_SECONDS", "5"))  # Reduced since Gemini is faster
+PARAGRAPHIZER_RETRY_BACKOFF_SECONDS = int(os.getenv("PARAGRAPHIZER_RETRY_BACKOFF_SECONDS", "10"))
+
+# Google AI API key for Gemini
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # AssemblyAI API key validation
 if not ASSEMBLYAI_API_KEY:
     print("Warning: ASSEMBLYAI_API_KEY not set")
+
+# Configure Gemini if using it
+if PARAGRAPHIZER_PROVIDER == "gemini":
+    if not GOOGLE_API_KEY:
+        print("Warning: GOOGLE_API_KEY not set but Gemini provider selected")
+    else:
+        genai.configure(api_key=GOOGLE_API_KEY)
+        print(f"Gemini configured with model: {PARAGRAPHIZER_MODEL}")
 
 
 app = FastAPI(title="Recording Angel Python API", version="0.0.1")
@@ -50,6 +62,11 @@ app.add_middleware(
 active_sessions: Dict[str, Set[WebSocket]] = {}
 session_metadata: Dict[str, Dict] = {}
 assembly_sessions: Dict[str, websockets.WebSocketClientProtocol] = {}  # AssemblyAI v3 WebSocket connections
+
+# Time-based buffering for AI refinement (every 10 seconds)
+TEXT_BUFFER_SECONDS = 10
+session_text_buffers: Dict[str, str] = {}  # Accumulate text for AI processing
+session_buffer_timers: Dict[str, asyncio.Task] = {}  # Active buffer timers
 
 # Paragraphizer throttling state
 paragraphizer_last_call_at: Dict[str, datetime] = {}
@@ -103,10 +120,10 @@ async def add_connection_to_session(session_id: str, websocket: WebSocket, user_
         active_sessions[session_id] = set()
         session_metadata[session_id] = {
             "created_at": now_utc().isoformat(),
-            "verse_counter": 0,
             "paragraph_counter": 0,
-            "current_verses": []
         }
+        # Initialize text buffer for this session
+        session_text_buffers[session_id] = ""
     
     active_sessions[session_id].add(websocket)
     print(f"User {user_id} joined session {session_id}. Total connections: {len(active_sessions[session_id])}")
@@ -119,6 +136,14 @@ async def remove_connection_from_session(session_id: str, websocket: WebSocket, 
             # Clean up empty session
             del active_sessions[session_id]
             del session_metadata[session_id]
+            
+            # Clean up text buffer and timer
+            if session_id in session_text_buffers:
+                del session_text_buffers[session_id]
+            if session_id in session_buffer_timers:
+                session_buffer_timers[session_id].cancel()
+                del session_buffer_timers[session_id]
+                
             print(f"Session {session_id} cleaned up - no active connections")
         else:
             print(f"User {user_id} left session {session_id}. Remaining connections: {len(active_sessions[session_id])}")
@@ -155,6 +180,60 @@ def split_into_sentences(text: str) -> list[str]:
     # Simple sentence splitting - matches the React app expectation
     sentences = re.split(r'[.!?]+', text)
     return [s.strip() for s in sentences if s.strip()]
+
+async def start_buffer_timer(session_id: str):
+    """Start a timer to process accumulated text after TEXT_BUFFER_SECONDS"""
+    # Cancel any existing timer for this session
+    if session_id in session_buffer_timers:
+        session_buffer_timers[session_id].cancel()
+    
+    # Create new timer task
+    async def timer_task():
+        try:
+            await asyncio.sleep(TEXT_BUFFER_SECONDS)
+            await process_buffered_text(session_id)
+        except asyncio.CancelledError:
+            pass  # Timer was cancelled, which is fine
+    
+    session_buffer_timers[session_id] = asyncio.create_task(timer_task())
+
+async def process_buffered_text(session_id: str):
+    """Process accumulated text buffer and send for AI refinement"""
+    if session_id not in session_text_buffers:
+        return
+    
+    buffered_text = session_text_buffers[session_id].strip()
+    if not buffered_text:
+        return
+    
+    # Clear the buffer since we're processing it
+    session_text_buffers[session_id] = ""
+    
+    # Remove this session's timer since it completed
+    if session_id in session_buffer_timers:
+        del session_buffer_timers[session_id]
+    
+    # Get metadata for paragraph numbering
+    metadata = session_metadata.get(session_id, {})
+    metadata["paragraph_counter"] = metadata.get("paragraph_counter", 0) + 1
+    
+    # Send buffered text completion message
+    buffered_message = {
+        "type": "text_buffer_complete",
+        "data": {
+            "session_id": session_id,
+            "paragraph_number": metadata["paragraph_counter"],
+            "buffered_text": buffered_text,
+            "completed_at": now_utc().isoformat()
+        }
+    }
+    
+    # Broadcast the buffered text
+    await broadcast_to_session(session_id, buffered_message)
+    print(f"Session {session_id}: Sent buffered text ({len(buffered_text)} chars) for paragraph {metadata['paragraph_counter']}")
+    
+    # Fire-and-forget: refine with AI and broadcast when ready
+    asyncio.create_task(refine_and_broadcast_paragraph(session_id, buffered_message["data"]))
 
 async def setup_assemblyai_session(session_id: str, sample_rate: int) -> websockets.WebSocketClientProtocol:
     """Setup AssemblyAI v3 Universal-Streaming WebSocket connection for a session"""
@@ -231,73 +310,43 @@ async def handle_assemblyai_message(session_id: str, data: dict):
         if not transcript or not transcript.strip():
             return
         
-        # Get session metadata
-        metadata = session_metadata.get(session_id, {})
         transcript_text = transcript.strip()
         
-        # Only create verses for formatted final turns to avoid duplicates
+        # Always send live transcript for real-time display
+        live_message = {
+            "type": "live_transcript",
+            "data": {
+                "text": transcript_text,
+                "timestamp": now_utc().isoformat(),
+                "session_id": session_id,
+                "is_final": end_of_turn and (turn_is_formatted or "turn_is_formatted" in data)
+            }
+        }
+        await broadcast_to_session(session_id, live_message)
+        
+        # For final turns, add to text buffer for AI processing
         if end_of_turn and (turn_is_formatted or "turn_is_formatted" in data):
-            metadata["verse_counter"] = metadata.get("verse_counter", 0) + 1
+            # Add text to session buffer
+            if session_id not in session_text_buffers:
+                session_text_buffers[session_id] = ""
             
-            verse_message = {
-                "type": "verse",
-                "data": {
-                    "verse_number": metadata["verse_counter"],
-                    "text": transcript_text,
-                    "timestamp": now_utc().isoformat(),
-                    "speaker_id": metadata.get("current_speaker", "unknown")
-                }
-            }
+            # Add space if buffer already has content
+            if session_text_buffers[session_id]:
+                session_text_buffers[session_id] += " "
+            session_text_buffers[session_id] += transcript_text
             
-            # Add to current verses
-            current_verses = metadata.get("current_verses", [])
-            current_verses.append(verse_message["data"])
-            metadata["current_verses"] = current_verses
+            print(f"Session {session_id}: Added to buffer (now {len(session_text_buffers[session_id])} chars)")
             
-            # Broadcast verse to all session participants
-            await broadcast_to_session(session_id, verse_message)
-            
-            print(f"Session {session_id}: Broadcasting verse {metadata['verse_counter']} - {transcript_text}")
-            
-            # Create paragraph when we have enough verses (threshold adjustable)
-            if len(current_verses) >= 5:
-                metadata["paragraph_counter"] = metadata.get("paragraph_counter", 0) + 1
-                
-                paragraph_message = {
-                    "type": "paragraph_complete",
-                    "data": {
-                        "session_id": session_id,
-                        "paragraph_number": metadata["paragraph_counter"],
-                        "verses": current_verses.copy(),
-                        "completed_at": now_utc().isoformat()
-                    }
-                }
-                
-                # Clear current verses for next paragraph
-                metadata["current_verses"] = []
-                
-                # Broadcast paragraph completion
-                await broadcast_to_session(session_id, paragraph_message)
-                
-                print(f"Session {session_id}: Paragraph {metadata['paragraph_counter']} completed with {len(current_verses)} verses")
-
-                # Fire-and-forget: refine paragraph with LeMUR and broadcast when ready
-                asyncio.create_task(refine_and_broadcast_paragraph(session_id, paragraph_message["data"]))
-        else:
-            # For partial transcripts, just send live updates without creating verses
-            live_message = {
-                "type": "live_transcript",
-                "data": {
-                    "text": transcript_text,
-                    "timestamp": now_utc().isoformat(),
-                    "session_id": session_id
-                }
-            }
-            await broadcast_to_session(session_id, live_message)
+            # Start/restart the buffer timer
+            await start_buffer_timer(session_id)
     
     elif msg_type == "Termination":
         audio_duration = data.get("audio_duration_seconds", 0)
         print(f"AssemblyAI session terminated for {session_id}: {audio_duration}s audio")
+        
+        # Process any remaining buffered text
+        if session_id in session_text_buffers and session_text_buffers[session_id].strip():
+            await process_buffered_text(session_id)
         
     else:
         # Handle errors or unknown message types
@@ -324,9 +373,12 @@ async def refine_and_broadcast_paragraph(session_id: str, paragraph_data: dict) 
                 asyncio.create_task(_refine_after_delay(session_id, paragraph_data, delay))
                 return
 
-        # Join verses as-is into one text block (no formatting)
-        verses = paragraph_data.get("verses", [])
-        text = "\n".join(v.get("text", "") for v in verses)
+        # Get buffered text directly (new approach) or fall back to verses (legacy)
+        text = paragraph_data.get("buffered_text", "")
+        if not text:
+            # Legacy fallback for any remaining verse-based messages
+            verses = paragraph_data.get("verses", [])
+            text = "\n".join(v.get("text", "") for v in verses)
         if not text:
             return
 
@@ -339,7 +391,40 @@ async def refine_and_broadcast_paragraph(session_id: str, paragraph_data: dict) 
             "Return only the same text, with paragraph breaks inserted where appropriate."
         )
 
-        if PARAGRAPHIZER_PROVIDER == "http":
+        if PARAGRAPHIZER_PROVIDER == "gemini":
+            # Use Google Gemini
+            if not GOOGLE_API_KEY:
+                print("Gemini selected but GOOGLE_API_KEY not configured; skipping refinement")
+            else:
+                try:
+                    model = genai.GenerativeModel(PARAGRAPHIZER_MODEL)
+                    
+                    # Create the prompt for Gemini
+                    prompt = f"""Task: {instruction}
+
+Text to organize:
+{text}
+
+Please return only the reorganized text with appropriate paragraph breaks."""
+
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=0.1,
+                            max_output_tokens=2000,
+                        )
+                    )
+                    
+                    if response.text:
+                        refined_text = response.text.strip()
+                    else:
+                        print(f"Gemini returned empty response for session {session_id}")
+                        
+                except Exception as e:
+                    print(f"Gemini API error for session {session_id}: {e}")
+                    # Could implement retry logic here if needed
+
+        elif PARAGRAPHIZER_PROVIDER == "http":
             if not PARAGRAPHIZER_HTTP_URL:
                 print("Paragraphizer HTTP URL not configured; skipping refinement")
             else:

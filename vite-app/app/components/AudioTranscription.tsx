@@ -14,6 +14,7 @@ export function AudioTranscription({
   serverUrl = 'ws://localhost:8080' 
 }: AudioTranscriptionProps) {
   const [userType, setUserType] = useState<'speaker' | 'reader'>('speaker');
+  const [displayMode, setDisplayMode] = useState<'live' | 'paragraphs'>('live');
 
   const {
     startRecording,
@@ -29,6 +30,8 @@ export function AudioTranscription({
   const {
     verses,
     paragraphs,
+    liveTranscript,
+    bufferedTexts,
     connectionStatus,
     error: connectionError,
     sendAudio,
@@ -61,21 +64,21 @@ export function AudioTranscription({
 
   const error = recordingError || connectionError;
 
-  // Auto-scroll for live verses and paragraphs
+  // Auto-scroll for live transcript and paragraphs
   const liveRef = useRef<HTMLDivElement | null>(null);
   const paraRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (liveRef.current) {
+    if (liveRef.current && displayMode === 'live') {
       liveRef.current.scrollTop = liveRef.current.scrollHeight;
     }
-  }, [verses]);
+  }, [liveTranscript, displayMode]);
 
   useEffect(() => {
-    if (paraRef.current) {
+    if (paraRef.current && displayMode === 'paragraphs') {
       paraRef.current.scrollTop = paraRef.current.scrollHeight;
     }
-  }, [paragraphs]);
+  }, [bufferedTexts, paragraphs, displayMode]);
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -166,6 +169,38 @@ export function AudioTranscription({
             </p>
           </div>
 
+          {/* Display Mode */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Display Mode</h2>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setDisplayMode('live')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  displayMode === 'live'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                }`}
+              >
+                Live Stream
+              </button>
+              <button
+                onClick={() => setDisplayMode('paragraphs')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  displayMode === 'paragraphs'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                }`}
+              >
+                Paragraphs
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              {displayMode === 'live' 
+                ? 'Real-time transcription as it happens - perfect for fast readers.'
+                : 'AI-organized paragraphs updated every 10 seconds.'}
+            </p>
+          </div>
+
           {/* Recording Controls (Speaker Only) */}
           {userType === 'speaker' && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -222,58 +257,95 @@ export function AudioTranscription({
 
         {/* Right: Transcripts */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Live Verses */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-gray-900">Current Paragraph</h2>
-              <span className="text-xs text-gray-500">Auto-updating</span>
+          {displayMode === 'live' ? (
+            /* Live Stream Mode */
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold text-gray-900">Live Transcription</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-gray-500">Real-time</span>
+                </div>
+              </div>
+              <div ref={liveRef} className="bg-green-50/60 rounded-md p-6 min-h-96 max-h-96 overflow-y-auto">
+                {liveTranscript ? (
+                  <div className="text-gray-900 text-base leading-relaxed whitespace-pre-wrap">
+                    {liveTranscript}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-12">
+                    {userType === 'speaker' ? 'Start recording to see live transcription…' : 'Waiting for speaker to begin…'}
+                  </div>
+                )}
+              </div>
             </div>
-            <div ref={liveRef} className="bg-blue-50/60 rounded-md p-4 space-y-2 max-h-48 overflow-y-auto">
-              {verses.length > 0 ? (
-                verses.map((verse) => (
+          ) : (
+            /* Paragraph Mode */
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold text-gray-900">AI-Organized Paragraphs</h2>
+                <span className="text-xs text-gray-500">Updated every 10 seconds</span>
+              </div>
+              <div ref={paraRef} className="space-y-4 max-h-96 overflow-y-auto pr-1">
+                {bufferedTexts.map((buffered) => (
+                  <div key={`${buffered.session_id}-${buffered.paragraph_number}`} className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-blue-700">Paragraph {buffered.paragraph_number}</span>
+                      <span className="text-[11px] text-gray-500">{new Date(buffered.completed_at).toLocaleTimeString()}</span>
+                    </div>
+                    <div className="text-sm text-gray-800 leading-relaxed">
+                      {buffered.buffered_text}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Legacy paragraph support */}
+                {paragraphs.map((paragraph) => {
+                  const isRefined = paragraph.verses.length === 1 && paragraph.verses[0]?.speaker_id === 'ai';
+                  return (
+                  <div key={`legacy-${paragraph.session_id}-${paragraph.paragraph_number}`} className={`${isRefined ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50'} rounded-md p-3`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-medium text-gray-700">{isRefined ? 'Refined Paragraph' : 'Legacy Paragraph'}</span>
+                      <span className="text-[11px] text-gray-500">{new Date(paragraph.completed_at).toLocaleTimeString()}</span>
+                    </div>
+                    <div className="space-y-0.5">
+                      {paragraph.verses.map((verse, idx) => (
+                        <div key={`${idx}-${verse.timestamp}`} className="text-sm text-gray-800">
+                          <span>{verse.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );})}
+                
+                {bufferedTexts.length === 0 && paragraphs.length === 0 && (
+                  <div className="text-center text-gray-500 text-sm py-12">
+                    {userType === 'speaker' ? 'Start recording and speak for at least 10 seconds to see organized paragraphs…' : 'Waiting for content to be organized…'}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Legacy Current Paragraph (for verse-based display) - only show if we have verses but no new data */}
+          {verses.length > 0 && bufferedTexts.length === 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold text-gray-900">Current Paragraph (Legacy)</h2>
+                <span className="text-xs text-gray-500">Auto-updating</span>
+              </div>
+              <div className="bg-blue-50/60 rounded-md p-4 space-y-2 max-h-48 overflow-y-auto">
+                {verses.map((verse) => (
                   <div key={`${verse.timestamp}-${verse.speaker_id}`} className="text-gray-800">
                     <span>{verse.text}</span>
                     <span className="ml-2 text-[11px] text-gray-500">
                       {new Date(verse.timestamp).toLocaleTimeString()}
                     </span>
                   </div>
-                ))
-              ) : (
-                <div className="text-center text-gray-500 text-sm py-6">
-                  {userType === 'speaker' ? 'Start recording to see live transcriptions…' : 'Waiting for speaker…'}
-                </div>
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-
-          {/* Completed Paragraphs */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-gray-900">Completed Paragraphs</h2>
-            </div>
-            <div ref={paraRef} className="space-y-3 max-h-72 overflow-y-auto pr-1">
-              {paragraphs.map((paragraph) => {
-                const isRefined = paragraph.verses.length === 1 && paragraph.verses[0]?.speaker_id === 'ai';
-                return (
-                <div key={`${paragraph.session_id}-${paragraph.paragraph_number}`} className={`${isRefined ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50'} rounded-md p-3`}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-medium text-gray-700">{isRefined ? 'Refined Paragraph' : 'Paragraph'}</span>
-                    <span className="text-[11px] text-gray-500">{new Date(paragraph.completed_at).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="space-y-0.5">
-                    {paragraph.verses.map((verse, idx) => (
-                      <div key={`${idx}-${verse.timestamp}`} className="text-sm text-gray-800">
-                        <span>{verse.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );})}
-              {paragraphs.length === 0 && (
-                <div className="text-center text-gray-500 text-sm py-6">No paragraphs yet.</div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

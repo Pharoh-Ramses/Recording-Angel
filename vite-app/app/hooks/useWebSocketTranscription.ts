@@ -21,6 +21,20 @@ export interface RefinedParagraph {
   completed_at: string;
 }
 
+export interface LiveTranscript {
+  text: string;
+  timestamp: string;
+  session_id: string;
+  is_final?: boolean;
+}
+
+export interface BufferedText {
+  session_id: string;
+  paragraph_number: number;
+  buffered_text: string;
+  completed_at: string;
+}
+
 export interface TranscriptionConnection {
   sessionId: string;
   userId: string;
@@ -38,6 +52,8 @@ export function useWebSocketTranscription({
 }: TranscriptionConnection) {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [paragraphs, setParagraphs] = useState<Paragraph[]>([]);
+  const [liveTranscript, setLiveTranscript] = useState<string>('');
+  const [bufferedTexts, setBufferedTexts] = useState<BufferedText[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
   const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +90,35 @@ export function useWebSocketTranscription({
           console.log('Received message:', message);
 
           switch (message.type) {
+            case 'live_transcript': {
+              const liveData: LiveTranscript = message.data;
+              setLiveTranscript(liveData.text);
+              break;
+            }
+            
+            case 'text_buffer_complete': {
+              const bufferedData: BufferedText = message.data;
+              setBufferedTexts(prev => [...prev, bufferedData]);
+              break;
+            }
+            
+            case 'paragraph_refined': {
+              const refined: RefinedParagraph = message.data;
+              // Update the corresponding buffered text with refined content
+              setBufferedTexts(prev => prev.map(bt => {
+                if (bt.paragraph_number === refined.paragraph_number) {
+                  return {
+                    ...bt,
+                    buffered_text: refined.refined_text,
+                    completed_at: refined.completed_at
+                  };
+                }
+                return bt;
+              }));
+              break;
+            }
+            
+            // Legacy support for existing verse/paragraph system
             case 'verse':
               setVerses(prev => [...prev, message.data]);
               break;
@@ -82,26 +127,6 @@ export function useWebSocketTranscription({
               setParagraphs(prev => [...prev, message.data]);
               setVerses([]); // Clear verses for new paragraph
               break;
-            
-            case 'paragraph_refined': {
-              const refined: RefinedParagraph = message.data;
-              // Replace the matching paragraph's text with refined_text as a single verse
-              setParagraphs(prev => prev.map(p => {
-                if (p.paragraph_number === refined.paragraph_number) {
-                  return {
-                    ...p,
-                    verses: [{
-                      verse_number: 1,
-                      text: refined.refined_text,
-                      timestamp: refined.completed_at,
-                      speaker_id: 'ai'
-                    }]
-                  };
-                }
-                return p;
-              }));
-              break;
-            }
               
             case 'error':
               console.error('Server error:', message.message);
@@ -187,6 +212,8 @@ export function useWebSocketTranscription({
   return {
     verses,
     paragraphs,
+    liveTranscript,
+    bufferedTexts,
     connectionStatus,
     error,
     sendAudio,
