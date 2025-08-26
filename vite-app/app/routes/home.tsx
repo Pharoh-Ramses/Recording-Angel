@@ -1,9 +1,8 @@
 import type { Route } from "./+types/home";
 import { AudioTranscription } from "../components/AudioTranscription";
-import { AppHeader } from "../components/AppHeader";
 import { useState } from "react";
 import { RequireAuth } from "../components/ProtectedRoute";
-import { useSession } from "../lib/auth/client";
+import { useUser } from "@clerk/clerk-react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,14 +12,12 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { data: session } = useSession();
-  const user = session?.user;
+  const { user } = useUser();
   const [sessionId] = useState(() => `session-${Date.now()}`);
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-gray-100">
-        <AppHeader />
+      <div className="bg-gray-100 min-h-screen">
         <AudioTranscription 
           sessionId={sessionId}
           userId={user?.id || 'unknown'}

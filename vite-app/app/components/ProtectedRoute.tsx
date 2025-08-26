@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { useRequireAuth } from '../hooks/useBetterAuth';
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { Navigate } from 'react-router';
+import { useRequireAuth } from '../hooks/useClerkAuth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRoles?: string[];
-  requireApproval?: boolean;
   redirectTo?: string;
   fallback?: ReactNode;
 }
@@ -12,14 +13,12 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({
   children,
   requiredRoles = [],
-  requireApproval = true,
   redirectTo,
   fallback
 }: ProtectedRouteProps) {
   const { isLoading, isAuthorized } = useRequireAuth({
     redirectTo,
     requiredRoles,
-    requireApproval
   });
 
   // Show loading state while auth is initializing
@@ -39,14 +38,16 @@ export function ProtectedRoute({
     );
   }
 
-  // Only render children if authorized
-  // The useRequireAuth hook handles redirects
-  if (isAuthorized) {
-    return <>{children}</>;
-  }
-
-  // Return null while redirecting
-  return null;
+  return (
+    <>
+      <SignedOut>
+        <Navigate to="/login" replace />
+      </SignedOut>
+      <SignedIn>
+        {isAuthorized ? <>{children}</> : null}
+      </SignedIn>
+    </>
+  );
 }
 
 // Convenience components for common protection scenarios
@@ -80,12 +81,6 @@ export function RequireRole({
 
 export function RequireApproval({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
   return (
-    <ProtectedRoute 
-      requireApproval={true}
-      redirectTo="/pending-approval"
-      fallback={fallback}
-    >
-      {children}
-    </ProtectedRoute>
+    <ProtectedRoute fallback={fallback}>{children}</ProtectedRoute>
   );
 }

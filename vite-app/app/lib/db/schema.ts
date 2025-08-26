@@ -9,8 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// User status enum
-export type UserStatus = "PENDING" | "APPROVED" | "REJECTED";
+// Removed user status enum - no approval process needed
 
 // User role enum
 export type UserRole =
@@ -24,7 +23,7 @@ export type UserRole =
 // Sync status enum
 export type SyncStatus = "pending" | "success" | "failed" | "retrying";
 
-// Users table - authentication focused (BetterAuth compatible)
+// Users table - minimal user data (Clerk handles authentication)
 export const users = pgTable("users", {
 	id: text("id").primaryKey(),
 	email: varchar("email", { length: 255 }).unique().notNull(),
@@ -38,10 +37,6 @@ export const users = pgTable("users", {
 	// Church-specific fields (synced from Python API)
 	ward: integer("ward"),
 	stake: integer("stake"),
-	status: varchar("status", { length: 20 })
-		.$type<UserStatus>()
-		.default("PENDING")
-		.notNull(),
 	role: varchar("role", { length: 20 })
 		.$type<UserRole>()
 		.default("MEMBER")
@@ -60,48 +55,7 @@ export const users = pgTable("users", {
 		.notNull(),
 });
 
-// BetterAuth accounts table
-export const accounts = pgTable("accounts", {
-	id: text("id").primaryKey(),
-	accountId: varchar("account_id", { length: 255 }).notNull(),
-	providerId: varchar("provider_id", { length: 255 }).notNull(),
-	userId: text("user_id")
-		.references(() => users.id, { onDelete: "cascade" })
-		.notNull(),
-	accessToken: text("access_token"),
-	refreshToken: text("refresh_token"),
-	idToken: text("id_token"),
-	accessTokenExpiresAt: timestamp("access_token_expires_at"),
-	refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-	scope: text("scope"),
-	password: text("password"), // For email/password provider
-	createdAt: timestamp("created_at").notNull(),
-	updatedAt: timestamp("updated_at").notNull(),
-});
-
-// BetterAuth sessions table
-export const sessions = pgTable("sessions", {
-	id: text("id").primaryKey(),
-	expiresAt: timestamp("expires_at").notNull(),
-	token: text("token").unique().notNull(),
-	createdAt: timestamp("created_at").notNull(),
-	updatedAt: timestamp("updated_at").notNull(),
-	ipAddress: text("ip_address"),
-	userAgent: text("user_agent"),
-	userId: text("user_id")
-		.references(() => users.id, { onDelete: "cascade" })
-		.notNull(),
-});
-
-// BetterAuth verification table
-export const verifications = pgTable("verifications", {
-	id: text("id").primaryKey(),
-	identifier: varchar("identifier", { length: 255 }).notNull(),
-	value: text("value").notNull(),
-	expiresAt: timestamp("expires_at").notNull(),
-	createdAt: timestamp("created_at").$defaultFn(() => new Date()),
-	updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
-});
+// Removed BetterAuth tables - Clerk handles authentication
 
 // Webhook sync tracking for outbound events (React → Python)
 export const syncEvents = pgTable("sync_events", {
@@ -134,35 +88,16 @@ export const webhookEvents = pgTable("webhook_events", {
 	processedAt: timestamp("processed_at"),
 });
 
-// Relations
+// Relations (removed BetterAuth-specific relations)
 export const usersRelations = relations(users, ({ many }) => ({
-	accounts: many(accounts),
-	sessions: many(sessions),
-}));
-
-export const accountsRelations = relations(accounts, ({ one }) => ({
-	user: one(users, {
-		fields: [accounts.userId],
-		references: [users.id],
-	}),
-}));
-
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-	user: one(users, {
-		fields: [sessions.userId],
-		references: [users.id],
-	}),
+	// No auth-related relations since Clerk handles authentication
 }));
 
 // TypeScript types derived from schema
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
-export type Account = typeof accounts.$inferSelect;
-export type NewAccount = typeof accounts.$inferInsert;
-
-export type Session = typeof sessions.$inferSelect;
-export type NewSession = typeof sessions.$inferInsert;
+// Removed BetterAuth types - using Clerk for authentication
 
 export type SyncEvent = typeof syncEvents.$inferSelect;
 export type NewSyncEvent = typeof syncEvents.$inferInsert;

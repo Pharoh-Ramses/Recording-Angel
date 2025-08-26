@@ -2,6 +2,7 @@ import type { ActionFunctionArgs } from "react-router";
 import { eq } from "drizzle-orm";
 import { db, webhookEvents } from "~/lib";
 import { webhookHandlers, verifyWebhookSignature } from "~/lib/webhooks/sync";
+import { randomUUID } from "crypto";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -22,11 +23,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Store webhook event
     const [webhookEvent] = await db.insert(webhookEvents).values({
+      id: randomUUID(),
       source,
       eventType,
       payload: data,
       signature,
       processed: false,
+      createdAt: new Date(),
     }).returning();
 
     // Process webhook if we have a handler

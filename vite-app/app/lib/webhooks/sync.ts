@@ -1,5 +1,6 @@
 import { db, syncEvents, users } from "../index";
 import { eq } from "drizzle-orm";
+import { createHmac, randomUUID } from "crypto";
 
 // Types for webhook payloads
 export interface UserWebhookPayload {
@@ -24,9 +25,7 @@ export function verifyWebhookSignature(
   secret: string
 ): boolean {
   try {
-    const expectedSignature = `sha256=${Buffer.from(
-      require('crypto').createHmac('sha256', secret).update(payload).digest('hex')
-    ).toString()}`;
+    const expectedSignature = `sha256=${createHmac('sha256', secret).update(payload).digest('hex')}`;
     
     return signature === expectedSignature;
   } catch (error) {
@@ -39,11 +38,13 @@ export function verifyWebhookSignature(
 export async function sendUserCreatedWebhook(user: UserWebhookPayload): Promise<void> {
   // Store sync event in database
   const [syncEvent] = await db.insert(syncEvents).values({
+    id: randomUUID(),
     entityType: 'user',
     entityId: user.id,
     action: 'create',
     payload: user,
     status: 'pending',
+    createdAt: new Date(),
   }).returning();
 
   // Process the webhook
@@ -55,11 +56,13 @@ export async function sendUserUpdatedWebhook(
   updates: Partial<UserWebhookPayload>
 ): Promise<void> {
   const [syncEvent] = await db.insert(syncEvents).values({
+    id: randomUUID(),
     entityType: 'user',
     entityId: userId,
     action: 'update',
     payload: updates,
     status: 'pending',
+    createdAt: new Date(),
   }).returning();
 
   await processWebhookEvent(syncEvent.id);
@@ -91,8 +94,7 @@ async function processWebhookEvent(eventId: string): Promise<void> {
     const payloadString = JSON.stringify(webhookPayload);
     
     // Generate signature
-    const signature = require('crypto')
-      .createHmac('sha256', webhookSecret)
+    const signature = createHmac('sha256', webhookSecret)
       .update(payloadString)
       .digest('hex');
 
@@ -156,27 +158,7 @@ async function processWebhookEvent(eventId: string): Promise<void> {
 
 // Inbound webhook handlers (Python API → React)
 export const webhookHandlers = {
-  'user.approved': async (payload: any) => {
-    await db.update(users)
-      .set({
-        status: 'APPROVED',
-        syncedAt: new Date(),
-        lastSyncVersion: payload.version || Date.now(),
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, payload.userId));
-  },
-
-  'user.rejected': async (payload: any) => {
-    await db.update(users)
-      .set({
-        status: 'REJECTED', 
-        syncedAt: new Date(),
-        lastSyncVersion: payload.version || Date.now(),
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, payload.userId));
-  },
+  // Removed approval/rejection handlers - no approval process needed
 
   'user.role_changed': async (payload: any) => {
     await db.update(users)
