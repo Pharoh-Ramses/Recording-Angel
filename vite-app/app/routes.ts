@@ -6,6 +6,5 @@ export default [
   route("/register", "routes/register.tsx"),
   route("/unauthorized", "routes/unauthorized.tsx"),
   
-  // Webhook routes
-  route("/api/webhooks", "routes/api/webhooks.ts"),
+
 ] satisfies RouteConfig;

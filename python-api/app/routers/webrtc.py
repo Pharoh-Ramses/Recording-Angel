@@ -1,16 +1,20 @@
 """WebRTC token router."""
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from app.config import config
+from app.auth import require_api_token
 from app.models import TokenRequest
 
 router = APIRouter(prefix="/api/webrtc", tags=["webrtc"])
 
 
 @router.post("/token")
-async def create_webrtc_token(body: TokenRequest):
+async def create_webrtc_token(
+    body: TokenRequest,
+    _: bool = require_api_token()
+):
     """
     Create an ephemeral realtime token for the browser to initialize a WebRTC
     connection to AssemblyAI from a React app.

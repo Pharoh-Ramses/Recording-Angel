@@ -3,6 +3,7 @@ import { AudioTranscription } from "../components/AudioTranscription";
 import { useState } from "react";
 import { RequireAuth } from "../components/ProtectedRoute";
 import { useUser } from "@clerk/clerk-react";
+import { config } from "../config";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,7 +22,7 @@ export default function Home() {
         <AudioTranscription 
           sessionId={sessionId}
           userId={user?.id || 'unknown'}
-          serverUrl="ws://localhost:8080"
+          serverUrl={config.wsUrl}
         />
       </div>
     </RequireAuth>

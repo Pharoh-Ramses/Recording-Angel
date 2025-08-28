@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { config } from '../config';
 
 export interface Verse {
   verse_number: number;
@@ -46,7 +47,7 @@ export interface TranscriptionConnection {
 export function useWebSocketTranscription({
   sessionId,
   userId,
-  serverUrl = 'ws://localhost:8080',
+  serverUrl = config.wsUrl,
   sampleRate = 16000,
   encoding = 'pcm_s16le'
 }: TranscriptionConnection) {
@@ -70,7 +71,7 @@ export function useWebSocketTranscription({
     setConnectionStatus('connecting');
     setError(null);
 
-    const wsUrl = `${serverUrl}/ws?session_id=${encodeURIComponent(sessionId)}&user_id=${encodeURIComponent(userId)}&sample_rate=${sampleRate}&encoding=${encoding}`;
+    const wsUrl = `${serverUrl}/ws?session_id=${encodeURIComponent(sessionId)}&user_id=${encodeURIComponent(userId)}&api_token=${encodeURIComponent(config.apiToken)}&sample_rate=${sampleRate}&encoding=${encoding}`;
     
     console.log('Connecting to WebSocket:', wsUrl);
     

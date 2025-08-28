@@ -5,13 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import config
 from app.database import create_tables
-from app.routers import health, webrtc, websocket, auth, users, sessions
+from app.routers import health, webrtc, websocket, auth, sessions
 
 # Create FastAPI application
 app = FastAPI(
     title=config.TITLE,
     version=config.VERSION,
-    description="Real-time audio transcription API with AI paragraph organization and authentication"
+    description="Real-time audio transcription API with AI paragraph organization and simple API token authentication"
 )
 
 # Add CORS middleware
@@ -26,7 +26,6 @@ app.add_middleware(
 # Include routers
 app.include_router(health.router)
 app.include_router(auth.router)
-app.include_router(users.router)
 app.include_router(sessions.router)
 app.include_router(webrtc.router)
 app.include_router(websocket.router)

@@ -19,6 +19,9 @@ class Config:
     ASSEMBLYAI_API_KEY: str = os.getenv("ASSEMBLYAI_API_KEY", "")
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     
+    # Simple API token for client authentication
+    API_TOKEN: str = os.getenv("API_TOKEN", "")
+    
     # Authentication configuration
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
@@ -52,6 +55,9 @@ class Config:
     
     def _validate_keys(self) -> None:
         """Validate required API keys."""
+        if not self.API_TOKEN:
+            print("Warning: API_TOKEN not set - clients cannot authenticate")
+        
         if not self.ASSEMBLYAI_API_KEY:
             print("Warning: ASSEMBLYAI_API_KEY not set")
         

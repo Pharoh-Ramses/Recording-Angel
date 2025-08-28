@@ -3,7 +3,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.auth import AuthService
 from app.database import get_db
 from app.models import HealthResponse
 from app.utils.time import now_utc
@@ -34,8 +33,7 @@ async def auth_health():
     """Authentication health check endpoint."""
     return {
         "status": "healthy",
-        "auth_system": "jwt",
-        "algorithm": "HS256",
-        "access_token_expiry": "30 minutes",
-        "refresh_token_expiry": "7 days"
+        "auth_system": "api_token",
+        "description": "Simple API token authentication",
+        "note": "No user management or JWT tokens"
     }

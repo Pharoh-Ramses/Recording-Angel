@@ -57,7 +57,7 @@ export default function Login() {
       {/* Left Column - Background Image/Gradient */}
       <div
         className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-8 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/auth-side.jpg')" }}
+        style={{ backgroundImage: "url('https://ik.imagekit.io/recordingAngel/recording-angel-login-left.png?updatedAt=1756353365500')" }}
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-black/10"></div>

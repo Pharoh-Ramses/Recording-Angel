@@ -2,9 +2,10 @@
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 
-from app.auth import AuthService
-from app.database import get_db, get_session_by_id, get_user_by_id
+from app.config import config
+from app.database import get_db, get_session_by_id, create_session
 from app.services.session_manager import session_manager
 from app.services.assemblyai import (
     setup_assemblyai_session, 
@@ -12,7 +13,6 @@ from app.services.assemblyai import (
     process_audio_chunk,
     assembly_sessions
 )
-from app.database import SessionParticipant
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ async def websocket_endpoint(
     websocket: WebSocket,
     session_id: str = Query(..., description="Session ID"),
     user_id: str = Query(..., description="User ID"),
-    access_token: str = Query(..., description="JWT Access Token"),
+    api_token: str = Query(..., description="API Token"),
     sample_rate: int = Query(16000, description="Audio sample rate"),
     encoding: str = Query("pcm_s16le", description="Audio encoding")
 ):
@@ -30,60 +30,37 @@ async def websocket_endpoint(
     WebSocket endpoint for real-time audio transcription.
     
     Expected flow:
-    1. React app connects with session_id, user_id, access_token, sample_rate, encoding
-    2. Server validates JWT token and user permissions
+    1. React app connects with session_id, user_id, api_token, sample_rate, encoding
+    2. Server validates API token
     3. Sends PCM16 audio chunks as binary WebSocket messages
     4. Receives JSON responses with transcription verses and completed paragraphs
     """
     await websocket.accept()
     
     try:
-        # Validate JWT token and get user
-        token_data = AuthService.verify_token(access_token)
-        if not token_data or token_data.user_id != user_id:
+        # Validate API token
+        if api_token != config.API_TOKEN:
             await websocket.send_json({
                 "type": "error",
-                "message": "Invalid authentication token"
+                "message": "Invalid API token"
             })
             return
         
         # Get database session for validation
         db = next(get_db())
         try:
-            # Verify user exists and is active
-            user = get_user_by_id(db, user_id)
-            if not user or not user.is_active:
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "User not found or inactive"
-                })
-                return
-            
-            # Verify session exists and user has access
+            # Verify session exists, create if it doesn't
             session = get_session_by_id(db, session_id)
             if not session:
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "Session not found"
-                })
-                return
-            
-            # Check if user has access to this session
-            if (user.role not in ["BISHOP", "STAKEPRESIDENT", "MISSIONPRESIDENT", "ADMIN"] and
-                session.host_id != user_id):
-                # Check if user is a participant
-                participant = db.query(SessionParticipant).filter(
-                    SessionParticipant.session_id == session_id,
-                    SessionParticipant.user_id == user_id,
-                    SessionParticipant.left_at.is_(None)
-                ).first()
-                
-                if not participant:
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": "Not authorized to access this session"
-                    })
-                    return
+                # Create session automatically
+                session_data = {
+                    "id": session_id,
+                    "code": session_id[-8:].upper(),  # Use last 8 chars as code
+                    "host_id": user_id,
+                    "created_at": datetime.utcnow()
+                }
+                session = create_session(db, session_data)
+                print(f"Auto-created session: {session_id}")
             
             # Check if session is ended
             if session.ended_at:
@@ -123,13 +100,13 @@ async def websocket_endpoint(
                 "encoding": encoding,
                 "session_id": session_id,
                 "user_id": user_id,
-                "user_name": user.full_name,
-                "user_role": user.role,
+                "user_name": "N/A", # User name is not available in this flow
+                "user_role": "N/A", # User role is not available in this flow
                 "assemblyai_enabled": True
             }
         })
         
-        print(f"WebSocket connected: session={session_id}, user={user_id} ({user.full_name}), sample_rate={sample_rate}, encoding={encoding}")
+        print(f"WebSocket connected: session={session_id}, user={user_id}, sample_rate={sample_rate}, encoding={encoding}")
         
         # Listen for audio data
         while True:
