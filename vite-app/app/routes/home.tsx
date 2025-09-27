@@ -1,30 +1,34 @@
 import type { Route } from "./+types/home";
 import { AudioTranscription } from "../components/AudioTranscription";
 import { useState } from "react";
-import { RequireAuth } from "../components/ProtectedRoute";
-import { useUser } from "@clerk/clerk-react";
 import { config } from "../config";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Recording Angel - Live Transcription" },
-    { name: "description", content: "Real-time audio transcription and translation" },
+    { title: "Recording Angel - Live Transcription (Testing)" },
+    { name: "description", content: "Real-time audio transcription and translation - Testing Mode" },
   ];
 }
 
 export default function Home() {
-  const { user } = useUser();
   const [sessionId] = useState(() => `session-${Date.now()}`);
+  const [userId] = useState(() => `user-${Date.now()}`);
 
   return (
-    <RequireAuth>
-      <div className="bg-gray-100 min-h-screen">
-        <AudioTranscription 
-          sessionId={sessionId}
-          userId={user?.id || 'unknown'}
-          serverUrl={config.wsUrl}
-        />
+    <div className="bg-gray-100 min-h-screen">
+      <div className="bg-yellow-100 border-b border-yellow-200 p-3">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-sm text-yellow-800">
+            🔧 <strong>Testing Mode:</strong> Authentication disabled for fast testing.
+            Using simplified API without session management.
+          </p>
+        </div>
       </div>
-    </RequireAuth>
+      <AudioTranscription
+        sessionId={sessionId}
+        userId={userId}
+        serverUrl={config.wsUrl}
+      />
+    </div>
   );
 }
