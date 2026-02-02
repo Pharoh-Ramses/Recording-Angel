@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 ## Current Position
 
 Phase: 1 of 3 (Authentication Access)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-02 — Completed 01-03-PLAN.md
+Last activity: 2026-02-02 — Completed 01-04-PLAN.md
 
-Progress: [████░░░░░░] 20%
+Progress: [████░░░░░░] 27%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 4 min
 - Total execution time: 0.20 hours
 
@@ -27,10 +27,10 @@ Progress: [████░░░░░░] 20%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 | 3 | 12 min | 4 min |
+| 1 | 4 | 12 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01, 01-02, 01-03
+- Last 5 plans: 01-01, 01-02, 01-03, 01-04
 - Trend: Consistent velocity
 
 *Updated after each plan completion*
@@ -49,6 +49,8 @@ Recent decisions affecting current work:
 | 2026-02-02 | Mark root package private | Prevents accidental npm publish |
 | 2026-02-02 | Pin pnpm 9.15.0 | Consistent package manager version |
 | 2026-02-02 | No AuthKitProvider needed | authkit-nextjs uses middleware pattern, not React context |
+| 2026-02-02 | Matcher config limits middleware scope | Avoid running auth middleware on static assets |
+| 2026-02-02 | Two-layer protection (middleware + withAuth) | Middleware catches early, page guard ensures user context |
 
 ### Pending Todos
 
@@ -66,8 +68,30 @@ None yet.
    - Next.js warns during build but functions correctly
    - Resolution: Consider standardizing on pnpm or configuring turbopack.root
 
+2. **Middleware deprecation warning** (from 01-04)
+   - Next.js 16 shows: "middleware" file convention is deprecated
+   - Suggests using "proxy" instead
+   - Current implementation works correctly
+   - Resolution: Can migrate to proxy pattern in future if needed
+
 ## Session Continuity
 
-Last session: 2026-02-02 04:53 UTC
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-02-02 04:56 UTC
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None
+
+Config (if exists):
+{
+  "mode": "yolo",
+  "depth": "standard",
+  "parallelization": true,
+  "commit_docs": true,
+  "model_profile": "quality",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true
+  }
+}
+
+**NOTE:** Plan 01-04 completed successfully. AuthKit callback route added at /auth/callback. Middleware protecting /dashboard with authkitMiddleware(). Dashboard page with withAuth() guard and sign-out action. USER-SETUP.md created for WorkOS configuration. Build verified successfully.

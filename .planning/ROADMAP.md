@@ -32,7 +32,7 @@ Plans:
 - [x] 01-01-PLAN.md — Initialize pnpm workspace root
 - [x] 01-02-PLAN.md — Scaffold apps/web Next.js App Router app
 - [x] 01-03-PLAN.md — Integrate AuthKit provider and auth-aware home
-- [ ] 01-04-PLAN.md — Add AuthKit callback and protected dashboard
+- [x] 01-04-PLAN.md — Add AuthKit callback and protected dashboard
 - [ ] 01-05-PLAN.md — Verify WorkOS email verification and password reset
 
 ### Phase 2: Org Structure & Languages
@@ -68,6 +68,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Authentication Access | 3/5 | In progress | 01-01, 01-02, 01-03 |
+| 1. Authentication Access | 4/5 | In progress | 01-01, 01-02, 01-03, 01-04 |
 | 2. Org Structure & Languages | 0/TBD | Not started | - |
 | 3. Member Enrollment | 0/TBD | Not started | - |
