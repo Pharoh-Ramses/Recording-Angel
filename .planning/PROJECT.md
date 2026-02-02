@@ -28,13 +28,16 @@ Leaders can publish once and members can reliably read it in their language.
 ## Context
 
 - Planned monorepo with pnpm, Next.js App Router (apps/web), Convex (packages/backend), and shared UI components (packages/ui).
+- UI styling with Tailwind CSS and shadcn/ui components.
 - Internationalization with next-intl and locale-based routing (/en, /es).
 - WorkOS for authentication; Convex for data and sync of users.
+- Convex schema kept in a shared package so other apps can import types/models.
 - Future AI workflows via n8n for translation/enrichment, but not required for v1.
 
 ## Constraints
 
 - **Languages**: English and Spanish — initial locale support.
+- **UI Stack**: Tailwind CSS + shadcn/ui — consistent styling and components.
 
 ## Key Decisions
 
@@ -43,6 +46,8 @@ Leaders can publish once and members can reliably read it in their language.
 | WorkOS email/password auth | Centralized, managed auth for leaders/members | — Pending |
 | v1 languages = English + Spanish | Matches initial audience and routing goals | — Pending |
 | Sharing scoped to ward/stake | Keep content relevant and reduce moderation scope | — Pending |
+| Tailwind + shadcn/ui | Consistent component system for web UI | — Pending |
+| Shared Convex schema package | Enables type reuse across apps | — Pending |
 
 ---
 *Last updated: 2026-02-01 after initialization*
