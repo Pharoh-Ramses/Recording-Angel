@@ -4,13 +4,17 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "pnpm -C apps/web dev",
-    "build": "pnpm -C apps/web build",
-    "start": "pnpm -C apps/web start",
-    "lint": "pnpm -C apps/web lint"
+    "dev": "turbo run dev --filter=web",
+    "build": "turbo run build",
+    "start": "turbo run start --filter=web",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check"
   },
   "engines": {
     "node": ">=20",
     "pnpm": ">=9"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.1"
   }
 }
