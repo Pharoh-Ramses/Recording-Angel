@@ -61,20 +61,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase TBD | Pending |
-| AUTH-02 | Phase TBD | Pending |
-| AUTH-03 | Phase TBD | Pending |
-| ORG-01 | Phase TBD | Pending |
-| ORG-02 | Phase TBD | Pending |
-| ORG-03 | Phase TBD | Pending |
-| MEMB-01 | Phase TBD | Pending |
-| MEMB-02 | Phase TBD | Pending |
-| MEMB-03 | Phase TBD | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| ORG-01 | Phase 2 | Pending |
+| ORG-02 | Phase 2 | Pending |
+| ORG-03 | Phase 2 | Pending |
+| MEMB-01 | Phase 3 | Pending |
+| MEMB-02 | Phase 3 | Pending |
+| MEMB-03 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-01*
