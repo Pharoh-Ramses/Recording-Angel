@@ -26,10 +26,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. User can log in with email/password via WorkOS.
   2. User receives email verification after signup.
   3. User can reset password via email link.
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 01-01: TBD during planning
+- [x] 01-01-PLAN.md — Initialize pnpm workspace root
+- [x] 01-02-PLAN.md — Scaffold apps/web Next.js App Router app
+- [x] 01-03-PLAN.md — Integrate AuthKit provider and auth-aware home
+- [ ] 01-04-PLAN.md — Add AuthKit callback and protected dashboard
+- [ ] 01-05-PLAN.md — Verify WorkOS email verification and password reset
 
 ### Phase 2: Org Structure & Languages
 **Goal**: Leaders can define stake/ward structure and supported languages
@@ -64,6 +68,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Authentication Access | 0/TBD | Not started | - |
+| 1. Authentication Access | 3/5 | In progress | 01-01, 01-02, 01-03 |
 | 2. Org Structure & Languages | 0/TBD | Not started | - |
 | 3. Member Enrollment | 0/TBD | Not started | - |
