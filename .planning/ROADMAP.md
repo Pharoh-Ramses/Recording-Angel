@@ -46,11 +46,16 @@ Plans:
   1. Stake leader can create a stake.
   2. Ward leader can create a ward under a stake.
   3. Stake or ward can set supported languages to English and/or Spanish.
-**Plans**: TBD
+**Plans**: 6 plans
 **Status**: Not started
 
 Plans:
-- [ ] 02-01: TBD during planning
+- [ ] 02-01-PLAN.md — Set up Convex with schema and WorkOS auth config
+- [ ] 02-02-PLAN.md — Create auth function wrappers and user store
+- [ ] 02-03-PLAN.md — Implement stake and ward mutations/queries
+- [ ] 02-04-PLAN.md — Create ConvexClientProvider and integrate into layout
+- [ ] 02-05-PLAN.md — Build stake/ward management UI pages
+- [ ] 02-06-PLAN.md — Verify phase requirements end-to-end
 
 ### Phase 3: Member Enrollment
 **Goal**: Members can find and join their stake and ward
@@ -74,5 +79,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Authentication Access | 5/5 | ✅ Complete | 2026-02-04 |
-| 2. Org Structure & Languages | 0/TBD | Not started | - |
+| 2. Org Structure & Languages | 0/6 | Not started | - |
 | 3. Member Enrollment | 0/TBD | Not started | - |
