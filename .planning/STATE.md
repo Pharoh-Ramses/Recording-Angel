@@ -5,33 +5,32 @@
 See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** Leaders can publish once and members can reliably read it in their language.
-**Current focus:** Phase 1 — Authentication Access
+**Current focus:** Phase 1 — Authentication Access (COMPLETE)
 
 ## Current Position
 
 Phase: 1 of 3 (Authentication Access)
-Plan: 6 of 5 in current phase (Plan 6 added as infrastructure improvement)
-Status: In progress
-Last activity: 2026-02-02 — Completed 01-06-PLAN.md
+Plan: 5 of 5 in current phase (Phase 1 COMPLETE)
+Status: Phase complete
+Last activity: 2026-02-04 — Completed 01-05-PLAN.md (email verification flows verified)
 
-Progress: [██████░░░░] 40%
+Progress: [██████░░░░] 100% (Phase 1)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 4 min
-- Total execution time: 0.25 hours
+- Total plans completed: 5 (plus 1 infrastructure plan 01-06)
+- All Phase 1 plans executed
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 | 6 | 14 min | 2.3 min |
+| 1 | 6 | ~30 min | ~5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02, 01-03, 01-04, 01-06
-- Trend: Consistent velocity, added infrastructure plan 01-06 for Turbo Repo
+- Last 5 plans: 01-02, 01-03, 01-04, 01-05, 01-06
+- Trend: Phase 1 complete, ready for Phase 2
 
 *Updated after each plan completion*
 
@@ -52,6 +51,8 @@ Recent decisions affecting current work:
 | 2026-02-02 | Matcher config limits middleware scope | Avoid running auth middleware on static assets |
 | 2026-02-02 | Two-layer protection (middleware + withAuth) | Middleware catches early, page guard ensures user context |
 | 2026-02-02 | Turbo Repo for monorepo orchestration | Build caching, parallel task execution, standardized pipeline |
+| 2026-02-04 | Keep WorkOS AuthKit default emails | Satisfies AUTH-02/03 without custom email implementation |
+| 2026-02-04 | Root path in middleware matcher | Required for withAuth() session injection on homepage |
 
 ### Pending Todos
 
@@ -77,8 +78,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-02 05:14 UTC
-Stopped at: Completed 01-06-PLAN.md
+Last session: 2026-02-04 04:44 UTC
+Stopped at: Completed 01-05-PLAN.md (email verification flows verified)
 Resume file: None
 
 Config (if exists):
@@ -95,4 +96,9 @@ Config (if exists):
   }
 }
 
-**NOTE:** Plan 01-06 completed successfully. Turbo Repo retrofitted onto existing pnpm workspace. Installed turbo@2.8.1, configured turbo.json with tasks for build/dev/lint/type-check, updated root package.json scripts to use turbo run, added type-check script to apps/web. All pipeline tasks verified working with caching. Auth system remains intact with WorkOS AuthKit.
+**NOTE:** Phase 1 complete. All authentication requirements satisfied:
+- ✓ Users can log in with email/password via WorkOS
+- ✓ Users receive email verification after signup
+- ✓ Users can reset password via email link
+- ✓ Protected dashboard at /dashboard
+- ✓ Turbo Repo build caching enabled

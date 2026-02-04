@@ -12,9 +12,9 @@ GospelSmarts delivers a focused v1 that lets leaders authenticate, establish the
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Authentication Access** - Users can securely access accounts via WorkOS email/password.
+- [x] **Phase 1: Authentication Access** - Users can securely access accounts via WorkOS email/password.
 - [ ] **Phase 2: Org Structure & Languages** - Leaders define stake/ward structure and supported languages.
-- [ ] **Phase 3: Member Enrollment** - Members find and join their stake and ward.
+- [ ] **Phase 3: Member Enrollment** - Members can find and join their stake and ward.
 
 ## Phase Details
 
@@ -27,13 +27,16 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User receives email verification after signup.
   3. User can reset password via email link.
 **Plans**: 5 plans
+**Status**: ✅ Complete
 
 Plans:
 - [x] 01-01-PLAN.md — Initialize pnpm workspace root
 - [x] 01-02-PLAN.md — Scaffold apps/web Next.js App Router app
 - [x] 01-03-PLAN.md — Integrate AuthKit provider and auth-aware home
 - [x] 01-04-PLAN.md — Add AuthKit callback and protected dashboard
-- [ ] 01-05-PLAN.md — Verify WorkOS email verification and password reset
+- [x] 01-05-PLAN.md — Verify WorkOS email verification and password reset
+
+*Additional infrastructure plan 01-06 completed: Turbo Repo integration*
 
 ### Phase 2: Org Structure & Languages
 **Goal**: Leaders can define stake/ward structure and supported languages
@@ -44,6 +47,7 @@ Plans:
   2. Ward leader can create a ward under a stake.
   3. Stake or ward can set supported languages to English and/or Spanish.
 **Plans**: TBD
+**Status**: Not started
 
 Plans:
 - [ ] 02-01: TBD during planning
@@ -57,6 +61,7 @@ Plans:
   2. Member can search for a ward.
   3. Member can join a ward and stake and see membership confirmed.
 **Plans**: TBD
+**Status**: Not started
 
 Plans:
 - [ ] 03-01: TBD during planning
@@ -68,6 +73,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Authentication Access | 4/5 | In progress | 01-01, 01-02, 01-03, 01-04 |
+| 1. Authentication Access | 5/5 | ✅ Complete | 2026-02-04 |
 | 2. Org Structure & Languages | 0/TBD | Not started | - |
 | 3. Member Enrollment | 0/TBD | Not started | - |
