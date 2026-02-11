@@ -1,0 +1,24 @@
+{
+  "name": "@gospelsmarts/backend",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./convex/*": {
+      "types": "./convex/*.d.ts",
+      "default": "./convex/*.js"
+    }
+  },
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "convex": "^1.31.6",
+    "convex-helpers": "^0.1.111"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}
