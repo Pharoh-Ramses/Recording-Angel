@@ -2,87 +2,56 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-01)
+See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** Leaders can publish once and members can reliably read it in their language.
-**Current focus:** All phases complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 3 of 3 (Member Enrollment)
-Plan: 4 of 4 in current phase (Phase 3 COMPLETE)
-Status: All v1 phases complete
-Last activity: 2026-02-10 — Completed 03-04-PLAN.md (E2E verification passed)
+Phase: v1.0 complete — all phases shipped
+Plan: Not started
+Status: Ready to plan next milestone
+Last activity: 2026-02-11 — v1.0 milestone archived
 
-Progress: [██████████] 100% (Phase 3)
+Progress: [██████████] 100% (v1.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5 (plus 1 infrastructure plan 01-06)
-- All Phase 1 plans executed
+- Total plans completed: 16
+- Phases completed: 3
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1 | 6 | ~30 min | ~5 min |
-
-**Recent Trend:**
-- Last 5 plans: 01-02, 01-03, 01-04, 01-05, 01-06
-- Trend: Phase 1 complete, ready for Phase 2
-
-*Updated after each plan completion*
+| Phase | Plans | Completed |
+|-------|-------|-----------|
+| 1. Authentication Access | 6 | 2026-02-04 |
+| 2. Org Structure & Languages | 6 | 2026-02-10 |
+| 3. Member Enrollment | 4 | 2026-02-10 |
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-| Date | Decision | Context |
-|------|----------|---------|
-| 2026-02-02 | Root scripts delegate to apps/web | Keeps root scripts minimal using pnpm -C pattern |
-| 2026-02-02 | Include packages/* for future use | Allows shared Convex schema and UI components |
-| 2026-02-02 | Mark root package private | Prevents accidental npm publish |
-| 2026-02-02 | Pin pnpm 9.15.0 | Consistent package manager version |
-| 2026-02-02 | No AuthKitProvider needed | authkit-nextjs uses middleware pattern, not React context |
-| 2026-02-02 | Matcher config limits middleware scope | Avoid running auth middleware on static assets |
-| 2026-02-02 | Two-layer protection (middleware + withAuth) | Middleware catches early, page guard ensures user context |
-| 2026-02-02 | Turbo Repo for monorepo orchestration | Build caching, parallel task execution, standardized pipeline |
-| 2026-02-04 | Keep WorkOS AuthKit default emails | Satisfies AUTH-02/03 without custom email implementation |
-| 2026-02-04 | Root path in middleware matcher | Required for withAuth() session injection on homepage |
+All decisions logged in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-[From .planning/todos/pending/ — ideas captured during sessions]
-
-None yet.
+None.
 
 ### Blockers/Concerns
 
-[Issues that affect future work]
-
-1. **Dual lockfile situation** (from 01-02)
-   - apps/web has package-lock.json (from npm create-next-app)
-   - Root has pnpm-lock.yaml (pnpm workspace)
-   - Next.js warns during build but functions correctly
-   - Resolution: Consider standardizing on pnpm or configuring turbopack.root
-
-2. **Middleware deprecation warning** (from 01-04)
-   - Next.js 16 shows: "middleware" file convention is deprecated
-   - Suggests using "proxy" instead
-   - Current implementation works correctly
-   - Resolution: Can migrate to proxy pattern in future if needed
+1. **Dual lockfile situation** — apps/web has package-lock.json alongside root pnpm-lock.yaml. Consider standardizing.
+2. **Middleware deprecation warning** — Next.js 16 deprecates "middleware" convention. Current implementation works.
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Stopped at: All v1 phases complete (Phase 1 Auth, Phase 2 Org, Phase 3 Membership)
+Last session: 2026-02-11
+Stopped at: v1.0 milestone archived, ready for next milestone
 Resume file: None
 
-Config (if exists):
+Config:
 {
   "mode": "yolo",
   "depth": "standard",
@@ -95,8 +64,3 @@ Config (if exists):
     "verifier": true
   }
 }
-
-**NOTE:** All v1 phases complete. Requirements satisfied:
-- ✓ Phase 1 (Auth): Login, email verification, password reset via WorkOS
-- ✓ Phase 2 (Org): Stake/ward creation, language configuration
-- ✓ Phase 3 (Membership): Stake/ward search, join ward, membership confirmation
