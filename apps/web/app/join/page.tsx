@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Id } from "../../convex/_generated/dataModel";
 
 export default function JoinPage() {
@@ -21,12 +22,16 @@ export default function JoinPage() {
 
   // If user has active membership, redirect to their ward
   const activeMembership = memberships?.find((m) => m.status === "active");
-  if (activeMembership?.ward && activeMembership?.stake) {
-    router.push(
-      `/stake/${activeMembership.stake.slug}/ward/${activeMembership.ward.slug}`
-    );
-    return null;
-  }
+
+  useEffect(() => {
+    if (activeMembership?.ward && activeMembership?.stake) {
+      router.push(
+        `/stake/${activeMembership.stake.slug}/ward/${activeMembership.ward.slug}`
+      );
+    }
+  }, [activeMembership, router]);
+
+  if (activeMembership) return null;
 
   // If user has pending membership, show waiting message
   const pendingMembership = memberships?.find((m) => m.status === "pending");

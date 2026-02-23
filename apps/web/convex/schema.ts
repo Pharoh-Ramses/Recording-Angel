@@ -76,7 +76,7 @@ export default defineSchema({
       v.literal("classifieds")
     ),
     title: v.string(),
-    content: v.string(), // Tiptap JSON stringified
+    content: v.string(), // HTML from Tiptap editor
     status: v.union(
       v.literal("draft"),
       v.literal("pending_review"),

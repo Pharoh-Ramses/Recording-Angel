@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "isomorphic-dompurify";
 import { usePaginatedQuery, useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -102,7 +103,7 @@ function ModerationCard({
       <CardContent>
         <div
           className="prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
         />
       </CardContent>
       <CardFooter className="gap-2">

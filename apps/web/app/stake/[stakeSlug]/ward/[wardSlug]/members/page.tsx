@@ -15,9 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function MembersPage() {
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
   const ward = useQuery(api.wards.getBySlug, { slug: params.wardSlug });
-  const pending = useQuery(api.members.pendingMembers, {
-    wardId: ward?._id!,
-  });
+  const pending = useQuery(api.members.pendingMembers, ward ? { wardId: ward._id } : "skip");
   const permissions = useQuery(api.roles.myPermissions, {
     wardId: ward?._id,
   });

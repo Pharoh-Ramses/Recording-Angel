@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import { Id } from "../../../convex/_generated/dataModel";
 
 export default function ModerationSettingsPage() {
   const memberships = useQuery(api.members.myMembership);
@@ -24,7 +25,7 @@ export default function ModerationSettingsPage() {
   return <SettingsForm wardId={activeMembership.wardId} />;
 }
 
-function SettingsForm({ wardId }: { wardId: any }) {
+function SettingsForm({ wardId }: { wardId: Id<"wards"> }) {
   const settings = useQuery(api.moderation.getSettings, { wardId });
   const updateSettings = useMutation(api.moderation.updateSettings);
   const permissions = useQuery(api.roles.myPermissions, { wardId });

@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "isomorphic-dompurify";
 import {
   Card,
   CardContent,
@@ -60,7 +61,7 @@ export function PostCard({
       <CardContent>
         <div
           className="prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
         />
       </CardContent>
       {type === "event" && (eventDate || eventLocation) && (

@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { internalAction, internalMutation, mutation, query } from "./_generated/server";
+import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { getAuthenticatedMember, requirePermission } from "./lib/permissions";
+import { getAuthenticatedMember, requirePermission, hasPermission } from "./lib/permissions";
 import OpenAI from "openai";
 import { paginationOptsValidator } from "convex/server";
 
@@ -81,14 +81,14 @@ export const aiScreen = internalAction({
 });
 
 // Internal helpers
-export const getPostForScreening = query({
+export const getPostForScreening = internalQuery({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
     return await ctx.db.get(postId);
   },
 });
 
-export const getModerationSettings = query({
+export const getModerationSettings = internalQuery({
   args: { wardId: v.id("wards") },
   handler: async (ctx, { wardId }) => {
     return await ctx.db
@@ -120,6 +120,11 @@ export const pendingPosts = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, { wardId, paginationOpts }) => {
+    const member = await getAuthenticatedMember(ctx, wardId);
+    if (!member) throw new Error("Not a member of this ward");
+    const canApprove = await hasPermission(ctx, member._id, "post:approve");
+    if (!canApprove) throw new Error("Missing permission: post:approve");
+
     const results = await ctx.db
       .query("posts")
       .withIndex("byWardIdAndStatus", (q) =>
@@ -185,6 +190,9 @@ export const rejectPost = mutation({
 export const getSettings = query({
   args: { wardId: v.id("wards") },
   handler: async (ctx, { wardId }) => {
+    const member = await getAuthenticatedMember(ctx, wardId);
+    if (!member) throw new Error("Not a member of this ward");
+
     return await ctx.db
       .query("moderationSettings")
       .withIndex("byWardId", (q) => q.eq("wardId", wardId))

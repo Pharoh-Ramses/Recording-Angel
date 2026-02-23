@@ -133,6 +133,9 @@ export const rejectMember = mutation({
 export const pendingMembers = query({
   args: { wardId: v.id("wards") },
   handler: async (ctx, { wardId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
     const pending = await ctx.db
       .query("members")
       .withIndex("byWardIdAndStatus", (q) =>
