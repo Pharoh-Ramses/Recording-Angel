@@ -140,3 +140,47 @@ export const promoteToStake = mutation({
     await ctx.db.patch(postId, { scope: "stake" });
   },
 });
+
+export const upcomingEvents = query({
+  args: {
+    wardId: v.optional(v.id("wards")),
+    stakeId: v.optional(v.id("stakes")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { wardId, stakeId, limit = 5 }) => {
+    const now = new Date().toISOString();
+
+    let postsQuery;
+    if (wardId) {
+      postsQuery = ctx.db
+        .query("posts")
+        .withIndex("byWardIdAndStatus", (q) =>
+          q.eq("wardId", wardId).eq("status", "approved")
+        );
+    } else if (stakeId) {
+      postsQuery = ctx.db
+        .query("posts")
+        .withIndex("byStakeIdAndScopeAndStatus", (q) =>
+          q.eq("stakeId", stakeId).eq("scope", "stake").eq("status", "approved")
+        );
+    } else {
+      return [];
+    }
+
+    const allPosts = await postsQuery.collect();
+    const events = allPosts
+      .filter((p) => p.type === "event" && p.eventDate && p.eventDate >= now)
+      .sort((a, b) => (a.eventDate! < b.eventDate! ? -1 : 1))
+      .slice(0, limit);
+
+    const enriched = await Promise.all(
+      events.map(async (post) => {
+        const member = await ctx.db.get(post.authorId);
+        const user = member ? await ctx.db.get(member.userId) : null;
+        return { ...post, author: user };
+      })
+    );
+
+    return enriched;
+  },
+});
