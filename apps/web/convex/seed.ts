@@ -13,15 +13,17 @@ const WARD_SYSTEM_ROLES = [
       "post:publish_directly",
       "post:approve",
       "member:approve",
+      "comment:create",
+      "comment:moderate",
     ],
   },
   {
     name: "clerk",
-    permissions: ["post:create", "post:publish_directly", "member:view"],
+    permissions: ["post:create", "post:publish_directly", "member:view", "comment:create"],
   },
   {
     name: "member",
-    permissions: ["post:create"],
+    permissions: ["post:create", "comment:create"],
   },
 ];
 
@@ -32,7 +34,7 @@ const STAKE_SYSTEM_ROLES = [
   },
   {
     name: "stake_clerk",
-    permissions: ["post:create", "post:publish_directly"],
+    permissions: ["post:create", "post:publish_directly", "comment:create"],
   },
 ];
 
