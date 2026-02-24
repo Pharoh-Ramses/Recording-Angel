@@ -22,7 +22,13 @@ import {
 } from "@/components/ui/select";
 import { RichTextEditor } from "./rich-text-editor";
 
-export function CreatePostButton({ wardId }: { wardId: Id<"wards"> }) {
+export function CreatePostButton({
+  wardId,
+  triggerVariant = "button",
+}: {
+  wardId: Id<"wards">;
+  triggerVariant?: "button" | "bar";
+}) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -57,7 +63,13 @@ export function CreatePostButton({ wardId }: { wardId: Id<"wards"> }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>New Post</Button>
+        {triggerVariant === "bar" ? (
+          <button className="flex-1 text-left text-sm text-muted-foreground hover:text-foreground transition-colors rounded-full bg-muted/50 px-4 py-2">
+            What&apos;s on your mind?
+          </button>
+        ) : (
+          <Button>New Post</Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
