@@ -8,6 +8,7 @@ export default defineSchema({
     name: v.string(),
     email: v.string(),
     imageUrl: v.optional(v.string()),
+    preferredLanguage: v.optional(v.string()),
   }).index("byClerkId", ["clerkId"]),
 
   // Stakes (top-level org)
@@ -103,4 +104,15 @@ export default defineSchema({
   })
     .index("byWardId", ["wardId"])
     .index("byStakeId", ["stakeId"]),
+
+  // Translated versions of posts
+  postTranslations: defineTable({
+    postId: v.id("posts"),
+    language: v.string(),
+    title: v.string(),
+    content: v.string(),
+    eventLocation: v.optional(v.string()),
+  })
+    .index("byPostId", ["postId"])
+    .index("byPostIdAndLanguage", ["postId", "language"]),
 });
