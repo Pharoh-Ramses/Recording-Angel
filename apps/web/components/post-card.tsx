@@ -1,13 +1,18 @@
 "use client";
 
 import DOMPurify from "isomorphic-dompurify";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, MessageCircle, Repeat2, Share } from "lucide-react";
+import { ArrowUp, Globe, MessageCircle, Repeat2, Share } from "lucide-react";
 import { relativeTime } from "@/lib/utils";
 
 interface PostCardProps {
+  postId: Id<"posts">;
   title: string;
   content: string;
   type: string;
@@ -16,9 +21,11 @@ interface PostCardProps {
   createdAt: number;
   eventDate?: string;
   eventLocation?: string;
+  preferredLanguage?: string;
 }
 
 export function PostCard({
+  postId,
   title,
   content,
   type,
@@ -27,7 +34,23 @@ export function PostCard({
   createdAt,
   eventDate,
   eventLocation,
+  preferredLanguage,
 }: PostCardProps) {
+  const needsTranslation = preferredLanguage && preferredLanguage !== "en";
+  const translation = useQuery(
+    api.translations.getTranslation,
+    needsTranslation ? { postId, language: preferredLanguage } : "skip"
+  );
+
+  const [showOriginal, setShowOriginal] = useState(false);
+
+  const displayTitle = !showOriginal && translation ? translation.title : title;
+  const displayContent = !showOriginal && translation ? translation.content : content;
+  const displayEventLocation =
+    !showOriginal && translation?.eventLocation
+      ? translation.eventLocation
+      : eventLocation;
+
   const initials = author?.name
     ?.split(" ")
     .map((n) => n[0])
@@ -66,12 +89,12 @@ export function PostCard({
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-base mt-1">{title}</h3>
+          <h3 className="font-semibold text-base mt-1">{displayTitle}</h3>
 
           {/* Content */}
           <div
             className="prose prose-sm max-w-none mt-2 text-foreground/90"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayContent) }}
           />
 
           {/* Event info */}
@@ -84,10 +107,30 @@ export function PostCard({
               )}
               {eventLocation && (
                 <span className="flex items-center gap-1">
-                  📍 {eventLocation}
+                  📍 {displayEventLocation}
                 </span>
               )}
             </div>
+          )}
+
+          {/* Translation indicator */}
+          {translation && !showOriginal && (
+            <button
+              onClick={() => setShowOriginal(true)}
+              className="flex items-center gap-1 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Globe className="h-3 w-3" />
+              Translated &middot; Show original
+            </button>
+          )}
+          {showOriginal && translation && (
+            <button
+              onClick={() => setShowOriginal(false)}
+              className="flex items-center gap-1 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Globe className="h-3 w-3" />
+              Show translation
+            </button>
           )}
 
           {/* Interaction bar */}

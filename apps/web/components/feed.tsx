@@ -1,6 +1,6 @@
 "use client";
 
-import { usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { PostCard } from "./post-card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,9 @@ export function Feed({ wardId, stakeId, mode, typeFilter }: FeedProps) {
     mode === "stake" && stakeId ? { stakeId } : "skip",
     { initialNumItems: 10 }
   );
+
+  const currentUser = useQuery(api.users.currentUser);
+  const preferredLanguage = currentUser?.preferredLanguage;
 
   const feed = mode === "ward" ? wardFeed : stakeFeed;
 
@@ -53,6 +56,7 @@ export function Feed({ wardId, stakeId, mode, typeFilter }: FeedProps) {
       {filteredResults.map((post) => (
         <PostCard
           key={post._id}
+          postId={post._id}
           title={post.title}
           content={post.content}
           type={post.type}
@@ -61,6 +65,7 @@ export function Feed({ wardId, stakeId, mode, typeFilter }: FeedProps) {
           createdAt={post._creationTime}
           eventDate={post.eventDate}
           eventLocation={post.eventLocation}
+          preferredLanguage={preferredLanguage}
         />
       ))}
       {feed.status === "CanLoadMore" && (
