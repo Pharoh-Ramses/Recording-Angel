@@ -28,7 +28,7 @@ export default function MembersPage() {
   const canApprove = permissions?.includes("member:approve");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-4">
       <h1 className="text-2xl font-bold">Members</h1>
 
       {canApprove && pending && pending.length > 0 && (
