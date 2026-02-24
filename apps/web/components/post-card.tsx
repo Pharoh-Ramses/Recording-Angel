@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Globe, MessageCircle, Repeat2, Share } from "lucide-react";
 import { relativeTime } from "@/lib/utils";
+import { CommentSheet } from "./comment-sheet";
 
 interface PostCardProps {
   postId: Id<"posts">;
@@ -50,6 +51,8 @@ export function PostCard({
     !showOriginal && translation?.eventLocation
       ? translation.eventLocation
       : eventLocation;
+
+  const count = useQuery(api.comments.commentCount, { postId });
 
   const initials = author?.name
     ?.split(" ")
@@ -144,15 +147,16 @@ export function PostCard({
               <ArrowUp className="h-4 w-4" />
               <span className="text-xs">0</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-muted-foreground hover:text-foreground gap-1.5"
-              onClick={(e) => e.preventDefault()}
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs">0</span>
-            </Button>
+            <CommentSheet postId={postId}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-muted-foreground hover:text-foreground gap-1.5"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-xs">{count ?? 0}</span>
+              </Button>
+            </CommentSheet>
             <Button
               variant="ghost"
               size="sm"
