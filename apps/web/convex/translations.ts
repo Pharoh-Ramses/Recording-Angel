@@ -1,0 +1,207 @@
+import { v } from "convex/values";
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+  query,
+} from "./_generated/server";
+import { internal } from "./_generated/api";
+import OpenAI from "openai";
+
+// ISO code → English name mapping
+export const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English",
+  es: "Spanish",
+  pt: "Portuguese",
+  fr: "French",
+  de: "German",
+  zh: "Chinese",
+  ko: "Korean",
+  ja: "Japanese",
+  tl: "Tagalog",
+  to: "Tongan",
+  sm: "Samoan",
+};
+
+// ---------------------------------------------------------------------------
+// Internal helpers (called from actions via ctx.runQuery / ctx.runMutation)
+// ---------------------------------------------------------------------------
+
+export const getPostForTranslation = internalQuery({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    return await ctx.db.get(postId);
+  },
+});
+
+export const getStakeLanguages = internalQuery({
+  args: { stakeId: v.id("stakes") },
+  handler: async (ctx, { stakeId }) => {
+    const stake = await ctx.db.get(stakeId);
+    return stake?.languages ?? [];
+  },
+});
+
+export const saveTranslation = internalMutation({
+  args: {
+    postId: v.id("posts"),
+    language: v.string(),
+    title: v.string(),
+    content: v.string(),
+    eventLocation: v.optional(v.string()),
+  },
+  handler: async (ctx, { postId, language, title, content, eventLocation }) => {
+    const existing = await ctx.db
+      .query("postTranslations")
+      .withIndex("byPostIdAndLanguage", (q) =>
+        q.eq("postId", postId).eq("language", language)
+      )
+      .unique();
+
+    if (existing) {
+      await ctx.db.replace(existing._id, {
+        postId,
+        language,
+        title,
+        content,
+        eventLocation,
+      });
+    } else {
+      await ctx.db.insert("postTranslations", {
+        postId,
+        language,
+        title,
+        content,
+        eventLocation,
+      });
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Translation action (runs async, e.g. scheduled after post approval)
+// ---------------------------------------------------------------------------
+
+export const translatePost = internalAction({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    // Fetch post
+    const post = await ctx.runQuery(
+      internal.translations.getPostForTranslation,
+      { postId }
+    );
+    if (!post) {
+      console.error("translatePost: post not found", postId);
+      return;
+    }
+
+    // Fetch configured languages for the stake
+    const languages = await ctx.runQuery(
+      internal.translations.getStakeLanguages,
+      { stakeId: post.stakeId }
+    );
+    if (!languages || languages.length === 0) return;
+
+    const sourceLanguage = "en";
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    for (const targetLanguage of languages) {
+      // Skip the source language — no translation needed
+      if (targetLanguage === sourceLanguage) continue;
+
+      try {
+        const targetName =
+          LANGUAGE_NAMES[targetLanguage] ?? targetLanguage;
+        const sourceName =
+          LANGUAGE_NAMES[sourceLanguage] ?? sourceLanguage;
+
+        const systemPrompt = [
+          `You are a professional translator. Translate the following content from ${sourceName} to ${targetName}.`,
+          `Preserve all HTML tags exactly as they are — only translate the text content within them.`,
+          `Return a JSON object with the following fields:`,
+          `  - "title": the translated title`,
+          `  - "content": the translated content (HTML preserved)`,
+          `  - "eventLocation": the translated event location (only if provided in the input, otherwise omit this field)`,
+        ].join("\n");
+
+        const userContent = [
+          `Title: ${post.title}`,
+          `Content: ${post.content}`,
+          ...(post.eventLocation
+            ? [`Event Location: ${post.eventLocation}`]
+            : []),
+        ].join("\n\n");
+
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2000,
+        });
+
+        const result = JSON.parse(
+          response.choices[0]?.message?.content ?? "{}"
+        );
+
+        if (!result.title || !result.content) {
+          console.error(
+            `translatePost: incomplete response for ${targetLanguage}`,
+            result
+          );
+          continue;
+        }
+
+        await ctx.runMutation(internal.translations.saveTranslation, {
+          postId,
+          language: targetLanguage,
+          title: result.title,
+          content: result.content,
+          ...(result.eventLocation
+            ? { eventLocation: result.eventLocation }
+            : {}),
+        });
+      } catch (error) {
+        console.error(
+          `translatePost: failed for language ${targetLanguage}:`,
+          error
+        );
+        // Continue with remaining languages
+      }
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Client-facing queries
+// ---------------------------------------------------------------------------
+
+export const getTranslation = query({
+  args: {
+    postId: v.id("posts"),
+    language: v.string(),
+  },
+  handler: async (ctx, { postId, language }) => {
+    return await ctx.db
+      .query("postTranslations")
+      .withIndex("byPostIdAndLanguage", (q) =>
+        q.eq("postId", postId).eq("language", language)
+      )
+      .unique();
+  },
+});
+
+export const listTranslations = query({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, { postId }) => {
+    return await ctx.db
+      .query("postTranslations")
+      .withIndex("byPostId", (q) => q.eq("postId", postId))
+      .collect();
+  },
+});
