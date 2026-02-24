@@ -49,6 +49,10 @@ export const create = mutation({
       await ctx.scheduler.runAfter(0, internal.moderation.aiScreen, {
         postId,
       });
+    } else {
+      await ctx.scheduler.runAfter(0, internal.translations.translatePost, {
+        postId,
+      });
     }
 
     return postId;

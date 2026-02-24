@@ -28,6 +28,7 @@ export const aiScreen = internalAction({
         status: "approved",
         moderationNotes: "Auto-approved by type setting",
       });
+      await ctx.scheduler.runAfter(0, internal.translations.translatePost, { postId });
       return;
     }
 
@@ -65,6 +66,7 @@ export const aiScreen = internalAction({
           status: "approved",
           moderationNotes: `AI approved: ${reason}`,
         });
+        await ctx.scheduler.runAfter(0, internal.translations.translatePost, { postId });
       } else if (decision === "reject") {
         await ctx.runMutation(internal.moderation.updatePostStatus, {
           postId,
@@ -163,6 +165,7 @@ export const approvePost = mutation({
       status: "approved",
       moderationNotes: notes ?? "Manually approved",
     });
+    await ctx.scheduler.runAfter(0, internal.translations.translatePost, { postId });
   },
 });
 
