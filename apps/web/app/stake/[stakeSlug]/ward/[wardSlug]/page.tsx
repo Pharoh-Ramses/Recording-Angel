@@ -2,9 +2,10 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { Feed } from "../../../../components/feed";
-import { CreatePostButton } from "../../../../components/create-post-button";
+import { api } from "@/convex/_generated/api";
+import { Feed } from "@/components/feed";
+import { CreatePostBar } from "@/components/create-post-bar";
+import { useFeedFilter } from "@/components/feed-filter-context";
 
 export default function WardFeedPage() {
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
@@ -12,18 +13,17 @@ export default function WardFeedPage() {
   const permissions = useQuery(api.roles.myPermissions, {
     wardId: ward?._id,
   });
+  const { typeFilter } = useFeedFilter();
 
   if (!ward) return null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{ward.name} Feed</h1>
-        {permissions?.includes("post:create") && (
-          <CreatePostButton wardId={ward._id} />
-        )}
-      </div>
-      <Feed wardId={ward._id} mode="ward" />
-    </div>
+    <>
+      <CreatePostBar
+        wardId={ward._id}
+        canPost={permissions?.includes("post:create") ?? false}
+      />
+      <Feed wardId={ward._id} mode="ward" typeFilter={typeFilter} />
+    </>
   );
 }
