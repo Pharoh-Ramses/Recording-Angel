@@ -12,8 +12,16 @@ export const listByStake = query({
 });
 
 export const getBySlug = query({
-  args: { slug: v.string() },
-  handler: async (ctx, { slug }) => {
+  args: { slug: v.string(), stakeId: v.optional(v.id("stakes")) },
+  handler: async (ctx, { slug, stakeId }) => {
+    if (stakeId) {
+      return await ctx.db
+        .query("wards")
+        .withIndex("byStakeIdAndSlug", (q) =>
+          q.eq("stakeId", stakeId).eq("slug", slug)
+        )
+        .unique();
+    }
     return await ctx.db
       .query("wards")
       .withIndex("bySlug", (q) => q.eq("slug", slug))

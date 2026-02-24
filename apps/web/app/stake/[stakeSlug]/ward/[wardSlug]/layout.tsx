@@ -8,7 +8,11 @@ import { FeedFilterProvider, useFeedFilter } from "@/components/feed-filter-cont
 
 function WardLayoutInner({ children }: { children: React.ReactNode }) {
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
-  const ward = useQuery(api.wards.getBySlug, { slug: params.wardSlug });
+  const stake = useQuery(api.stakes.getBySlug, { slug: params.stakeSlug });
+  const ward = useQuery(
+    api.wards.getBySlug,
+    stake ? { slug: params.wardSlug, stakeId: stake._id } : "skip"
+  );
   const { typeFilter, setTypeFilter } = useFeedFilter();
 
   return (

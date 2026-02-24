@@ -34,9 +34,38 @@ export const deleteByClerkId = internalMutation({
       .query("users")
       .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
       .unique();
-    if (user) {
-      await ctx.db.delete(user._id);
+    if (!user) return;
+
+    // Find all memberships for this user
+    const members = await ctx.db
+      .query("members")
+      .withIndex("byUserId", (q) => q.eq("userId", user._id))
+      .collect();
+
+    for (const member of members) {
+      // Delete member's role assignments
+      const roles = await ctx.db
+        .query("memberRoles")
+        .withIndex("byMemberId", (q) => q.eq("memberId", member._id))
+        .collect();
+      for (const role of roles) {
+        await ctx.db.delete(role._id);
+      }
+
+      // Delete member's posts
+      const posts = await ctx.db
+        .query("posts")
+        .withIndex("byAuthorId", (q) => q.eq("authorId", member._id))
+        .collect();
+      for (const post of posts) {
+        await ctx.db.delete(post._id);
+      }
+
+      // Delete the membership record
+      await ctx.db.delete(member._id);
     }
+
+    await ctx.db.delete(user._id);
   },
 });
 

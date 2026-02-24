@@ -26,7 +26,8 @@ export default defineSchema({
     settings: v.object({}),
   })
     .index("bySlug", ["slug"])
-    .index("byStakeId", ["stakeId"]),
+    .index("byStakeId", ["stakeId"])
+    .index("byStakeIdAndSlug", ["stakeId", "slug"]),
 
   // Ward membership
   members: defineTable({

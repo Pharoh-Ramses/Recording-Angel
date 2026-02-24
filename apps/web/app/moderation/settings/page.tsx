@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,17 +12,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import { Id } from "../../../convex/_generated/dataModel";
+import { useSearchParams } from "next/navigation";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function ModerationSettingsPage() {
-  const memberships = useQuery(api.members.myMembership);
-  const activeMembership = memberships?.find((m) => m.status === "active");
+  const searchParams = useSearchParams();
+  const wardId = searchParams.get("ward") as Id<"wards"> | null;
 
-  if (!activeMembership) {
-    return <p className="text-muted-foreground">No active ward membership.</p>;
+  if (!wardId) {
+    return <p className="text-muted-foreground">No ward selected.</p>;
   }
 
-  return <SettingsForm wardId={activeMembership.wardId} />;
+  return <SettingsForm wardId={wardId} />;
 }
 
 function SettingsForm({ wardId }: { wardId: Id<"wards"> }) {
@@ -48,7 +49,7 @@ function SettingsForm({ wardId }: { wardId: Id<"wards"> }) {
   }
 
   async function handleSave() {
-    await updateSettings({ wardId, aiPrompt });
+    await updateSettings({ wardId: wardId!, aiPrompt });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }

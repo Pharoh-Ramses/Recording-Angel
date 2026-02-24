@@ -11,9 +11,15 @@ export function BottomTabBar() {
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
   const pathname = usePathname();
 
+  const stake = useQuery(
+    api.stakes.getBySlug,
+    params.stakeSlug ? { slug: params.stakeSlug } : "skip"
+  );
   const ward = useQuery(
     api.wards.getBySlug,
-    params.wardSlug ? { slug: params.wardSlug } : "skip"
+    params.wardSlug && stake
+      ? { slug: params.wardSlug, stakeId: stake._id }
+      : "skip"
   );
   const permissions = useQuery(
     api.roles.myPermissions,
@@ -35,12 +41,12 @@ export function BottomTabBar() {
       href: `/stake/${params.stakeSlug}`,
       active: pathname === `/stake/${params.stakeSlug}`,
     },
-    ...(permissions?.includes("post:approve")
+    ...(permissions?.includes("post:approve") && ward
       ? [
           {
             label: "Moderate",
             icon: Shield,
-            href: "/moderation",
+            href: `/moderation?ward=${ward._id}`,
             active: pathname?.startsWith("/moderation"),
           },
         ]

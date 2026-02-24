@@ -35,20 +35,6 @@ export const requestToJoin = mutation({
       status: "pending",
     });
 
-    // Assign default "member" role
-    const memberRole = await ctx.db
-      .query("roles")
-      .withIndex("byWardId", (q) => q.eq("wardId", wardId))
-      .filter((q) => q.eq(q.field("name"), "member"))
-      .unique();
-
-    if (memberRole) {
-      await ctx.db.insert("memberRoles", {
-        memberId,
-        roleId: memberRole._id,
-      });
-    }
-
     return memberId;
   },
 });
@@ -89,6 +75,20 @@ export const approveMember = mutation({
     if (!canApprove) throw new Error("Missing permission: member:approve");
 
     await ctx.db.patch(memberId, { status: "active" });
+
+    // Assign default "member" role now that membership is approved
+    const memberRole = await ctx.db
+      .query("roles")
+      .withIndex("byWardId", (q) => q.eq("wardId", targetMember.wardId))
+      .filter((q) => q.eq(q.field("name"), "member"))
+      .unique();
+
+    if (memberRole) {
+      await ctx.db.insert("memberRoles", {
+        memberId,
+        roleId: memberRole._id,
+      });
+    }
   },
 });
 

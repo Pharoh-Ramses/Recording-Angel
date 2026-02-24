@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,7 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function MembersPage() {
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
-  const ward = useQuery(api.wards.getBySlug, { slug: params.wardSlug });
+  const stake = useQuery(api.stakes.getBySlug, { slug: params.stakeSlug });
+  const ward = useQuery(
+    api.wards.getBySlug,
+    stake ? { slug: params.wardSlug, stakeId: stake._id } : "skip"
+  );
   const pending = useQuery(api.members.pendingMembers, ward ? { wardId: ward._id } : "skip");
   const permissions = useQuery(api.roles.myPermissions, {
     wardId: ward?._id,

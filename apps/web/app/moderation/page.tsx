@@ -1,8 +1,8 @@
 "use client";
 
 import DOMPurify from "isomorphic-dompurify";
-import { usePaginatedQuery, useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { usePaginatedQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,17 +14,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Id } from "../../convex/_generated/dataModel";
+import { useSearchParams } from "next/navigation";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function ModerationPage() {
-  const memberships = useQuery(api.members.myMembership);
-  const activeMembership = memberships?.find((m) => m.status === "active");
+  const searchParams = useSearchParams();
+  const wardId = searchParams.get("ward") as Id<"wards"> | null;
 
-  if (!activeMembership?.ward) {
-    return <p className="text-muted-foreground">No active ward membership.</p>;
+  if (!wardId) {
+    return <p className="text-muted-foreground">No ward selected.</p>;
   }
 
-  return <ModerationQueue wardId={activeMembership.wardId} />;
+  return <ModerationQueue wardId={wardId} />;
 }
 
 function ModerationQueue({ wardId }: { wardId: Id<"wards"> }) {

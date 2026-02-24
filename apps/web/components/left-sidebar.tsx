@@ -37,7 +37,12 @@ export function LeftSidebar({
     api.wards.listByStake,
     stake ? { stakeId: stake._id } : "skip"
   );
-  const activeWard = wards?.find((w) => w.slug === params.wardSlug);
+  const activeWard = useQuery(
+    api.wards.getBySlug,
+    stake && params.wardSlug
+      ? { slug: params.wardSlug, stakeId: stake._id }
+      : "skip"
+  );
   const permissions = useQuery(
     api.roles.myPermissions,
     activeWard ? { wardId: activeWard._id } : "skip"
@@ -136,9 +141,9 @@ export function LeftSidebar({
                 Members
               </Link>
             )}
-            {permissions?.includes("post:approve") && (
+            {permissions?.includes("post:approve") && activeWard && (
               <Link
-                href="/moderation"
+                href={`/moderation?ward=${activeWard._id}`}
                 className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
               >
                 <Shield className="h-4 w-4" />
