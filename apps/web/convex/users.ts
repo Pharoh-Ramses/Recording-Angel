@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 export const upsertFromClerk = internalMutation({
   args: {
@@ -79,5 +79,21 @@ export const currentUser = query({
       .query("users")
       .withIndex("byClerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
+  },
+});
+
+export const setPreferredLanguage = mutation({
+  args: { language: v.string() },
+  handler: async (ctx, { language }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, { preferredLanguage: language });
   },
 });
