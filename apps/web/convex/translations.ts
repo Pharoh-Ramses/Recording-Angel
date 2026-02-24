@@ -90,8 +90,7 @@ export const translatePost = internalAction({
       internal.translations.getPostForTranslation,
       { postId }
     );
-    if (!post) {
-      console.error("translatePost: post not found", postId);
+    if (!post || post.status !== "approved") {
       return;
     }
 

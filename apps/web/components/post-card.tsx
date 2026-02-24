@@ -105,7 +105,7 @@ export function PostCard({
                   📅 {new Date(eventDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               )}
-              {eventLocation && (
+              {displayEventLocation && (
                 <span className="flex items-center gap-1">
                   📍 {displayEventLocation}
                 </span>
