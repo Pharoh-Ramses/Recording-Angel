@@ -2,59 +2,49 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Feed } from "../../../components/feed";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/nextjs";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { api } from "@/convex/_generated/api";
+import { Feed } from "@/components/feed";
+import { AppShell } from "@/components/app-shell";
+import { FeedFilterProvider, useFeedFilter } from "@/components/feed-filter-context";
 
-export default function StakeFeedPage() {
+function StakeFeedInner() {
   const params = useParams<{ stakeSlug: string }>();
   const stake = useQuery(api.stakes.getBySlug, { slug: params.stakeSlug });
-  const wards = useQuery(api.wards.listByStake, stake ? { stakeId: stake._id } : "skip");
+  const { typeFilter } = useFeedFilter();
 
   if (!stake) return null;
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <span className="font-semibold">{stake.name}</span>
-          <UserButton />
-        </div>
-      </header>
-      <main className="mx-auto max-w-3xl px-4 py-6">
-        <div className="space-y-6">
-          <h1 className="text-2xl font-bold">{stake.name}</h1>
+    <>
+      <div className="px-4 py-3 border-b border-border">
+        <h1 className="font-semibold text-lg">{stake.name}</h1>
+        <p className="text-xs text-muted-foreground">Stake Announcements</p>
+      </div>
+      <Feed stakeId={stake._id} mode="stake" typeFilter={typeFilter} />
+    </>
+  );
+}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Wards</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {wards?.map((ward) => (
-                <Link
-                  key={ward._id}
-                  href={`/stake/${params.stakeSlug}/ward/${ward.slug}`}
-                >
-                  <Button variant="outline" size="sm">
-                    {ward.name}
-                  </Button>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
+function StakePageWithShell() {
+  const params = useParams<{ stakeSlug: string }>();
+  const stake = useQuery(api.stakes.getBySlug, { slug: params.stakeSlug });
+  const { typeFilter, setTypeFilter } = useFeedFilter();
 
-          <h2 className="text-lg font-semibold">Stake Announcements</h2>
-          <Feed stakeId={stake._id} mode="stake" />
-        </div>
-      </main>
-    </div>
+  return (
+    <AppShell
+      stakeId={stake?._id}
+      typeFilter={typeFilter}
+      onTypeFilterChange={setTypeFilter}
+    >
+      <StakeFeedInner />
+    </AppShell>
+  );
+}
+
+export default function StakeFeedPage() {
+  return (
+    <FeedFilterProvider>
+      <StakePageWithShell />
+    </FeedFilterProvider>
   );
 }
