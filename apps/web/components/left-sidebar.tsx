@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Shield,
   Users,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,20 @@ const FEED_FILTERS = [
   { label: "Events", value: "event", icon: CalendarDays },
   { label: "Classifieds", value: "classifieds", icon: ShoppingBag },
 ] as const;
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: "English",
+  es: "Español",
+  pt: "Português",
+  fr: "Français",
+  de: "Deutsch",
+  zh: "中文",
+  ko: "한국어",
+  ja: "日本語",
+  tl: "Tagalog",
+  to: "Lea fakatonga",
+  sm: "Gagana Samoa",
+};
 
 interface LeftSidebarProps {
   typeFilter?: string;
@@ -48,6 +63,7 @@ export function LeftSidebar({
     activeWard ? { wardId: activeWard._id } : "skip"
   );
   const currentUser = useQuery(api.users.currentUser);
+  const setPreferredLanguage = useMutation(api.users.setPreferredLanguage);
 
   return (
     <aside className="hidden lg:flex flex-col w-60 border-r border-border h-screen sticky top-0 bg-background">
@@ -150,6 +166,35 @@ export function LeftSidebar({
                 Moderation
               </Link>
             )}
+          </nav>
+        </div>
+      )}
+
+      {/* Language selector */}
+      {stake?.languages && stake.languages.length > 1 && (
+        <div className="px-2 pt-6">
+          <p className="px-3 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Language
+          </p>
+          <nav className="space-y-0.5">
+            {stake.languages.map((lang) => {
+              const isActive = (currentUser?.preferredLanguage ?? "en") === lang;
+              return (
+                <button
+                  key={lang}
+                  onClick={() => setPreferredLanguage({ language: lang })}
+                  className={cn(
+                    "flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors",
+                    isActive
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  )}
+                >
+                  <Globe className="h-4 w-4" />
+                  {LANGUAGE_LABELS[lang] ?? lang.toUpperCase()}
+                </button>
+              );
+            })}
           </nav>
         </div>
       )}
