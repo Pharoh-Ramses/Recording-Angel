@@ -24,6 +24,7 @@ interface CommentSheetProps {
 
 export function CommentSheet({ postId, children }: CommentSheetProps) {
   const comments = useQuery(api.comments.listByPost, { postId });
+  const currentUser = useQuery(api.users.currentUser);
   const createComment = useMutation(api.comments.create);
   const removeComment = useMutation(api.comments.remove);
   const [newComment, setNewComment] = useState("");
@@ -69,23 +70,29 @@ export function CommentSheet({ postId, children }: CommentSheetProps) {
               No comments yet. Start the conversation!
             </p>
           )}
-          {topLevel.map((comment) => (
-            <div key={comment._id}>
-              <CommentItem
-                comment={comment}
-                onReply={() => setReplyTo(comment._id)}
-                onDelete={() => removeComment({ commentId: comment._id })}
-              />
-              {getReplies(comment._id).map((reply) => (
-                <div key={reply._id} className="ml-8 mt-2">
-                  <CommentItem
-                    comment={reply}
-                    onDelete={() => removeComment({ commentId: reply._id })}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
+          {topLevel.map((comment) => {
+            const isOwn = comment.author?._id === currentUser?._id;
+            return (
+              <div key={comment._id}>
+                <CommentItem
+                  comment={comment}
+                  onReply={() => setReplyTo(comment._id)}
+                  onDelete={isOwn ? () => removeComment({ commentId: comment._id }) : undefined}
+                />
+                {getReplies(comment._id).map((reply) => {
+                  const isOwnReply = reply.author?._id === currentUser?._id;
+                  return (
+                    <div key={reply._id} className="ml-8 mt-2">
+                      <CommentItem
+                        comment={reply}
+                        onDelete={isOwnReply ? () => removeComment({ commentId: reply._id }) : undefined}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
 
         <div className="border-t border-border pt-4 space-y-2">

@@ -91,6 +91,15 @@ export const remove = mutation({
     if (!isAuthor && !canModerate)
       throw new Error("Not authorized to delete this comment");
 
+    // Delete child replies to avoid orphaned comments
+    const childComments = await ctx.db
+      .query("comments")
+      .filter((q) => q.eq(q.field("parentCommentId"), commentId))
+      .collect();
+    for (const child of childComments) {
+      await ctx.db.delete(child._id);
+    }
+
     await ctx.db.delete(commentId);
   },
 });
