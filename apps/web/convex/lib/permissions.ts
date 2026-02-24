@@ -10,6 +10,8 @@ export const ALL_PERMISSIONS = [
   "member:view",
   "role:manage",
   "moderation:configure",
+  "comment:create",
+  "comment:moderate",
 ] as const;
 
 export type Permission = (typeof ALL_PERMISSIONS)[number];

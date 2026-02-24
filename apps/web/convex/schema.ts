@@ -115,4 +115,22 @@ export default defineSchema({
   })
     .index("byPostId", ["postId"])
     .index("byPostIdAndLanguage", ["postId", "language"]),
+
+  // Comments on posts
+  comments: defineTable({
+    postId: v.id("posts"),
+    parentCommentId: v.optional(v.id("comments")),
+    authorId: v.id("members"),
+    wardId: v.id("wards"),
+    stakeId: v.id("stakes"),
+    content: v.string(),
+    status: v.union(
+      v.literal("pending_review"),
+      v.literal("approved"),
+      v.literal("rejected")
+    ),
+    moderationNotes: v.optional(v.string()),
+  })
+    .index("byPostIdAndStatus", ["postId", "status"])
+    .index("byAuthorId", ["authorId"]),
 });
