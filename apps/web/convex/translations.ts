@@ -175,6 +175,41 @@ export const translatePost = internalAction({
 });
 
 // ---------------------------------------------------------------------------
+// Backfill: translate all existing approved posts
+// ---------------------------------------------------------------------------
+
+export const backfillTranslations = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const posts = await ctx.runQuery(
+      internal.translations.listApprovedPosts
+    );
+
+    console.log(`Backfilling translations for ${posts.length} approved posts`);
+
+    for (const post of posts) {
+      try {
+        await ctx.scheduler.runAfter(0, internal.translations.translatePost, {
+          postId: post._id,
+        });
+      } catch (error) {
+        console.error(`Failed to schedule translation for post ${post._id}:`, error);
+      }
+    }
+  },
+});
+
+export const listApprovedPosts = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("posts")
+      .filter((q) => q.eq(q.field("status"), "approved"))
+      .collect();
+  },
+});
+
+// ---------------------------------------------------------------------------
 // Client-facing queries
 // ---------------------------------------------------------------------------
 
