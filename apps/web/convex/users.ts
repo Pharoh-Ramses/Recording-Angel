@@ -61,6 +61,15 @@ export const deleteByClerkId = internalMutation({
         await ctx.db.delete(post._id);
       }
 
+      // Delete member's comments
+      const comments = await ctx.db
+        .query("comments")
+        .withIndex("byAuthorId", (q) => q.eq("authorId", member._id))
+        .collect();
+      for (const comment of comments) {
+        await ctx.db.delete(comment._id);
+      }
+
       // Delete the membership record
       await ctx.db.delete(member._id);
     }
