@@ -11,9 +11,10 @@ interface FeedProps {
   stakeId?: Id<"stakes">;
   mode: "ward" | "stake";
   typeFilter?: string;
+  isMember?: boolean;
 }
 
-export function Feed({ wardId, stakeId, mode, typeFilter }: FeedProps) {
+export function Feed({ wardId, stakeId, mode, typeFilter, isMember }: FeedProps) {
   const wardFeed = usePaginatedQuery(
     api.posts.listByWard,
     mode === "ward" && wardId ? { wardId } : "skip",
@@ -66,6 +67,7 @@ export function Feed({ wardId, stakeId, mode, typeFilter }: FeedProps) {
           eventDate={post.eventDate}
           eventLocation={post.eventLocation}
           preferredLanguage={preferredLanguage}
+          isMember={isMember ?? true}
         />
       ))}
       {feed.status === "CanLoadMore" && (

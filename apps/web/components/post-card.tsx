@@ -24,6 +24,7 @@ interface PostCardProps {
   eventDate?: string;
   eventLocation?: string;
   preferredLanguage?: string;
+  isMember?: boolean;
 }
 
 export function PostCard({
@@ -37,6 +38,7 @@ export function PostCard({
   eventDate,
   eventLocation,
   preferredLanguage,
+  isMember = true,
 }: PostCardProps) {
   const router = useRouter();
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
@@ -183,19 +185,31 @@ export function PostCard({
               <ArrowUp className="h-4 w-4" />
               <span className="text-xs">0</span>
             </Button>
-            <ReplyDialog
-              postId={postId}
-              post={{ title, content, author, ward, createdAt }}
-            >
+            {isMember ? (
+              <ReplyDialog
+                postId={postId}
+                post={{ title, content, author, ward, createdAt }}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1.5 rounded-full"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-xs">{count ?? 0}</span>
+                </Button>
+              </ReplyDialog>
+            ) : (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1.5 rounded-full"
+                className="h-8 px-2 text-muted-foreground gap-1.5 rounded-full cursor-default opacity-50"
+                disabled
               >
                 <MessageCircle className="h-4 w-4" />
                 <span className="text-xs">{count ?? 0}</span>
               </Button>
-            </ReplyDialog>
+            )}
             <Button
               variant="ghost"
               size="sm"
