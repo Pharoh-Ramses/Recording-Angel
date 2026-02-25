@@ -4,26 +4,35 @@ import { useParams, usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
-import { Home, LayoutList, Shield, User } from "lucide-react";
+import { Home, LayoutList, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MobileNavSheet } from "./mobile-nav-sheet";
 
-export function BottomTabBar() {
+interface BottomTabBarProps {
+  typeFilter?: string;
+  onTypeFilterChange: (type: string | undefined) => void;
+}
+
+export function BottomTabBar({
+  typeFilter,
+  onTypeFilterChange,
+}: BottomTabBarProps) {
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
   const pathname = usePathname();
 
   const stake = useQuery(
     api.stakes.getBySlug,
-    params.stakeSlug ? { slug: params.stakeSlug } : "skip"
+    params.stakeSlug ? { slug: params.stakeSlug } : "skip",
   );
   const ward = useQuery(
     api.wards.getBySlug,
     params.wardSlug && stake
       ? { slug: params.wardSlug, stakeId: stake._id }
-      : "skip"
+      : "skip",
   );
   const permissions = useQuery(
     api.roles.myPermissions,
-    ward ? { wardId: ward._id } : "skip"
+    ward ? { wardId: ward._id } : "skip",
   );
 
   const tabs = [
@@ -51,12 +60,6 @@ export function BottomTabBar() {
           },
         ]
       : []),
-    {
-      label: "Profile",
-      icon: User,
-      href: "/settings",
-      active: pathname === "/settings",
-    },
   ];
 
   return (
@@ -70,9 +73,7 @@ export function BottomTabBar() {
               href={tab.href}
               className={cn(
                 "flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs transition-colors",
-                tab.active
-                  ? "text-foreground"
-                  : "text-muted-foreground"
+                tab.active ? "text-foreground" : "text-muted-foreground",
               )}
             >
               <Icon className="h-5 w-5" />
@@ -80,6 +81,10 @@ export function BottomTabBar() {
             </Link>
           );
         })}
+        <MobileNavSheet
+          typeFilter={typeFilter}
+          onTypeFilterChange={onTypeFilterChange}
+        />
       </div>
     </nav>
   );

@@ -15,6 +15,7 @@ import {
   Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
 
 const FEED_FILTERS = [
   { label: "All", value: undefined, icon: LayoutList },
@@ -50,17 +51,17 @@ export function LeftSidebar({
   const stake = useQuery(api.stakes.getBySlug, { slug: params.stakeSlug });
   const wards = useQuery(
     api.wards.listByStake,
-    stake ? { stakeId: stake._id } : "skip"
+    stake ? { stakeId: stake._id } : "skip",
   );
   const activeWard = useQuery(
     api.wards.getBySlug,
     stake && params.wardSlug
       ? { slug: params.wardSlug, stakeId: stake._id }
-      : "skip"
+      : "skip",
   );
   const permissions = useQuery(
     api.roles.myPermissions,
-    activeWard ? { wardId: activeWard._id } : "skip"
+    activeWard ? { wardId: activeWard._id } : "skip",
   );
   const currentUser = useQuery(api.users.currentUser);
   const setPreferredLanguage = useMutation(api.users.setPreferredLanguage);
@@ -69,10 +70,7 @@ export function LeftSidebar({
     <aside className="hidden lg:flex flex-col w-60 border-r border-border h-screen sticky top-0 bg-background">
       {/* Stake branding */}
       <div className="p-4 border-b border-border">
-        <Link
-          href={`/stake/${params.stakeSlug}`}
-          className="block"
-        >
+        <Link href={`/stake/${params.stakeSlug}`} className="block">
           <h1 className="font-bold text-lg">ourStake</h1>
           <p className="text-xs text-muted-foreground truncate">
             {stake?.name}
@@ -97,7 +95,7 @@ export function LeftSidebar({
                   "flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors",
                   isActive
                     ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -124,13 +122,13 @@ export function LeftSidebar({
                   "flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors",
                   isActive
                     ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                 )}
               >
                 <span
                   className={cn(
                     "h-2 w-2 rounded-full",
-                    isActive ? "bg-primary" : "bg-border"
+                    isActive ? "bg-primary" : "bg-border",
                   )}
                 />
                 {ward.name}
@@ -178,7 +176,8 @@ export function LeftSidebar({
           </p>
           <nav className="space-y-0.5">
             {stake.languages.map((lang) => {
-              const isActive = (currentUser?.preferredLanguage ?? "en") === lang;
+              const isActive =
+                (currentUser?.preferredLanguage ?? "en") === lang;
               return (
                 <button
                   key={lang}
@@ -187,7 +186,7 @@ export function LeftSidebar({
                     "flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors",
                     isActive
                       ? "bg-accent text-accent-foreground font-medium"
-                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                   )}
                 >
                   <Globe className="h-4 w-4" />
@@ -202,14 +201,16 @@ export function LeftSidebar({
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* User section */}
+      {/* Theme & user section */}
+      <div className="px-2 pb-2">
+        <ThemeToggle />
+      </div>
+
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3">
           <UserButton />
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate">
-              {currentUser?.name}
-            </p>
+            <p className="text-sm font-medium truncate">{currentUser?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {currentUser?.email}
             </p>

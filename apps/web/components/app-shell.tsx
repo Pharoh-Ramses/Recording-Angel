@@ -29,9 +29,7 @@ export function AppShell({
 
       {/* Center feed column */}
       <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
-        <div className="mx-auto max-w-2xl">
-          {children}
-        </div>
+        <div className="mx-auto max-w-2xl">{children}</div>
       </main>
 
       <RightSidebar
@@ -40,7 +38,10 @@ export function AppShell({
         onShowEvents={() => onTypeFilterChange("event")}
       />
 
-      <BottomTabBar />
+      <BottomTabBar
+        typeFilter={typeFilter}
+        onTypeFilterChange={onTypeFilterChange}
+      />
     </div>
   );
 }
