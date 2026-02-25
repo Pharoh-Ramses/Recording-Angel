@@ -15,6 +15,7 @@ import {
   Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "./theme-toggle";
 
 const FEED_FILTERS = [
@@ -65,6 +66,12 @@ export function LeftSidebar({
   );
   const currentUser = useQuery(api.users.currentUser);
   const setPreferredLanguage = useMutation(api.users.setPreferredLanguage);
+  const memberships = useQuery(api.members.myMembership);
+  const memberWardIds = new Set(
+    memberships
+      ?.filter((m) => m.status === "active")
+      .map((m) => m.wardId) ?? []
+  );
 
   return (
     <aside className="hidden lg:flex flex-col w-60 border-r border-border h-screen sticky top-0 bg-background">
@@ -114,6 +121,7 @@ export function LeftSidebar({
         <nav className="space-y-0.5">
           {wards?.map((ward) => {
             const isActive = ward.slug === params.wardSlug;
+            const isHome = memberWardIds.has(ward._id);
             return (
               <Link
                 key={ward._id}
@@ -127,11 +135,16 @@ export function LeftSidebar({
               >
                 <span
                   className={cn(
-                    "h-2 w-2 rounded-full",
+                    "h-2 w-2 rounded-full shrink-0",
                     isActive ? "bg-primary" : "bg-border",
                   )}
                 />
-                {ward.name}
+                <span className="truncate">{ward.name}</span>
+                {isHome && (
+                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4 shrink-0">
+                    Home
+                  </Badge>
+                )}
               </Link>
             );
           })}
