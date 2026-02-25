@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 interface CommentSheetProps {
   postId: Id<"posts">;
   children: React.ReactNode;
+  isMember?: boolean;
 }
 
 type CommentData = {
@@ -31,7 +32,7 @@ type CommentData = {
   author: { _id: Id<"users">; name: string; imageUrl?: string } | null;
 };
 
-export function CommentSheet({ postId, children }: CommentSheetProps) {
+export function CommentSheet({ postId, children, isMember = true }: CommentSheetProps) {
   const comments = useQuery(api.comments.listByPost, { postId });
   const currentUser = useQuery(api.users.currentUser);
   const createComment = useMutation(api.comments.create);
@@ -149,64 +150,72 @@ export function CommentSheet({ postId, children }: CommentSheetProps) {
         </div>
 
         {/* Compose area */}
-        <div className="border-t border-border">
-          {/* Reply-to indicator */}
-          {replyTo && (
-            <div className="flex items-center gap-2 px-4 pt-3 pb-0">
-              <span className="text-xs text-muted-foreground">
-                Replying to{" "}
-                <span className="text-primary font-medium">
-                  @{replyTo.name.toLowerCase().replace(/\s+/g, "")}
+        {isMember ? (
+          <div className="border-t border-border">
+            {/* Reply-to indicator */}
+            {replyTo && (
+              <div className="flex items-center gap-2 px-4 pt-3 pb-0">
+                <span className="text-xs text-muted-foreground">
+                  Replying to{" "}
+                  <span className="text-primary font-medium">
+                    @{replyTo.name.toLowerCase().replace(/\s+/g, "")}
+                  </span>
                 </span>
-              </span>
-              <button
-                onClick={() => setReplyTo(null)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-
-          <div className="flex items-start gap-3 p-4">
-            <Avatar className="h-8 w-8 shrink-0 mt-0.5">
-              {currentUser?.imageUrl && (
-                <AvatarImage src={currentUser.imageUrl} />
-              )}
-              <AvatarFallback className="text-xs">
-                {userInitials ?? "?"}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="flex-1 min-w-0">
-              <Textarea
-                placeholder={
-                  replyTo ? `Reply to @${replyTo.name}...` : "Post your reply"
-                }
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={2}
-                className="resize-none border-0 bg-transparent p-0 focus-visible:ring-0 text-sm placeholder:text-muted-foreground/60"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-              />
-              <div className="flex justify-end mt-2">
-                <Button
-                  size="sm"
-                  onClick={handleSubmit}
-                  disabled={!newComment.trim() || submitting}
-                  className="rounded-full px-4 h-8 text-xs font-semibold"
+                <button
+                  onClick={() => setReplyTo(null)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
                 >
-                  Reply
-                </Button>
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-start gap-3 p-4">
+              <Avatar className="h-8 w-8 shrink-0 mt-0.5">
+                {currentUser?.imageUrl && (
+                  <AvatarImage src={currentUser.imageUrl} />
+                )}
+                <AvatarFallback className="text-xs">
+                  {userInitials ?? "?"}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 min-w-0">
+                <Textarea
+                  placeholder={
+                    replyTo ? `Reply to @${replyTo.name}...` : "Post your reply"
+                  }
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  rows={2}
+                  className="resize-none border-0 bg-transparent p-0 focus-visible:ring-0 text-sm placeholder:text-muted-foreground/60"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
+                />
+                <div className="flex justify-end mt-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSubmit}
+                    disabled={!newComment.trim() || submitting}
+                    className="rounded-full px-4 h-8 text-xs font-semibold"
+                  >
+                    Reply
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="border-t border-border pt-4 pb-4">
+            <p className="text-sm text-muted-foreground text-center py-2">
+              Join this ward to comment on posts.
+            </p>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
