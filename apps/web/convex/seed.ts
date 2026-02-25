@@ -104,3 +104,30 @@ export const seedStakeAndWards = internalMutation({
     console.log("Seed complete: 1 stake, 3 wards with roles and moderation settings.");
   },
 });
+
+// Backfill: sync existing system role permissions with current config
+export const syncRolePermissions = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const allRoles = await ctx.db.query("roles").collect();
+    const lookup = Object.fromEntries(
+      [...WARD_SYSTEM_ROLES, ...STAKE_SYSTEM_ROLES].map((r) => [r.name, r.permissions])
+    );
+
+    let updated = 0;
+    for (const role of allRoles) {
+      if (!role.isSystem) continue;
+      const expected = lookup[role.name];
+      if (!expected) continue;
+
+      const current = JSON.stringify(role.permissions.slice().sort());
+      const target = JSON.stringify(expected.slice().sort());
+      if (current !== target) {
+        await ctx.db.patch(role._id, { permissions: expected });
+        updated++;
+      }
+    }
+
+    console.log(`syncRolePermissions: updated ${updated} roles`);
+  },
+});
