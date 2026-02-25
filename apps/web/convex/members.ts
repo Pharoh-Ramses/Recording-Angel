@@ -191,3 +191,27 @@ export const myMembership = query({
     );
   },
 });
+
+export const myWardMembershipStatus = query({
+  args: { wardId: v.id("wards") },
+  handler: async (ctx, { wardId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) return null;
+
+    const membership = await ctx.db
+      .query("members")
+      .withIndex("byUserIdAndWardId", (q) =>
+        q.eq("userId", user._id).eq("wardId", wardId)
+      )
+      .unique();
+
+    if (!membership) return { status: "none" as const };
+    return { status: membership.status };
+  },
+});
