@@ -16,14 +16,25 @@ export const requestToJoin = mutation({
       .unique();
     if (!user) throw new Error("User not found");
 
-    // Check not already a member
+    // Check existing membership
     const existing = await ctx.db
       .query("members")
       .withIndex("byUserIdAndWardId", (q) =>
         q.eq("userId", user._id).eq("wardId", wardId)
       )
       .unique();
-    if (existing) throw new Error("Already requested or member of this ward");
+
+    if (existing) {
+      if (existing.status === "active") {
+        throw new Error("Already an active member of this ward");
+      }
+      if (existing.status === "pending") {
+        throw new Error("Join request already pending");
+      }
+      // status === "inactive" (rejected) — allow re-request
+      await ctx.db.patch(existing._id, { status: "pending" });
+      return existing._id;
+    }
 
     const ward = await ctx.db.get(wardId);
     if (!ward) throw new Error("Ward not found");
