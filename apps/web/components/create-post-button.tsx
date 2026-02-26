@@ -32,16 +32,23 @@ export function CreatePostButton({
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [type, setType] = useState<"announcement" | "event" | "classifieds">(
+  const [type, setType] = useState<"announcement" | "event" | "classifieds" | "poll">(
     "announcement"
   );
   const [eventDate, setEventDate] = useState("");
   const [eventLocation, setEventLocation] = useState("");
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
+  const [pollCloseDate, setPollCloseDate] = useState("");
 
   const createPost = useMutation(api.posts.create);
 
   async function handleSubmit() {
     if (!title.trim() || !content.trim()) return;
+
+    if (type === "poll") {
+      const validOptions = pollOptions.filter((o) => o.trim());
+      if (validOptions.length < 2) return;
+    }
 
     await createPost({
       wardId,
@@ -50,6 +57,8 @@ export function CreatePostButton({
       content,
       eventDate: type === "event" ? eventDate : undefined,
       eventLocation: type === "event" ? eventLocation : undefined,
+      pollOptions: type === "poll" ? pollOptions.filter((o) => o.trim()) : undefined,
+      pollCloseDate: type === "poll" && pollCloseDate ? pollCloseDate : undefined,
     });
 
     setTitle("");
@@ -57,6 +66,8 @@ export function CreatePostButton({
     setType("announcement");
     setEventDate("");
     setEventLocation("");
+    setPollOptions(["", ""]);
+    setPollCloseDate("");
     setOpen(false);
   }
 
@@ -87,6 +98,7 @@ export function CreatePostButton({
               <SelectItem value="announcement">Announcement</SelectItem>
               <SelectItem value="event">Event</SelectItem>
               <SelectItem value="classifieds">Classifieds</SelectItem>
+              <SelectItem value="poll">Poll</SelectItem>
             </SelectContent>
           </Select>
 
@@ -115,6 +127,54 @@ export function CreatePostButton({
                 onChange={(e) => setEventLocation(e.target.value)}
               />
             </>
+          )}
+
+          {type === "poll" && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium">Poll Options</p>
+              {pollOptions.map((option, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder={`Option ${index + 1}`}
+                    value={option}
+                    onChange={(e) => {
+                      const updated = [...pollOptions];
+                      updated[index] = e.target.value;
+                      setPollOptions(updated);
+                    }}
+                  />
+                  {pollOptions.length > 2 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setPollOptions(pollOptions.filter((_, i) => i !== index))
+                      }
+                    >
+                      &times;
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {pollOptions.length < 6 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPollOptions([...pollOptions, ""])}
+                >
+                  Add option
+                </Button>
+              )}
+              <Input
+                type="datetime-local"
+                value={pollCloseDate}
+                onChange={(e) => setPollCloseDate(e.target.value)}
+                placeholder="Close date (optional)"
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional: set a date when voting closes.
+              </p>
+            </div>
           )}
 
           <div className="flex justify-end gap-2">
