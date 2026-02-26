@@ -75,7 +75,8 @@ export default defineSchema({
     type: v.union(
       v.literal("announcement"),
       v.literal("event"),
-      v.literal("classifieds")
+      v.literal("classifieds"),
+      v.literal("poll")
     ),
     title: v.string(),
     content: v.string(), // HTML from Tiptap editor
@@ -89,6 +90,8 @@ export default defineSchema({
     // Event-specific fields
     eventDate: v.optional(v.string()),
     eventLocation: v.optional(v.string()),
+    // Poll-specific fields
+    pollCloseDate: v.optional(v.string()),
   })
     .index("byWardIdAndStatus", ["wardId", "status"])
     .index("byStakeIdAndScopeAndStatus", ["stakeId", "scope", "status"])
@@ -133,4 +136,20 @@ export default defineSchema({
   })
     .index("byPostIdAndStatus", ["postId", "status"])
     .index("byAuthorId", ["authorId"]),
+
+  // Poll options for poll-type posts
+  pollOptions: defineTable({
+    postId: v.id("posts"),
+    label: v.string(),
+    position: v.number(),
+  }).index("byPostId", ["postId"]),
+
+  // Poll votes (one per member per poll)
+  pollVotes: defineTable({
+    postId: v.id("posts"),
+    optionId: v.id("pollOptions"),
+    memberId: v.id("members"),
+  })
+    .index("byPostIdAndMemberId", ["postId", "memberId"])
+    .index("byOptionId", ["optionId"]),
 });
