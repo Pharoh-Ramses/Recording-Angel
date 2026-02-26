@@ -52,12 +52,28 @@ export const deleteByClerkId = internalMutation({
         await ctx.db.delete(role._id);
       }
 
-      // Delete member's posts
+      // Delete member's posts (and poll data for poll-type posts)
       const posts = await ctx.db
         .query("posts")
         .withIndex("byAuthorId", (q) => q.eq("authorId", member._id))
         .collect();
       for (const post of posts) {
+        if (post.type === "poll") {
+          const pollOptions = await ctx.db
+            .query("pollOptions")
+            .withIndex("byPostId", (q) => q.eq("postId", post._id))
+            .collect();
+          for (const option of pollOptions) {
+            const optionVotes = await ctx.db
+              .query("pollVotes")
+              .withIndex("byOptionId", (q) => q.eq("optionId", option._id))
+              .collect();
+            for (const v of optionVotes) {
+              await ctx.db.delete(v._id);
+            }
+            await ctx.db.delete(option._id);
+          }
+        }
         await ctx.db.delete(post._id);
       }
 
@@ -68,6 +84,15 @@ export const deleteByClerkId = internalMutation({
         .collect();
       for (const comment of comments) {
         await ctx.db.delete(comment._id);
+      }
+
+      // Delete member's poll votes
+      const pollVotes = await ctx.db
+        .query("pollVotes")
+        .filter((q) => q.eq(q.field("memberId"), member._id))
+        .collect();
+      for (const pv of pollVotes) {
+        await ctx.db.delete(pv._id);
       }
 
       // Delete the membership record
