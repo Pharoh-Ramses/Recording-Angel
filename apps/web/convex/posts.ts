@@ -14,16 +14,25 @@ export const create = mutation({
     type: v.union(
       v.literal("announcement"),
       v.literal("event"),
-      v.literal("classifieds")
+      v.literal("classifieds"),
+      v.literal("poll")
     ),
     title: v.string(),
     content: v.string(),
     eventDate: v.optional(v.string()),
     eventLocation: v.optional(v.string()),
+    pollOptions: v.optional(v.array(v.string())),
+    pollCloseDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const member = await getAuthenticatedMember(ctx, args.wardId);
     if (!member) throw new Error("Not an active member of this ward");
+
+    if (args.type === "poll") {
+      if (!args.pollOptions || args.pollOptions.length < 2 || args.pollOptions.length > 6) {
+        throw new Error("Polls require 2-6 options");
+      }
+    }
 
     const canPublishDirectly = await hasPermission(
       ctx,
@@ -42,7 +51,19 @@ export const create = mutation({
       status: canPublishDirectly ? "approved" : "pending_review",
       eventDate: args.eventDate,
       eventLocation: args.eventLocation,
+      pollCloseDate: args.type === "poll" ? args.pollCloseDate : undefined,
     });
+
+    // Insert poll options
+    if (args.type === "poll" && args.pollOptions) {
+      for (let i = 0; i < args.pollOptions.length; i++) {
+        await ctx.db.insert("pollOptions", {
+          postId,
+          label: args.pollOptions[i],
+          position: i,
+        });
+      }
+    }
 
     // If post needs review, schedule AI moderation
     if (!canPublishDirectly) {
