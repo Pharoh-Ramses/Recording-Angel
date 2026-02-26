@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,14 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Pin, PinOff } from "lucide-react";
 
 export default function ModerationPollsPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
+      <ModerationPollsContent />
+    </Suspense>
+  );
+}
+
+function ModerationPollsContent() {
   const searchParams = useSearchParams();
   const wardId = searchParams.get("ward") as Id<"wards"> | null;
 

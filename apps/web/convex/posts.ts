@@ -59,7 +59,7 @@ export const create = mutation({
       for (let i = 0; i < args.pollOptions.length; i++) {
         await ctx.db.insert("pollOptions", {
           postId,
-          label: args.pollOptions[i],
+          label: args.pollOptions[i]!,
           position: i,
         });
       }

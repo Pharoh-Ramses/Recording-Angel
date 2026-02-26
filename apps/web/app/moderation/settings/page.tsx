@@ -11,11 +11,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 
 export default function ModerationSettingsPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
+      <ModerationSettingsContent />
+    </Suspense>
+  );
+}
+
+function ModerationSettingsContent() {
   const searchParams = useSearchParams();
   const wardId = searchParams.get("ward") as Id<"wards"> | null;
 
