@@ -8,14 +8,17 @@
  * @module
  */
 
+import type * as comments from "../comments.js";
 import type * as http from "../http.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as members from "../members.js";
 import type * as moderation from "../moderation.js";
+import type * as polls from "../polls.js";
 import type * as posts from "../posts.js";
 import type * as roles from "../roles.js";
 import type * as seed from "../seed.js";
 import type * as stakes from "../stakes.js";
+import type * as translations from "../translations.js";
 import type * as users from "../users.js";
 import type * as wards from "../wards.js";
 
@@ -26,14 +29,17 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  comments: typeof comments;
   http: typeof http;
   "lib/permissions": typeof lib_permissions;
   members: typeof members;
   moderation: typeof moderation;
+  polls: typeof polls;
   posts: typeof posts;
   roles: typeof roles;
   seed: typeof seed;
   stakes: typeof stakes;
+  translations: typeof translations;
   users: typeof users;
   wards: typeof wards;
 }>;

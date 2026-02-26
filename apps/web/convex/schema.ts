@@ -92,6 +92,7 @@ export default defineSchema({
     eventLocation: v.optional(v.string()),
     // Poll-specific fields
     pollCloseDate: v.optional(v.string()),
+    isPinned: v.optional(v.boolean()),
   })
     .index("byWardIdAndStatus", ["wardId", "status"])
     .index("byStakeIdAndScopeAndStatus", ["stakeId", "scope", "status"])

@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { CalendarDays, MapPin, ArrowRight } from "lucide-react";
+import { PollCard } from "@/components/poll-card";
 
 interface RightSidebarProps {
   wardId?: Id<"wards">;
@@ -20,6 +21,17 @@ export function RightSidebar({
     api.posts.upcomingEvents,
     wardId ? { wardId } : stakeId ? { stakeId } : "skip"
   );
+
+  const pinnedPolls = useQuery(
+    api.polls.getPinnedPolls,
+    wardId ? { wardId } : "skip"
+  );
+
+  const membershipStatus = useQuery(
+    api.members.myWardMembershipStatus,
+    wardId ? { wardId } : "skip"
+  );
+  const isMember = membershipStatus?.status === "active";
 
   return (
     <aside className="hidden lg:block w-72 border-l border-border h-screen sticky top-0 bg-background overflow-y-auto">
@@ -72,22 +84,28 @@ export function RightSidebar({
         )}
       </div>
 
-      {/* Promoted section */}
-      <div className="p-4 pt-2">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Promoted
-        </h2>
-        <div className="rounded-lg bg-muted/50 p-4">
-          <p className="text-sm font-medium">Complete your profile</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Add a photo and bio to connect with your ward members.
-          </p>
-          <button className="flex items-center gap-1 text-xs font-medium text-primary mt-3 hover:underline">
-            Get started
-            <ArrowRight className="h-3 w-3" />
-          </button>
+      {/* Pinned Polls */}
+      {pinnedPolls && pinnedPolls.length > 0 && (
+        <div className="p-4 pt-2">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Pinned Polls
+          </h2>
+          <div className="space-y-3">
+            {pinnedPolls.map((poll) => (
+              <div key={poll._id}>
+                <p className="text-sm font-medium leading-tight">
+                  {poll.title}
+                </p>
+                <PollCard
+                  postId={poll._id}
+                  pollCloseDate={poll.pollCloseDate}
+                  isMember={isMember}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

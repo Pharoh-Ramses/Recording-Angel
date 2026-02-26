@@ -20,6 +20,11 @@ export default function ModerationLayout({
                 Queue
               </Button>
             </Link>
+            <Link href="/moderation/polls">
+              <Button variant="ghost" size="sm">
+                Polls
+              </Button>
+            </Link>
             <Link href="/moderation/settings">
               <Button variant="ghost" size="sm">
                 Settings
