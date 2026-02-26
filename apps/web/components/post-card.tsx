@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowUp, Globe, MessageCircle, Repeat2, Share } from "lucide-react";
 import { relativeTime } from "@/lib/utils";
 import { ReplyDialog } from "./reply-dialog";
+import { PollCard } from "./poll-card";
 
 interface PostCardProps {
   postId: Id<"posts">;
@@ -25,6 +26,7 @@ interface PostCardProps {
   eventLocation?: string;
   preferredLanguage?: string;
   isMember?: boolean;
+  pollCloseDate?: string;
 }
 
 export function PostCard({
@@ -39,6 +41,7 @@ export function PostCard({
   eventLocation,
   preferredLanguage,
   isMember = true,
+  pollCloseDate,
 }: PostCardProps) {
   const router = useRouter();
   const params = useParams<{ stakeSlug: string; wardSlug: string }>();
@@ -142,6 +145,11 @@ export function PostCard({
                 </span>
               )}
             </div>
+          )}
+
+          {/* Poll */}
+          {type === "poll" && (
+            <PollCard postId={postId} pollCloseDate={pollCloseDate} isMember={isMember} />
           )}
 
           {/* Translation indicator */}

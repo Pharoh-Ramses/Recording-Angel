@@ -68,6 +68,7 @@ export function Feed({ wardId, stakeId, mode, typeFilter, isMember }: FeedProps)
           eventLocation={post.eventLocation}
           preferredLanguage={preferredLanguage}
           isMember={isMember ?? true}
+          pollCloseDate={post.pollCloseDate}
         />
       ))}
       {feed.status === "CanLoadMore" && (
