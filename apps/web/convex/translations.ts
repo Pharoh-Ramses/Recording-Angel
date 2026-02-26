@@ -42,6 +42,17 @@ export const getStakeLanguages = internalQuery({
   },
 });
 
+export const getPollOptionsForTranslation = internalQuery({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    const options = await ctx.db
+      .query("pollOptions")
+      .withIndex("byPostId", (q) => q.eq("postId", postId))
+      .collect();
+    return options.sort((a, b) => a.position - b.position);
+  },
+});
+
 export const saveTranslation = internalMutation({
   args: {
     postId: v.id("posts"),
@@ -49,31 +60,20 @@ export const saveTranslation = internalMutation({
     title: v.string(),
     content: v.string(),
     eventLocation: v.optional(v.string()),
+    pollOptionLabels: v.optional(v.array(v.string())),
   },
-  handler: async (ctx, { postId, language, title, content, eventLocation }) => {
+  handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("postTranslations")
       .withIndex("byPostIdAndLanguage", (q) =>
-        q.eq("postId", postId).eq("language", language)
+        q.eq("postId", args.postId).eq("language", args.language)
       )
       .unique();
 
     if (existing) {
-      await ctx.db.replace(existing._id, {
-        postId,
-        language,
-        title,
-        content,
-        eventLocation,
-      });
+      await ctx.db.replace(existing._id, args);
     } else {
-      await ctx.db.insert("postTranslations", {
-        postId,
-        language,
-        title,
-        content,
-        eventLocation,
-      });
+      await ctx.db.insert("postTranslations", args);
     }
   },
 });
@@ -101,6 +101,16 @@ export const translatePost = internalAction({
     );
     if (!languages || languages.length === 0) return;
 
+    // Fetch poll options if this is a poll
+    let pollOptionLabels: string[] = [];
+    if (post.type === "poll") {
+      const pollOptions = await ctx.runQuery(
+        internal.translations.getPollOptionsForTranslation,
+        { postId }
+      );
+      pollOptionLabels = pollOptions.map((o) => o.label);
+    }
+
     const sourceLanguage = "en";
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -121,7 +131,12 @@ export const translatePost = internalAction({
           `Return a JSON object with the following fields:`,
           `  - "title": the translated title`,
           `  - "content": the translated content (HTML preserved)`,
-          `  - "eventLocation": the translated event location (only if provided in the input, otherwise omit this field)`,
+          ...(post.eventLocation
+            ? [`  - "eventLocation": the translated event location`]
+            : []),
+          ...(pollOptionLabels.length > 0
+            ? [`  - "pollOptionLabels": an array of translated poll option labels, in the same order as provided`]
+            : []),
         ].join("\n");
 
         const userContent = [
@@ -129,6 +144,9 @@ export const translatePost = internalAction({
           `Content: ${post.content}`,
           ...(post.eventLocation
             ? [`Event Location: ${post.eventLocation}`]
+            : []),
+          ...(pollOptionLabels.length > 0
+            ? [`Poll Options: ${JSON.stringify(pollOptionLabels)}`]
             : []),
         ].join("\n\n");
 
@@ -161,6 +179,9 @@ export const translatePost = internalAction({
           content: result.content,
           ...(result.eventLocation
             ? { eventLocation: result.eventLocation }
+            : {}),
+          ...(result.pollOptionLabels
+            ? { pollOptionLabels: result.pollOptionLabels }
             : {}),
         });
       } catch (error) {

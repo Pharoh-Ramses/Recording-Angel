@@ -115,6 +115,7 @@ export default defineSchema({
     title: v.string(),
     content: v.string(),
     eventLocation: v.optional(v.string()),
+    pollOptionLabels: v.optional(v.array(v.string())),
   })
     .index("byPostId", ["postId"])
     .index("byPostIdAndLanguage", ["postId", "language"]),
