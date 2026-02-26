@@ -10,6 +10,7 @@ import {
   Megaphone,
   CalendarDays,
   ShoppingBag,
+  BarChart3,
   Shield,
   Users,
   Globe,
@@ -22,6 +23,7 @@ const FEED_FILTERS = [
   { label: "All", value: undefined, icon: LayoutList },
   { label: "Announcements", value: "announcement", icon: Megaphone },
   { label: "Events", value: "event", icon: CalendarDays },
+  { label: "Polls", value: "poll", icon: BarChart3 },
   { label: "Classifieds", value: "classifieds", icon: ShoppingBag },
 ] as const;
 
