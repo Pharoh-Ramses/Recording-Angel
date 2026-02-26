@@ -70,9 +70,8 @@ export function LeftSidebar({
   const setPreferredLanguage = useMutation(api.users.setPreferredLanguage);
   const memberships = useQuery(api.members.myMembership);
   const memberWardIds = new Set(
-    memberships
-      ?.filter((m) => m.status === "active")
-      .map((m) => m.wardId) ?? []
+    memberships?.filter((m) => m.status === "active").map((m) => m.wardId) ??
+      [],
   );
 
   return (
@@ -80,7 +79,7 @@ export function LeftSidebar({
       {/* Stake branding */}
       <div className="p-4 border-b border-border">
         <Link href={`/stake/${params.stakeSlug}`} className="block">
-          <h1 className="font-bold text-lg">ourStake</h1>
+          <h1 className="font-bold text-lg">Our Stake</h1>
           <p className="text-xs text-muted-foreground truncate">
             {stake?.name}
           </p>
@@ -143,7 +142,10 @@ export function LeftSidebar({
                 />
                 <span className="truncate">{ward.name}</span>
                 {isHome && (
-                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4 shrink-0">
+                  <Badge
+                    variant="secondary"
+                    className="ml-auto text-[10px] px-1.5 py-0 h-4 shrink-0"
+                  >
                     Home
                   </Badge>
                 )}
