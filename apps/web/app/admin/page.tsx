@@ -1,9 +1,17 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 export default function AdminPage() {
+  return (
+    <Suspense>
+      <AdminRedirect />
+    </Suspense>
+  );
+}
+
+function AdminRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const ward = searchParams.get("ward");

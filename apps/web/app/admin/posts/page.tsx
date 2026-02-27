@@ -4,7 +4,7 @@ import { usePaginatedQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,14 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function AdminPostsPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
+      <AdminPostsContent />
+    </Suspense>
+  );
+}
+
+function AdminPostsContent() {
   const searchParams = useSearchParams();
   const wardId = searchParams.get("ward") as Id<"wards"> | null;
 

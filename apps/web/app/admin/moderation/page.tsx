@@ -13,11 +13,19 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 
 export default function AdminModerationPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
+      <AdminModerationContent />
+    </Suspense>
+  );
+}
+
+function AdminModerationContent() {
   const searchParams = useSearchParams();
   const wardId = searchParams.get("ward") as Id<"wards"> | null;
 

@@ -7,8 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { Pin, PinOff } from "lucide-react";
+import { Suspense } from "react";
 
 export default function AdminPollsPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
+      <AdminPollsContent />
+    </Suspense>
+  );
+}
+
+function AdminPollsContent() {
   const searchParams = useSearchParams();
   const wardId = searchParams.get("ward") as Id<"wards"> | null;
 

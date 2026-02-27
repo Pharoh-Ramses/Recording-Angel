@@ -15,6 +15,7 @@ import {
   Settings,
   ArrowLeft,
 } from "lucide-react";
+import { Suspense } from "react";
 
 const navItems = [
   {
@@ -50,6 +51,18 @@ const navItems = [
 ];
 
 export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </Suspense>
+  );
+}
+
+function AdminLayoutInner({
   children,
 }: {
   children: React.ReactNode;
