@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { hasPermission } from "./lib/permissions";
+import { hasPermission, getMemberPermissions } from "./lib/permissions";
 
 export const requestToJoin = mutation({
   args: {
@@ -187,6 +187,79 @@ export const myMembership = query({
         const ward = await ctx.db.get(m.wardId);
         const stake = await ctx.db.get(m.stakeId);
         return { ...m, ward, stake };
+      })
+    );
+  },
+});
+
+export const listActive = query({
+  args: { wardId: v.id("wards") },
+  handler: async (ctx, { wardId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const admin = await ctx.db
+      .query("members")
+      .withIndex("byUserIdAndWardId", (q) =>
+        q.eq("userId", user._id).eq("wardId", wardId)
+      )
+      .unique();
+    if (!admin || admin.status !== "active") {
+      throw new Error("Not an active member");
+    }
+
+    const perms = await getMemberPermissions(ctx, admin._id);
+    if (!perms.has("member:approve") && !perms.has("member:view")) {
+      throw new Error("Missing permission");
+    }
+
+    const activeMembers = await ctx.db
+      .query("members")
+      .withIndex("byWardIdAndStatus", (q) =>
+        q.eq("wardId", wardId).eq("status", "active")
+      )
+      .collect();
+
+    return Promise.all(
+      activeMembers.map(async (m) => {
+        const memberUser = await ctx.db
+          .query("users")
+          .filter((q) => q.eq(q.field("_id"), m.userId))
+          .unique();
+
+        const assignments = await ctx.db
+          .query("memberRoles")
+          .withIndex("byMemberId", (q) => q.eq("memberId", m._id))
+          .collect();
+
+        const roles = (
+          await Promise.all(
+            assignments.map(async (a) => {
+              const role = await ctx.db.get(a.roleId);
+              return role
+                ? { _id: role._id, name: role.name, isSystem: role.isSystem }
+                : null;
+            })
+          )
+        ).filter(Boolean);
+
+        return {
+          ...m,
+          user: memberUser
+            ? {
+                name: memberUser.name,
+                email: memberUser.email,
+                imageUrl: memberUser.imageUrl,
+              }
+            : null,
+          roles,
+        };
       })
     );
   },

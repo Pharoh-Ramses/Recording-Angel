@@ -55,6 +55,31 @@ export const createCustomRole = mutation({
   },
 });
 
+export const unassignRole = mutation({
+  args: {
+    memberId: v.id("members"),
+    roleId: v.id("roles"),
+  },
+  handler: async (ctx, { memberId, roleId }) => {
+    const member = await ctx.db.get(memberId);
+    if (!member) throw new Error("Member not found");
+
+    const admin = await getAuthenticatedMember(ctx, member.wardId);
+    if (!admin) throw new Error("Not authenticated");
+    await requirePermission(ctx, admin._id, "role:manage");
+
+    const assignment = await ctx.db
+      .query("memberRoles")
+      .withIndex("byMemberId", (q) => q.eq("memberId", memberId))
+      .filter((q) => q.eq(q.field("roleId"), roleId))
+      .unique();
+
+    if (assignment) {
+      await ctx.db.delete(assignment._id);
+    }
+  },
+});
+
 export const assignRole = mutation({
   args: {
     memberId: v.id("members"),

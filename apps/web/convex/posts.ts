@@ -166,6 +166,56 @@ export const promoteToStake = mutation({
   },
 });
 
+export const listForAdmin = query({
+  args: {
+    wardId: v.id("wards"),
+    status: v.optional(
+      v.union(
+        v.literal("draft"),
+        v.literal("pending_review"),
+        v.literal("approved"),
+        v.literal("rejected")
+      )
+    ),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { wardId, status, paginationOpts }) => {
+    const member = await getAuthenticatedMember(ctx, wardId);
+    if (!member) throw new Error("Not authenticated");
+    await requirePermission(ctx, member._id, "post:approve");
+
+    const q = status
+      ? ctx.db
+          .query("posts")
+          .withIndex("byWardIdAndStatus", (q) =>
+            q.eq("wardId", wardId).eq("status", status)
+          )
+      : ctx.db
+          .query("posts")
+          .withIndex("byWardIdAndStatus", (q) => q.eq("wardId", wardId));
+
+    const results = await q.order("desc").paginate(paginationOpts);
+
+    const enriched = await Promise.all(
+      results.page.map(async (post) => {
+        const authorMember = await ctx.db.get(post.authorId);
+        const authorUser = authorMember
+          ? await ctx.db
+              .query("users")
+              .filter((q) => q.eq(q.field("_id"), authorMember.userId))
+              .unique()
+          : null;
+        return {
+          ...post,
+          author: authorUser ? { name: authorUser.name } : null,
+        };
+      })
+    );
+
+    return { ...results, page: enriched };
+  },
+});
+
 export const upcomingEvents = query({
   args: {
     wardId: v.optional(v.id("wards")),

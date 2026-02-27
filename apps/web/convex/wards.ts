@@ -11,6 +11,19 @@ export const listByStake = query({
   },
 });
 
+export const getById = query({
+  args: { wardId: v.id("wards") },
+  handler: async (ctx, { wardId }) => {
+    const ward = await ctx.db.get(wardId);
+    if (!ward) return null;
+    const stake = await ctx.db.get(ward.stakeId);
+    return {
+      ...ward,
+      stake: stake ? { slug: stake.slug, name: stake.name } : null,
+    };
+  },
+});
+
 export const getBySlug = query({
   args: { slug: v.string(), stakeId: v.optional(v.id("stakes")) },
   handler: async (ctx, { slug, stakeId }) => {
