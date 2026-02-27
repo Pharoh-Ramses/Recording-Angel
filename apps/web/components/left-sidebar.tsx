@@ -12,7 +12,6 @@ import {
   ShoppingBag,
   BarChart3,
   Shield,
-  Users,
   Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -155,35 +154,26 @@ export function LeftSidebar({
         </nav>
       </div>
 
-      {/* Conditional admin links */}
+      {/* Admin link */}
       {(permissions?.includes("member:approve") ||
-        permissions?.includes("post:approve")) && (
-        <div className="px-2 pt-6">
-          <p className="px-3 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Admin
-          </p>
-          <nav className="space-y-0.5">
-            {permissions?.includes("member:approve") && (
+        permissions?.includes("post:approve") ||
+        permissions?.includes("moderation:configure")) &&
+        activeWard && (
+          <div className="px-2 pt-6">
+            <p className="px-3 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Admin
+            </p>
+            <nav className="space-y-0.5">
               <Link
-                href={`/stake/${params.stakeSlug}/ward/${params.wardSlug}/members`}
-                className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
-              >
-                <Users className="h-4 w-4" />
-                Members
-              </Link>
-            )}
-            {permissions?.includes("post:approve") && activeWard && (
-              <Link
-                href={`/moderation?ward=${activeWard._id}`}
+                href={`/admin?ward=${activeWard._id}`}
                 className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
               >
                 <Shield className="h-4 w-4" />
-                Moderation
+                Dashboard
               </Link>
-            )}
-          </nav>
-        </div>
-      )}
+            </nav>
+          </div>
+        )}
 
       {/* Language selector */}
       {stake?.languages && stake.languages.length > 1 && (
