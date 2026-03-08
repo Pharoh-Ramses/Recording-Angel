@@ -136,3 +136,67 @@ export const memberPermissionDetails = query({
     return { systemPermissions, customPermissions };
   },
 });
+
+export const setMemberPermissions = mutation({
+  args: {
+    memberId: v.id("members"),
+    permissions: v.array(v.string()),
+  },
+  handler: async (ctx, { memberId, permissions }) => {
+    const member = await ctx.db.get(memberId);
+    if (!member) throw new Error("Member not found");
+
+    // Require role:manage permission
+    const admin = await getAuthenticatedMember(ctx, member.wardId);
+    if (!admin) throw new Error("Not authenticated");
+    await requirePermission(ctx, admin._id, "role:manage");
+
+    // Validate permissions
+    for (const p of permissions) {
+      if (!ALL_PERMISSIONS.includes(p as any)) {
+        throw new Error(`Invalid permission: ${p}`);
+      }
+    }
+
+    // Find existing custom overrides role for this member
+    const customRoleName = `custom:${memberId}`;
+    const allRoles = await ctx.db
+      .query("roles")
+      .withIndex("byWardId", (q) => q.eq("wardId", member.wardId))
+      .collect();
+    const existingCustomRole = allRoles.find(
+      (r) => !r.isSystem && r.name === customRoleName,
+    );
+
+    if (permissions.length === 0) {
+      // Remove custom role if it exists
+      if (existingCustomRole) {
+        const assignment = await ctx.db
+          .query("memberRoles")
+          .withIndex("byMemberId", (q) => q.eq("memberId", memberId))
+          .filter((q) => q.eq(q.field("roleId"), existingCustomRole._id))
+          .unique();
+        if (assignment) {
+          await ctx.db.delete(assignment._id);
+        }
+        await ctx.db.delete(existingCustomRole._id);
+      }
+      return;
+    }
+
+    if (existingCustomRole) {
+      // Update existing custom role permissions
+      await ctx.db.patch(existingCustomRole._id, { permissions });
+    } else {
+      // Create new custom role and assign it
+      const roleId = await ctx.db.insert("roles", {
+        name: customRoleName,
+        wardId: member.wardId,
+        permissions,
+        isSystem: false,
+        level: "ward",
+      });
+      await ctx.db.insert("memberRoles", { memberId, roleId });
+    }
+  },
+});
