@@ -13,6 +13,7 @@ import {
   BarChart3,
   Shield,
   Globe,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -174,6 +175,24 @@ export function LeftSidebar({
             </nav>
           </div>
         )}
+
+      {/* Live Visit link */}
+      {permissions?.includes("live:manage") && activeWard && (
+        <div className="px-2 pt-6">
+          <p className="px-3 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Live
+          </p>
+          <nav className="space-y-0.5">
+            <Link
+              href={`/stake/${params.stakeSlug}/ward/${params.wardSlug}/live`}
+              className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            >
+              <Radio className="h-4 w-4" />
+              Live Visit
+            </Link>
+          </nav>
+        </div>
+      )}
 
       {/* Language selector */}
       {stake?.languages && stake.languages.length > 1 && (
