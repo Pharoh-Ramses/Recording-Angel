@@ -12,13 +12,14 @@ export const ALL_PERMISSIONS = [
   "moderation:configure",
   "comment:create",
   "comment:moderate",
+  "live:manage",
 ] as const;
 
 export type Permission = (typeof ALL_PERMISSIONS)[number];
 
 export async function getMemberPermissions(
   ctx: QueryCtx,
-  memberId: Id<"members">
+  memberId: Id<"members">,
 ): Promise<Set<Permission>> {
   const assignments = await ctx.db
     .query("memberRoles")
@@ -42,7 +43,7 @@ export async function getMemberPermissions(
 export async function hasPermission(
   ctx: QueryCtx,
   memberId: Id<"members">,
-  permission: Permission
+  permission: Permission,
 ): Promise<boolean> {
   const perms = await getMemberPermissions(ctx, memberId);
   return perms.has(permission);
@@ -51,7 +52,7 @@ export async function hasPermission(
 export async function requirePermission(
   ctx: QueryCtx | MutationCtx,
   memberId: Id<"members">,
-  permission: Permission
+  permission: Permission,
 ): Promise<void> {
   const has = await hasPermission(ctx as QueryCtx, memberId, permission);
   if (!has) {
@@ -61,7 +62,7 @@ export async function requirePermission(
 
 export async function getAuthenticatedMember(
   ctx: QueryCtx,
-  wardId?: Id<"wards">
+  wardId?: Id<"wards">,
 ) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) return null;
@@ -76,7 +77,7 @@ export async function getAuthenticatedMember(
     const member = await ctx.db
       .query("members")
       .withIndex("byUserIdAndWardId", (q) =>
-        q.eq("userId", user._id).eq("wardId", wardId)
+        q.eq("userId", user._id).eq("wardId", wardId),
       )
       .unique();
     return member?.status === "active" ? member : null;

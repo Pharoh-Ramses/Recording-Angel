@@ -15,11 +15,17 @@ const WARD_SYSTEM_ROLES = [
       "member:approve",
       "comment:create",
       "comment:moderate",
+      "live:manage",
     ],
   },
   {
     name: "clerk",
-    permissions: ["post:create", "post:publish_directly", "member:view", "comment:create"],
+    permissions: [
+      "post:create",
+      "post:publish_directly",
+      "member:view",
+      "comment:create",
+    ],
   },
   {
     name: "member",
@@ -96,12 +102,14 @@ export const seedStakeAndWards = internalMutation({
         wardId,
         level: "ward",
         aiPrompt:
-          "You are a content moderator for a church community platform. Review the following post and determine if it is appropriate. Posts should be respectful, relevant to the community, and free of spam or inappropriate content. Respond with JSON: {\"decision\": \"approve\" | \"reject\" | \"needs_review\", \"reason\": \"brief explanation\"}",
+          'You are a content moderator for a church community platform. Review the following post and determine if it is appropriate. Posts should be respectful, relevant to the community, and free of spam or inappropriate content. Respond with JSON: {"decision": "approve" | "reject" | "needs_review", "reason": "brief explanation"}',
         autoApproveTypes: [],
       });
     }
 
-    console.log("Seed complete: 1 stake, 3 wards with roles and moderation settings.");
+    console.log(
+      "Seed complete: 1 stake, 3 wards with roles and moderation settings.",
+    );
   },
 });
 
@@ -111,7 +119,10 @@ export const syncRolePermissions = internalMutation({
   handler: async (ctx) => {
     const allRoles = await ctx.db.query("roles").collect();
     const lookup = Object.fromEntries(
-      [...WARD_SYSTEM_ROLES, ...STAKE_SYSTEM_ROLES].map((r) => [r.name, r.permissions])
+      [...WARD_SYSTEM_ROLES, ...STAKE_SYSTEM_ROLES].map((r) => [
+        r.name,
+        r.permissions,
+      ]),
     );
 
     let updated = 0;
