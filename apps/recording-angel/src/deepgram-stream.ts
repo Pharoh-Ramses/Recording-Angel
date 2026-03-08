@@ -25,6 +25,7 @@ export class DeepgramStream {
     return new Promise((resolve, reject) => {
       const baseUrl = this.config.url ?? DEEPGRAM_WS_URL;
       const params = new URLSearchParams({
+        token: this.config.apiKey,
         encoding: "linear16",
         sample_rate: "16000",
         language: this.config.language,
@@ -35,10 +36,6 @@ export class DeepgramStream {
 
       const url = `${baseUrl}?${params}`;
 
-      // Note: Bun's native WebSocket does not support custom headers in the
-      // constructor. In production, Deepgram auth will need to be handled
-      // differently (e.g., via query param or a different WS client).
-      // The mock server used in tests does not check auth.
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => resolve();

@@ -4,14 +4,31 @@ import { OpenAITranslator } from "./openai-translator.js";
 import { Provisioner } from "./db/provisioner.js";
 import { migrateControl } from "./db/migrations.js";
 
+const REQUIRED_ENV = [
+  "API_KEY",
+  "DEEPGRAM_API_KEY",
+  "OPENAI_API_KEY",
+  "TURSO_CONTROL_DB_URL",
+  "TURSO_CONTROL_DB_TOKEN",
+  "TURSO_API_TOKEN",
+  "TURSO_ORG",
+] as const;
+
+const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
+if (missing.length > 0) {
+  throw new Error(
+    `Missing required environment variables: ${missing.join(", ")}`,
+  );
+}
+
 const PORT = Number(process.env.PORT) || 3001;
-const API_KEY = process.env.API_KEY ?? "";
-const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY ?? "";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
-const TURSO_CONTROL_URL = process.env.TURSO_CONTROL_DB_URL ?? "";
-const TURSO_CONTROL_TOKEN = process.env.TURSO_CONTROL_DB_TOKEN ?? "";
-const TURSO_API_TOKEN = process.env.TURSO_API_TOKEN ?? "";
-const TURSO_ORG = process.env.TURSO_ORG ?? "";
+const API_KEY = process.env.API_KEY!;
+const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY!;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
+const TURSO_CONTROL_URL = process.env.TURSO_CONTROL_DB_URL!;
+const TURSO_CONTROL_TOKEN = process.env.TURSO_CONTROL_DB_TOKEN!;
+const TURSO_API_TOKEN = process.env.TURSO_API_TOKEN!;
+const TURSO_ORG = process.env.TURSO_ORG!;
 
 // OpenAI translator
 const openai = {
