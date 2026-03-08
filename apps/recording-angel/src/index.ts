@@ -8,8 +8,8 @@ const PORT = Number(process.env.PORT) || 3001;
 const API_KEY = process.env.API_KEY ?? "";
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY ?? "";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
-const TURSO_CONTROL_URL = process.env.TURSO_CONTROL_URL ?? "";
-const TURSO_CONTROL_TOKEN = process.env.TURSO_CONTROL_TOKEN ?? "";
+const TURSO_CONTROL_URL = process.env.TURSO_CONTROL_DB_URL ?? "";
+const TURSO_CONTROL_TOKEN = process.env.TURSO_CONTROL_DB_TOKEN ?? "";
 const TURSO_API_TOKEN = process.env.TURSO_API_TOKEN ?? "";
 const TURSO_ORG = process.env.TURSO_ORG ?? "";
 
