@@ -105,3 +105,34 @@ export const assignRole = mutation({
     return await ctx.db.insert("memberRoles", { memberId, roleId });
   },
 });
+
+export const memberPermissionDetails = query({
+  args: { memberId: v.id("members") },
+  handler: async (ctx, { memberId }) => {
+    const member = await ctx.db.get(memberId);
+    if (!member) throw new Error("Member not found");
+
+    const assignments = await ctx.db
+      .query("memberRoles")
+      .withIndex("byMemberId", (q) => q.eq("memberId", memberId))
+      .collect();
+
+    const systemPermissions: { permission: string; fromRole: string }[] = [];
+    const customPermissions: string[] = [];
+
+    for (const assignment of assignments) {
+      const role = await ctx.db.get(assignment.roleId);
+      if (!role) continue;
+
+      if (role.isSystem) {
+        for (const perm of role.permissions) {
+          systemPermissions.push({ permission: perm, fromRole: role.name });
+        }
+      } else {
+        customPermissions.push(...role.permissions);
+      }
+    }
+
+    return { systemPermissions, customPermissions };
+  },
+});
