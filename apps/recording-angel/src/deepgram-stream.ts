@@ -25,7 +25,6 @@ export class DeepgramStream {
     return new Promise((resolve, reject) => {
       const baseUrl = this.config.url ?? DEEPGRAM_WS_URL;
       const params = new URLSearchParams({
-        token: this.config.apiKey,
         encoding: "linear16",
         sample_rate: "16000",
         language: this.config.language,
@@ -36,7 +35,9 @@ export class DeepgramStream {
 
       const url = `${baseUrl}?${params}`;
 
-      this.ws = new WebSocket(url);
+      this.ws = new WebSocket(url, {
+        headers: { Authorization: `Token ${this.config.apiKey}` },
+      } as unknown as string[]);
 
       this.ws.onopen = () => resolve();
 
@@ -59,13 +60,20 @@ export class DeepgramStream {
         }
       };
 
-      this.ws.onerror = () => {
-        const error = new Error("Deepgram WebSocket error");
+      this.ws.onerror = (event) => {
+        const error = new Error(
+          `Deepgram WebSocket error: ${(event as ErrorEvent).message ?? "unknown"}`,
+        );
         this.config.onError(error);
         reject(error);
       };
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (event) => {
+        if (event.code !== 1000) {
+          console.error(
+            `Deepgram WS closed: code=${event.code} reason=${event.reason || "(none)"}`,
+          );
+        }
         this.ws = null;
       };
     });
