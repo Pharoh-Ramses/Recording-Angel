@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -8,8 +8,30 @@ import { createLiveSession } from "@/app/actions/live-session";
 import { useRecordingAngelSocket } from "@/hooks/use-recording-angel-socket";
 import { useAudioCapture } from "@/hooks/use-audio-capture";
 import { Button } from "@/components/ui/button";
-import { Copy, Mic, MicOff, Radio, Square, Check } from "lucide-react";
+import { Copy, Globe, Mic, MicOff, Radio, Square, Check } from "lucide-react";
 import { toast } from "sonner";
+import type { TranscriptMessage } from "@/hooks/use-recording-angel-socket";
+
+interface Segment {
+  id: number;
+  text: string;
+  language: string;
+  isFinal: boolean;
+}
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: "English",
+  es: "Español",
+  pt: "Português",
+  fr: "Français",
+  de: "Deutsch",
+  zh: "中文",
+  ko: "한국어",
+  ja: "日本語",
+  tl: "Tagalog",
+  to: "Lea fakatonga",
+  sm: "Gagana Samoa",
+};
 
 type SessionState =
   | { phase: "idle" }
@@ -41,6 +63,30 @@ export default function LiveDashboardPage() {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Transcript monitor state
+  const [segmentsByLang, setSegmentsByLang] = useState<
+    Record<string, Segment[]>
+  >({});
+  const [previewLang, setPreviewLang] = useState<string | null>(null);
+  const segmentCounter = useRef(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Source language is always "en" (the speaker's language)
+  const sourceLang = "en";
+  const stakeLanguages = stake?.languages;
+  // Translation languages = stake languages minus the source
+  const translationLanguages = useMemo(
+    () => (stakeLanguages ?? []).filter((l) => l !== sourceLang),
+    [stakeLanguages],
+  );
+
+  // Default preview language to the first translation language
+  useEffect(() => {
+    if (!previewLang && translationLanguages.length > 0) {
+      setPreviewLang(translationLanguages[0]!);
+    }
+  }, [previewLang, translationLanguages]);
+
   const canManage = permissions?.includes("live:manage") ?? false;
 
   // Timer for live sessions
@@ -55,6 +101,71 @@ export default function LiveDashboardPage() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [sessionState.phase]);
+
+  // Transcript handler — stores segments per language
+  const handleTranscript = useCallback((msg: TranscriptMessage) => {
+    const lang = msg.language;
+    setSegmentsByLang((prev) => {
+      const langSegments = prev[lang] ?? [];
+      const lastIdx = langSegments.length - 1;
+
+      if (!msg.isFinal) {
+        // Replace the last interim, or add a new one
+        if (lastIdx >= 0 && !langSegments[lastIdx]!.isFinal) {
+          const updated = [...langSegments];
+          updated[lastIdx] = { ...updated[lastIdx]!, text: msg.text };
+          return { ...prev, [lang]: updated };
+        }
+        segmentCounter.current++;
+        return {
+          ...prev,
+          [lang]: [
+            ...langSegments,
+            {
+              id: segmentCounter.current,
+              text: msg.text,
+              language: lang,
+              isFinal: false,
+            },
+          ],
+        };
+      }
+
+      // Final — replace last interim or append
+      if (lastIdx >= 0 && !langSegments[lastIdx]!.isFinal) {
+        const updated = [...langSegments];
+        updated[lastIdx] = {
+          ...updated[lastIdx]!,
+          text: msg.text,
+          language: lang,
+          isFinal: true,
+        };
+        return { ...prev, [lang]: updated };
+      }
+
+      segmentCounter.current++;
+      return {
+        ...prev,
+        [lang]: [
+          ...langSegments,
+          {
+            id: segmentCounter.current,
+            text: msg.text,
+            language: lang,
+            isFinal: true,
+          },
+        ],
+      };
+    });
+  }, []);
+
+  // Auto-scroll transcript panel
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [segmentsByLang]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -75,6 +186,7 @@ export default function LiveDashboardPage() {
     send,
   } = useRecordingAngelSocket({
     url: wsUrl,
+    onTranscript: handleTranscript,
     onSessionEnded: () => setSessionState({ phase: "ended" }),
     onError: (msg) => toast.error(msg.message),
   });
@@ -202,53 +314,144 @@ export default function LiveDashboardPage() {
 
   // Live state
   if (sessionState.phase === "live") {
+    const sourceSegments = segmentsByLang[sourceLang] ?? [];
+    const previewSegments = previewLang
+      ? (segmentsByLang[previewLang] ?? [])
+      : [];
+
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-6">
-        <div className="flex items-center gap-2 text-green-600">
-          <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-          <span className="font-semibold">LIVE</span>
-          <span className="text-muted-foreground ml-2">
-            {formatTime(elapsed)}
-          </span>
+      <div className="flex flex-col h-full gap-4">
+        {/* Top bar: status, join code, controls */}
+        <div className="flex flex-wrap items-center justify-between gap-4 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-green-600">
+              <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+              <span className="font-semibold">LIVE</span>
+            </div>
+            <span className="text-muted-foreground text-sm">
+              {formatTime(elapsed)}
+            </span>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              {micStatus === "active" ? (
+                <Mic className="h-4 w-4 text-green-600" />
+              ) : (
+                <MicOff className="h-4 w-4 text-destructive" />
+              )}
+              <span>
+                {micStatus === "active" ? "Mic on" : (micError ?? "Mic off")}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-mono font-bold tracking-wider">
+              {sessionState.joinCode}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyCode}
+              className="gap-1.5"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              {copied ? "Copied!" : "Copy Link"}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleEndSession}
+              className="gap-1.5"
+            >
+              <Square className="h-3.5 w-3.5" />
+              End
+            </Button>
+          </div>
         </div>
 
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Join Code</p>
-          <p className="text-4xl font-mono font-bold tracking-[0.3em]">
-            {sessionState.joinCode}
-          </p>
-        </div>
+        {/* Language picker for preview column */}
+        {translationLanguages.length > 0 && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Preview:</span>
+            <select
+              value={previewLang ?? ""}
+              onChange={(e) => setPreviewLang(e.target.value)}
+              className="bg-transparent border border-border rounded px-2 py-1 text-sm"
+            >
+              {translationLanguages.map((lang) => (
+                <option key={lang} value={lang}>
+                  {LANGUAGE_LABELS[lang] ?? lang}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-        <Button variant="outline" onClick={handleCopyCode} className="gap-2">
-          {copied ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          {copied ? "Copied!" : "Copy Join Link"}
-        </Button>
-
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {micStatus === "active" ? (
-            <Mic className="h-4 w-4 text-green-600" />
-          ) : (
-            <MicOff className="h-4 w-4 text-destructive" />
-          )}
-          <span>
-            {micStatus === "active"
-              ? "Microphone active"
-              : (micError ?? "Microphone inactive")}
-          </span>
-        </div>
-
-        <Button
-          variant="destructive"
-          onClick={handleEndSession}
-          className="gap-2"
+        {/* Transcript columns */}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto border border-border rounded-lg"
         >
-          <Square className="h-4 w-4" />
-          End Session
-        </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border min-h-full">
+            {/* Source column */}
+            <div className="p-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                {LANGUAGE_LABELS[sourceLang] ?? sourceLang} (Source)
+              </p>
+              <div className="space-y-2">
+                {sourceSegments.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Waiting for speech...
+                  </p>
+                )}
+                {sourceSegments.map((seg) => (
+                  <p
+                    key={seg.id}
+                    className={`text-sm leading-relaxed ${
+                      seg.isFinal
+                        ? "text-foreground"
+                        : "text-muted-foreground italic"
+                    }`}
+                  >
+                    {seg.text}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            {/* Preview translation column */}
+            {previewLang && (
+              <div className="p-4">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                  {LANGUAGE_LABELS[previewLang] ?? previewLang} (Translation)
+                </p>
+                <div className="space-y-2">
+                  {previewSegments.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Waiting for translation...
+                    </p>
+                  )}
+                  {previewSegments.map((seg) => (
+                    <p
+                      key={seg.id}
+                      className={`text-sm leading-relaxed ${
+                        seg.isFinal
+                          ? "text-foreground"
+                          : "text-muted-foreground italic"
+                      }`}
+                    >
+                      {seg.text}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
