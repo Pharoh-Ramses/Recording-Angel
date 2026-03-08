@@ -8,6 +8,13 @@ export const list = query({
   },
 });
 
+export const get = query({
+  args: { id: v.id("stakes") },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.get(id);
+  },
+});
+
 export const getBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
