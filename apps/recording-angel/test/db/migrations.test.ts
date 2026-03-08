@@ -4,7 +4,7 @@ import {
   migrateControl,
   migrateWard,
   migrateStake,
-} from "../../src/db/migrations";
+} from "../../src/db/migrations.js";
 
 describe("migrateControl", () => {
   let db: Client;

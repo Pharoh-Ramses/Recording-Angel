@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, mock } from "bun:test";
-import { ListenerRegistry, type Listener } from "../src/listener-registry";
+import { ListenerRegistry, type Listener } from "../src/listener-registry.js";
 
 function mockListener(id: string, language: string): Listener {
   return { id, language, send: mock(() => {}) };

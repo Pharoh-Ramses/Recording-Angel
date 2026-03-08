@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { createClient, type Client } from "@libsql/client";
-import { migrateControl } from "../../src/db/migrations";
+import { migrateControl } from "../../src/db/migrations.js";
 import {
   registerOrganization,
   findOrganization,
   type OrganizationRecord,
-} from "../../src/db/control";
+} from "../../src/db/control.js";
 
 describe("control db operations", () => {
   let db: Client;

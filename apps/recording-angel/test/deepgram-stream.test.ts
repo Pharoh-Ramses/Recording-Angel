@@ -2,8 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import {
   startMockDeepgram,
   type MockDeepgramServer,
-} from "./helpers/mock-deepgram";
-import { DeepgramStream, type TranscriptEvent } from "../src/deepgram-stream";
+} from "./helpers/mock-deepgram.js";
+import {
+  DeepgramStream,
+  type TranscriptEvent,
+} from "../src/deepgram-stream.js";
 
 describe("DeepgramStream", () => {
   let mockServer: MockDeepgramServer;
@@ -22,7 +25,7 @@ describe("DeepgramStream", () => {
       url: mockServer.url,
       apiKey: "test-key",
       language: "en",
-      onTranscript: (event) => events.push(event),
+      onTranscript: (event: TranscriptEvent) => events.push(event),
       onError: () => {},
     });
 
@@ -44,7 +47,7 @@ describe("DeepgramStream", () => {
       url: mockServer.url,
       apiKey: "test-key",
       language: "en",
-      onTranscript: (event) => events.push(event),
+      onTranscript: (event: TranscriptEvent) => events.push(event),
       onError: () => {},
     });
 
@@ -65,7 +68,7 @@ describe("DeepgramStream", () => {
       url: mockServer.url,
       apiKey: "test-key",
       language: "en",
-      onTranscript: (event) => events.push(event),
+      onTranscript: (event: TranscriptEvent) => events.push(event),
       onError: () => {},
     });
 

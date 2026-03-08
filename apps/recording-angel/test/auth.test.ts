@@ -3,7 +3,7 @@ import {
   generateJoinCode,
   generateHostToken,
   validateApiKey,
-} from "../src/auth";
+} from "../src/auth.js";
 
 describe("generateJoinCode", () => {
   it("returns a 6-character string", () => {

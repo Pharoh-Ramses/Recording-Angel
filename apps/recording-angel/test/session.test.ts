@@ -1,12 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { createClient, type Client } from "@libsql/client";
-import { migrateWard } from "../src/db/migrations";
-import { Session, type SessionConfig, type SessionDeps } from "../src/session";
+import { migrateWard } from "../src/db/migrations.js";
+import {
+  Session,
+  type SessionConfig,
+  type SessionDeps,
+} from "../src/session.js";
 import {
   startMockDeepgram,
   type MockDeepgramServer,
-} from "./helpers/mock-deepgram";
-import { createMockTranslator } from "./helpers/mock-openai";
+} from "./helpers/mock-deepgram.js";
+import { createMockTranslator } from "./helpers/mock-openai.js";
 
 function createTestConfig(overrides?: Partial<SessionConfig>): SessionConfig {
   return {

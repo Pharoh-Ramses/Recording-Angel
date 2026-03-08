@@ -1,4 +1,4 @@
-import type { Translator } from "../../src/translation-queue";
+import type { Translator } from "../../src/translation-queue.js";
 
 export function createMockTranslator(): Translator {
   return {

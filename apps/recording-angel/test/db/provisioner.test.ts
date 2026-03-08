@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, mock } from "bun:test";
 import { createClient, type Client } from "@libsql/client";
-import { migrateControl } from "../../src/db/migrations";
-import { Provisioner, type TursoApiClient } from "../../src/db/provisioner";
+import { migrateControl } from "../../src/db/migrations.js";
+import { Provisioner, type TursoApiClient } from "../../src/db/provisioner.js";
 
 function createMockTursoApi(): TursoApiClient {
   let dbCounter = 0;

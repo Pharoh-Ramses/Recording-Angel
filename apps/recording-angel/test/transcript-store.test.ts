@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { createClient, type Client } from "@libsql/client";
-import { migrateWard } from "../src/db/migrations";
-import { TranscriptStore, type Segment } from "../src/transcript-store";
+import { migrateWard } from "../src/db/migrations.js";
+import { TranscriptStore, type Segment } from "../src/transcript-store.js";
 
 describe("TranscriptStore", () => {
   let db: Client;

@@ -1,5 +1,5 @@
 import { describe, it, expect, mock } from "bun:test";
-import { OpenAITranslator } from "../src/openai-translator";
+import { OpenAITranslator } from "../src/openai-translator.js";
 
 describe("OpenAITranslator", () => {
   it("calls openai with the correct prompt structure", async () => {
@@ -14,7 +14,7 @@ describe("OpenAITranslator", () => {
     expect(result).toBe("hola mundo");
     expect(mockCreate).toHaveBeenCalledTimes(1);
 
-    const callArgs = mockCreate.mock.calls[0]![0] as any;
+    const callArgs = (mockCreate.mock.calls as unknown[][])[0]![0] as any;
     expect(callArgs.model).toBe("gpt-4o-mini");
     expect(callArgs.messages).toHaveLength(2);
     expect(callArgs.messages[1].content).toContain("hello world");

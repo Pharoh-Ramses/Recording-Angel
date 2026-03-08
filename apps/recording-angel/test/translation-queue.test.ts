@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, mock } from "bun:test";
 import {
   TranslationQueue,
   type TranslationResult,
-} from "../src/translation-queue";
-import { createMockTranslator } from "./helpers/mock-openai";
+} from "../src/translation-queue.js";
+import { createMockTranslator } from "./helpers/mock-openai.js";
 
 describe("TranslationQueue", () => {
   let queue: TranslationQueue;
@@ -14,7 +14,7 @@ describe("TranslationQueue", () => {
     queue = new TranslationQueue({
       translator: createMockTranslator(),
       sourceLang: "en",
-      onTranslation: (result) => results.push(result),
+      onTranslation: (result: TranslationResult) => results.push(result),
     });
   });
 
@@ -48,8 +48,8 @@ describe("TranslationQueue", () => {
         },
       },
       sourceLang: "en",
-      onTranslation: (result) => results.push(result),
-      onError: (err) => errors.push(err),
+      onTranslation: (result: TranslationResult) => results.push(result),
+      onError: (err: Error) => errors.push(err),
     });
     await failingQueue.translate("hello", ["es"]);
     expect(results).toHaveLength(0);

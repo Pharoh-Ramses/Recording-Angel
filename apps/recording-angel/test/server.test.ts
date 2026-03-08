@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { createClient } from "@libsql/client";
-import { migrateWard } from "../src/db/migrations";
-import { createServer, type ServerConfig } from "../src/server";
-import { createMockTranslator } from "./helpers/mock-openai";
+import { migrateWard } from "../src/db/migrations.js";
+import { createServer, type ServerConfig } from "../src/server.js";
+import { createMockTranslator } from "./helpers/mock-openai.js";
 import {
   startMockDeepgram,
   type MockDeepgramServer,
-} from "./helpers/mock-deepgram";
+} from "./helpers/mock-deepgram.js";
 
 function createTestConfig(deepgramUrl: string): ServerConfig {
   const db = createClient({ url: ":memory:" });
