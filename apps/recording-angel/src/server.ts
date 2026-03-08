@@ -23,6 +23,8 @@ interface SessionEntry {
   joinCode: string;
   hostToken: string;
   languages: string[];
+  wardId: string;
+  stakeId: string;
 }
 
 interface WsData {
@@ -36,13 +38,18 @@ export function createServer(config: ServerConfig) {
   const joinCodeToSessionId = new Map<string, string>();
   const hostTokenToSessionId = new Map<string, string>();
 
-  async function handlePost(req: Request): Promise<Response> {
+  function requireApiKey(req: Request): Response | null {
     const auth = req.headers.get("authorization");
     const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-
     if (!validateApiKey(token, config.apiKey)) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
+    return null;
+  }
+
+  async function handlePost(req: Request): Promise<Response> {
+    const authErr = requireApiKey(req);
+    if (authErr) return authErr;
 
     const body = await req.json();
     const { wardId, stakeId, languages } = body as {
@@ -94,6 +101,8 @@ export function createServer(config: ServerConfig) {
       joinCode,
       hostToken,
       languages,
+      wardId,
+      stakeId,
     };
 
     sessions.set(sessionId, entry);
@@ -118,6 +127,78 @@ export function createServer(config: ServerConfig) {
     });
   }
 
+  async function handleGetTranscript(
+    sessionId: string,
+    wardId: string,
+    stakeId: string,
+    req: Request,
+  ): Promise<Response> {
+    const authErr = requireApiKey(req);
+    if (authErr) return authErr;
+
+    const db = await config.getDatabase("ward", wardId, stakeId);
+    const result = await db.execute({
+      sql: "SELECT id, session_id, sequence, source_text, language, text, is_final, created_at FROM transcript_segments WHERE session_id = ? ORDER BY sequence",
+      args: [sessionId],
+    });
+
+    if (result.rows.length === 0) {
+      return Response.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const segments = result.rows.map((row) => ({
+      id: row.id,
+      session_id: row.session_id,
+      sequence: row.sequence,
+      source_text: row.source_text,
+      language: row.language,
+      text: row.text,
+      is_final: row.is_final,
+      created_at: row.created_at,
+    }));
+
+    return Response.json({ segments });
+  }
+
+  const VALID_STATUSES = new Set(["waiting", "live", "ended"]);
+
+  async function handleListSessions(
+    wardId: string,
+    stakeId: string,
+    status: string,
+    req: Request,
+  ): Promise<Response> {
+    const authErr = requireApiKey(req);
+    if (authErr) return authErr;
+
+    if (!VALID_STATUSES.has(status)) {
+      return Response.json(
+        { error: "Invalid status. Must be one of: waiting, live, ended" },
+        { status: 400 },
+      );
+    }
+
+    const db = await config.getDatabase("ward", wardId, stakeId);
+    const result = await db.execute({
+      sql: "SELECT id, join_code, source_lang, target_langs, status, started_at, ended_at, created_at, listener_count FROM sessions WHERE status = ? ORDER BY created_at DESC",
+      args: [status],
+    });
+
+    const sessionsList = result.rows.map((row) => ({
+      id: row.id,
+      joinCode: row.join_code,
+      sourceLang: row.source_lang,
+      targetLangs: JSON.parse(row.target_langs as string),
+      status: row.status,
+      startedAt: row.started_at,
+      endedAt: row.ended_at,
+      createdAt: row.created_at,
+      listenerCount: row.listener_count,
+    }));
+
+    return Response.json({ sessions: sessionsList });
+  }
+
   const server = Bun.serve<WsData>({
     port: config.port,
 
@@ -136,7 +217,41 @@ export function createServer(config: ServerConfig) {
         return handlePost(req);
       }
 
-      // GET /sessions/:code
+      // GET /sessions/:id/transcript?wardId=...&stakeId=... (UUID pattern)
+      const transcriptMatch = url.pathname.match(
+        /^\/sessions\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/transcript$/,
+      );
+      if (req.method === "GET" && transcriptMatch) {
+        const wardId = url.searchParams.get("wardId");
+        const stakeId = url.searchParams.get("stakeId");
+        if (!wardId || !stakeId) {
+          return Response.json(
+            { error: "wardId and stakeId query params are required" },
+            { status: 400 },
+          );
+        }
+        return handleGetTranscript(transcriptMatch[1]!, wardId, stakeId, req);
+      }
+
+      // GET /sessions?wardId=...&stakeId=...&status=... (query params)
+      if (
+        req.method === "GET" &&
+        url.pathname === "/sessions" &&
+        url.searchParams.has("wardId")
+      ) {
+        const wardId = url.searchParams.get("wardId")!;
+        const stakeId = url.searchParams.get("stakeId");
+        const status = url.searchParams.get("status");
+        if (!stakeId || !status) {
+          return Response.json(
+            { error: "stakeId and status query params are required" },
+            { status: 400 },
+          );
+        }
+        return handleListSessions(wardId, stakeId, status, req);
+      }
+
+      // GET /sessions/:code (6-char join code)
       const sessionMatch = url.pathname.match(/^\/sessions\/([A-Za-z0-9]+)$/);
       if (req.method === "GET" && sessionMatch) {
         return handleGetSession(sessionMatch[1]!);
@@ -249,6 +364,19 @@ export function createServer(config: ServerConfig) {
             const msg = JSON.parse(message as string);
             if (msg.type === "host:disconnect") {
               await entry.session.end();
+              try {
+                const db = await config.getDatabase(
+                  "ward",
+                  entry.wardId,
+                  entry.stakeId,
+                );
+                await db.execute({
+                  sql: "UPDATE sessions SET status = ?, ended_at = ? WHERE id = ?",
+                  args: ["ended", new Date().toISOString(), data.sessionId],
+                });
+              } catch (err) {
+                console.error("Failed to update session status:", err);
+              }
               return;
             }
           } catch {
