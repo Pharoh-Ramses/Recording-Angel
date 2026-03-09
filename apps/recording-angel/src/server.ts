@@ -353,8 +353,8 @@ export function createServer(config: ServerConfig) {
           const entry = sessions.get(data.sessionId);
           if (!entry) return;
 
-          // Binary audio data
-          if (message instanceof ArrayBuffer) {
+          // Binary audio data (Bun delivers binary WS frames as Buffer, not ArrayBuffer)
+          if (typeof message !== "string") {
             entry.session.onAudio(message);
             return;
           }

@@ -32,6 +32,9 @@ export function useAudioCapture({ onAudioChunk }: UseAudioCaptureOptions) {
       streamRef.current = stream;
 
       const audioContext = new AudioContext({ sampleRate: 16000 });
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
       contextRef.current = audioContext;
 
       const source = audioContext.createMediaStreamSource(stream);

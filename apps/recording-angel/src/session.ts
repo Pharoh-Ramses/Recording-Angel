@@ -107,7 +107,7 @@ export class Session {
     this.listeners.switchLanguage(id, language);
   }
 
-  onAudio(data: ArrayBuffer): void {
+  onAudio(data: ArrayBuffer | Uint8Array): void {
     this.deepgram?.sendAudio(data);
   }
 
@@ -140,6 +140,7 @@ export class Session {
       language: this.config.sourceLang,
       isFinal: event.isFinal,
     });
+    this.hostWs?.send(interimMessage);
     this.listeners.broadcastAll(interimMessage);
   }
 }

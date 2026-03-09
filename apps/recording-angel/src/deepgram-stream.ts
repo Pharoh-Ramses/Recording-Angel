@@ -79,7 +79,7 @@ export class DeepgramStream {
     });
   }
 
-  sendAudio(data: ArrayBuffer): void {
+  sendAudio(data: ArrayBuffer | Uint8Array): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(data);
     }
