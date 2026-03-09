@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Stake · Host Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --teal: #1a8a7d;
+        --teal-bg: rgba(26, 138, 125, 0.04);
+        --gray-border: #d0d0d0;
+        --gray-light: #b8b8b8;
+        --gray-text: #999;
+        --text-primary: #1a1a1a;
+        --text-secondary: #555;
+        --bg: #ffffff;
+        --bg-stripe: #fafaf9;
+        --red-live: #d63031;
+        --font-serif: "Libre Baskerville", Georgia, serif;
+        --font-mono: "Space Mono", "Courier New", monospace;
+      }
+
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: var(--font-serif);
+        color: var(--text-primary);
+        background: #f5f5f4;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── Toolbar ── */
+      .toolbar {
+        background: var(--bg);
+        border-bottom: 1px solid #e0e0e0;
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .toolbar-live {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--red-live);
+      }
+
+      .toolbar-live .dot {
+        width: 7px;
+        height: 7px;
+        background: var(--red-live);
+        border-radius: 50%;
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .toolbar-elapsed {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--text-secondary);
+        letter-spacing: 0.05em;
+      }
+
+      .toolbar-center {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .session-code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        padding: 4px 10px;
+        background: #f5f5f4;
+        border-radius: 4px;
+        border: 1px solid #e8e8e8;
+        transition: background 0.15s;
+      }
+
+      .session-code:hover {
+        background: #eee;
+      }
+
+      .session-code svg {
+        width: 13px;
+        height: 13px;
+        stroke: var(--gray-text);
+        fill: none;
+        stroke-width: 2;
+      }
+
+      .listener-count {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--gray-text);
+        letter-spacing: 0.05em;
+      }
+
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .lang-select {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        padding: 6px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: var(--bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 26px;
+      }
+
+      .btn-icon {
+        width: 34px;
+        height: 34px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: var(--bg);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+      }
+
+      .btn-icon:hover {
+        background: #f5f5f4;
+        border-color: #ccc;
+      }
+
+      .btn-icon.active {
+        background: var(--teal);
+        border-color: var(--teal);
+      }
+
+      .btn-icon.active svg {
+        stroke: #fff;
+      }
+
+      .btn-icon svg {
+        width: 16px;
+        height: 16px;
+        stroke: var(--text-secondary);
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .btn-end {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 7px 16px;
+        border: 1px solid var(--red-live);
+        border-radius: 4px;
+        background: var(--bg);
+        color: var(--red-live);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .btn-end:hover {
+        background: var(--red-live);
+        color: #fff;
+      }
+
+      /* ── Stats Ribbon ── */
+      .stats-ribbon {
+        background: #fafaf9;
+        border-bottom: 1px solid #e8e8e8;
+        padding: 8px 24px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--gray-text);
+        letter-spacing: 0.06em;
+        display: flex;
+        gap: 24px;
+        position: sticky;
+        top: 58px;
+        z-index: 190;
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .stat-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+
+      .stat-dot.en {
+        background: var(--text-primary);
+      }
+      .stat-dot.es {
+        background: var(--teal);
+      }
+      .stat-dot.pt {
+        background: #c49b2a;
+      }
+
+      /* ── Columns Layout ── */
+      .columns-wrapper {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        background: var(--bg);
+        margin: 0;
+      }
+
+      .column {
+        flex: 1;
+        overflow-y: auto;
+        border-right: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .column:last-child {
+        border-right: none;
+      }
+
+      .column-header {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--gray-text);
+        padding: 20px 20px 16px 48px;
+        border-bottom: 1px solid #f0f0f0;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        z-index: 50;
+      }
+
+      .column-segments {
+        flex: 1;
+        padding-bottom: 80px;
+      }
+
+      /* ── Segments ── */
+      .segment-row {
+        display: flex;
+        padding: 12px 20px 12px 14px;
+        border-left: 3px solid transparent;
+        transition: all 0.4s ease;
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      .segment-row.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .segment-row.active {
+        border-left-color: var(--teal);
+        background: var(--teal-bg);
+      }
+
+      .segment-row:not(.active) {
+        border-left: 3px dotted #e8e8e8;
+      }
+
+      /* Zebra striping */
+      .segment-row.stripe {
+        background: var(--bg-stripe);
+      }
+
+      .segment-row.active.stripe {
+        background: var(--teal-bg);
+      }
+
+      .seg-number {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--gray-light);
+        min-width: 22px;
+        padding-top: 2px;
+        text-align: right;
+        margin-right: 10px;
+        flex-shrink: 0;
+        user-select: none;
+      }
+
+      .seg-body {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .seg-ts {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--gray-text);
+        margin-bottom: 3px;
+        letter-spacing: 0.04em;
+      }
+
+      .seg-text {
+        font-family: var(--font-serif);
+        font-size: 13.5px;
+        line-height: 1.65;
+        color: var(--text-primary);
+      }
+
+      .seg-text.interim {
+        font-style: italic;
+        color: var(--text-secondary);
+      }
+
+      .seg-text.interim::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 12px;
+        background: var(--teal);
+        margin-left: 3px;
+        vertical-align: text-bottom;
+        animation: blink-cursor 1s step-end infinite;
+      }
+
+      @keyframes blink-cursor {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .seg-text.translating {
+        font-style: italic;
+        color: var(--gray-light);
+        font-size: 12px;
+      }
+
+      /* ── Scrollbar ── */
+      .column::-webkit-scrollbar {
+        width: 3px;
+      }
+
+      .column::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .column::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 2px;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 900px) {
+        .columns-wrapper {
+          flex-direction: column;
+        }
+
+        .column {
+          border-right: none;
+          border-bottom: 1px solid #eee;
+          max-height: 33vh;
+        }
+
+        .column:last-child {
+          border-bottom: none;
+        }
+
+        .toolbar {
+          padding: 10px 16px;
+        }
+
+        .stats-ribbon {
+          padding: 6px 16px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .seg-text {
+          font-size: 13px;
+        }
+      }
+
+      /* ── Tooltip ── */
+      .copy-toast {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: #fff;
+        background: var(--text-primary);
+        padding: 6px 14px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: all 0.25s ease;
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      .copy-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="toolbar-live">
+          <span class="dot"></span>
+          Live
+        </div>
+        <span class="toolbar-elapsed" id="elapsed">12:34</span>
+      </div>
+
+      <div class="toolbar-center">
+        <div class="session-code" id="session-code" title="Copy session code">
+          K7M2XP
+          <svg viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+        </div>
+        <span class="listener-count">3 listeners</span>
+      </div>
+
+      <div class="toolbar-right">
+        <select class="lang-select" id="lang-select">
+          <option value="pt">Portuguese</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+        </select>
+
+        <button class="btn-icon active" id="mic-toggle" title="Microphone">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+        </button>
+
+        <button class="btn-end" id="btn-end">End</button>
+      </div>
+    </div>
+
+    <!-- Stats Ribbon -->
+    <div class="stats-ribbon" id="stats-ribbon">
+      <div class="stat-item">
+        <span class="stat-dot en"></span>
+        Source: <strong id="stat-source">0</strong> segments
+      </div>
+      <div class="stat-item">
+        <span class="stat-dot es"></span>
+        ES: <strong id="stat-es">0</strong> translated
+      </div>
+      <div class="stat-item">
+        <span class="stat-dot pt"></span>
+        PT: <strong id="stat-pt">0</strong> translated
+      </div>
+    </div>
+
+    <!-- Columns -->
+    <div class="columns-wrapper">
+      <div class="column" id="col-en">
+        <div class="column-header">English — Source</div>
+        <div class="column-segments" id="segs-en"></div>
+      </div>
+      <div class="column" id="col-es">
+        <div class="column-header">Español — Translation</div>
+        <div class="column-segments" id="segs-es"></div>
+      </div>
+      <div class="column" id="col-pt">
+        <div class="column-header">Português — Translation</div>
+        <div class="column-segments" id="segs-pt"></div>
+      </div>
+    </div>
+
+    <!-- Copy Toast -->
+    <div class="copy-toast" id="copy-toast">Copied!</div>
+
+    <script>
+      // ── Mock Data ──
+      const dataEN = [
+        "Brothers and sisters, welcome to our ward conference today.",
+        "I'm grateful for the opportunity to speak with you this morning.",
+        "Our theme today is strengthening families through service.",
+        "When we serve others, we draw closer to each other and to our Heavenly Father.",
+        "I'd like to share a story about a family in our ward who exemplified this principle.",
+        "Brother and Sister García noticed a newly arrived family needed help moving in.",
+        "Without being asked, they organized neighbors to help throughout the entire weekend.",
+        "That small act of service transformed not just the new family, but the entire ward.",
+      ];
+
+      const dataES = [
+        "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+        "Estoy agradecido por la oportunidad de hablarles esta mañana.",
+        "Nuestro tema de hoy es fortalecer a las familias a través del servicio.",
+        "Cuando servimos a otros, nos acercamos más unos a otros y a nuestro Padre Celestial.",
+        "Me gustaría compartir una historia sobre una familia en nuestro barrio que ejemplificó este principio.",
+        "El hermano y la hermana García notaron que una familia recién llegada necesitaba ayuda para mudarse.",
+        "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+        "Ese pequeño acto de servicio transformó no solo a la familia nueva, sino a todo el barrio.",
+      ];
+
+      const dataPT = [
+        "Irmãos e irmãs, bem-vindos à nossa conferência de ala hoje.",
+        "Sou grato pela oportunidade de falar com vocês esta manhã.",
+        "Nosso tema hoje é fortalecer as famílias através do serviço.",
+        "Quando servimos aos outros, nos aproximamos uns dos outros e do nosso Pai Celestial.",
+        "Gostaria de compartilhar uma história sobre uma família em nossa ala que exemplificou este princípio.",
+        "O irmão e a irmã García notaram que uma família recém-chegada precisava de ajuda para se mudar.",
+      ];
+
+      // ── DOM Refs ──
+      const colEN = document.getElementById("col-en");
+      const colES = document.getElementById("col-es");
+      const colPT = document.getElementById("col-pt");
+      const segsEN = document.getElementById("segs-en");
+      const segsES = document.getElementById("segs-es");
+      const segsPT = document.getElementById("segs-pt");
+      const statSource = document.getElementById("stat-source");
+      const statES = document.getElementById("stat-es");
+      const statPT = document.getElementById("stat-pt");
+
+      let segmentIndex = 0;
+      let elapsedSeconds = 12 * 60 + 34; // start at 12:34
+
+      function formatTS(offset) {
+        const m = Math.floor(offset / 60);
+        const s = offset % 60;
+        return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      }
+
+      function updateElapsed() {
+        elapsedSeconds++;
+        const m = Math.floor(elapsedSeconds / 60);
+        const s = elapsedSeconds % 60;
+        document.getElementById("elapsed").textContent =
+          String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      }
+
+      setInterval(updateElapsed, 1000);
+
+      function createSeg(num, ts, text, isActive, isInterim, isTranslating) {
+        const el = document.createElement("div");
+        const stripe = num % 2 === 0 ? " stripe" : "";
+        el.className = "segment-row" + (isActive ? " active" : "") + stripe;
+
+        const numEl = document.createElement("div");
+        numEl.className = "seg-number";
+        numEl.textContent = num;
+
+        const body = document.createElement("div");
+        body.className = "seg-body";
+
+        const tsEl = document.createElement("div");
+        tsEl.className = "seg-ts";
+        tsEl.textContent = ts;
+
+        const txtEl = document.createElement("div");
+        let cls = "seg-text";
+        if (isInterim) cls += " interim";
+        if (isTranslating) cls += " translating";
+        txtEl.className = cls;
+        txtEl.textContent = text;
+
+        body.appendChild(tsEl);
+        body.appendChild(txtEl);
+        el.appendChild(numEl);
+        el.appendChild(body);
+
+        return el;
+      }
+
+      function deactivateAll(container) {
+        container
+          .querySelectorAll(".segment-row.active")
+          .forEach((el) => el.classList.remove("active"));
+      }
+
+      function updateStats() {
+        const enCount = segsEN.querySelectorAll(".segment-row").length;
+        const esCount = segsES.querySelectorAll(
+          ".segment-row:not(.translating-row)",
+        ).length;
+        const ptDone = segsPT.querySelectorAll(".segment-row").length;
+        // Count only non-"Translating..." rows for PT
+        let ptTranslated = 0;
+        segsPT.querySelectorAll(".segment-row").forEach((el) => {
+          if (!el.querySelector(".seg-text.translating")) ptTranslated++;
+        });
+
+        statSource.textContent = enCount;
+        statES.textContent = esCount;
+        statPT.textContent = ptTranslated;
+      }
+
+      function addSegment() {
+        if (segmentIndex >= dataEN.length) return;
+
+        const num = segmentIndex + 1;
+        const ts = formatTS(elapsedSeconds);
+        const isLast = segmentIndex === dataEN.length - 1;
+
+        // Deactivate all previous
+        deactivateAll(segsEN);
+        deactivateAll(segsES);
+        deactivateAll(segsPT);
+
+        // English
+        const enEl = createSeg(
+          num,
+          ts,
+          dataEN[segmentIndex],
+          true,
+          isLast,
+          false,
+        );
+        segsEN.appendChild(enEl);
+        requestAnimationFrame(() => enEl.classList.add("visible"));
+
+        // Spanish — always available
+        const esEl = createSeg(
+          num,
+          ts,
+          dataES[segmentIndex],
+          true,
+          false,
+          false,
+        );
+        segsES.appendChild(esEl);
+        requestAnimationFrame(() => esEl.classList.add("visible"));
+
+        // Portuguese — first 6 translated, 7-8 show "Translating..."
+        if (segmentIndex < dataPT.length) {
+          const ptEl = createSeg(
+            num,
+            ts,
+            dataPT[segmentIndex],
+            true,
+            false,
+            false,
+          );
+          segsPT.appendChild(ptEl);
+          requestAnimationFrame(() => ptEl.classList.add("visible"));
+        } else {
+          const ptEl = createSeg(num, ts, "Translating...", true, false, true);
+          segsPT.appendChild(ptEl);
+          requestAnimationFrame(() => ptEl.classList.add("visible"));
+        }
+
+        // Source interim indicator on the last source segment
+        if (isLast) {
+          const lastEnText = enEl.querySelector(".seg-text");
+          lastEnText.classList.add("interim");
+        }
+
+        // Auto-scroll
+        requestAnimationFrame(() => {
+          colEN.scrollTop = colEN.scrollHeight;
+          colES.scrollTop = colES.scrollHeight;
+          colPT.scrollTop = colPT.scrollHeight;
+        });
+
+        segmentIndex++;
+        updateStats();
+      }
+
+      // ── Simulate ──
+      function scheduleNext() {
+        if (segmentIndex >= dataEN.length) return;
+        const delay = 3000 + Math.random() * 1000;
+        setTimeout(() => {
+          addSegment();
+          scheduleNext();
+        }, delay);
+      }
+
+      addSegment();
+      scheduleNext();
+
+      // ── Synced Scrolling ──
+      let syncing = false;
+      const cols = [colEN, colES, colPT];
+
+      function syncFrom(source) {
+        if (syncing) return;
+        syncing = true;
+        const ratio =
+          source.scrollTop / (source.scrollHeight - source.clientHeight || 1);
+        cols.forEach((c) => {
+          if (c !== source) {
+            c.scrollTop = ratio * (c.scrollHeight - c.clientHeight);
+          }
+        });
+        requestAnimationFrame(() => {
+          syncing = false;
+        });
+      }
+
+      cols.forEach((c) => c.addEventListener("scroll", () => syncFrom(c)));
+
+      // ── Copy Session Code ──
+      const sessionCodeEl = document.getElementById("session-code");
+      const toast = document.getElementById("copy-toast");
+
+      sessionCodeEl.addEventListener("click", () => {
+        navigator.clipboard
+          .writeText("K7M2XP")
+          .then(() => {
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 1500);
+          })
+          .catch(() => {
+            // Fallback
+            toast.textContent = "K7M2XP";
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 1500);
+          });
+      });
+
+      // ── Mic Toggle ──
+      const micBtn = document.getElementById("mic-toggle");
+      micBtn.addEventListener("click", () => {
+        micBtn.classList.toggle("active");
+      });
+
+      // ── End Button ──
+      document.getElementById("btn-end").addEventListener("click", () => {
+        if (confirm("End this session?")) {
+          document.querySelector(".toolbar-live").innerHTML =
+            '<span style="color:#999;font-weight:400;">ENDED</span>';
+        }
+      });
+    </script>
+  </body>
+</html>

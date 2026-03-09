@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Stake - Broadcast Studio</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0f1a;
+        --bg-mid: #0d1525;
+        --teal-primary: #2dd4bf;
+        --teal-dark: #0f766e;
+        --teal-glow: rgba(45, 212, 191, 0.4);
+        --cyan-accent: #67e8f9;
+        --cyan-glow: rgba(103, 232, 249, 0.3);
+        --navy-deep: #0c1220;
+        --navy-mid: #111d35;
+        --red-live: #ef4444;
+        --red-glow: rgba(239, 68, 68, 0.5);
+        --text-primary: #f1f5f9;
+        --text-secondary: rgba(241, 245, 249, 0.55);
+        --text-interim: var(--cyan-accent);
+        --glass-bg: rgba(15, 23, 42, 0.5);
+        --glass-bg-hover: rgba(15, 23, 42, 0.65);
+        --glass-border: rgba(45, 212, 191, 0.1);
+        --glass-border-bright: rgba(45, 212, 191, 0.2);
+        --gradient-line: linear-gradient(
+          90deg,
+          transparent,
+          var(--teal-primary),
+          var(--cyan-accent),
+          var(--teal-primary),
+          transparent
+        );
+        --font-main: "Sora", sans-serif;
+        --bar-color: var(--teal-primary);
+        --bar-glow: var(--teal-glow);
+        --panel-radius: 16px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        font-family: var(--font-main);
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+
+      /* Animated gradient mesh background */
+      .bg-mesh {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% 50%,
+            rgba(13, 148, 136, 0.15) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 80% 20%,
+            rgba(17, 29, 53, 0.8) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 50% 80%,
+            rgba(15, 118, 110, 0.1) 0%,
+            transparent 60%
+          ),
+          linear-gradient(
+            160deg,
+            var(--bg-deep) 0%,
+            var(--navy-deep) 50%,
+            #0a1628 100%
+          );
+        animation: meshShift 12s ease-in-out infinite alternate;
+      }
+
+      @keyframes meshShift {
+        0% {
+          background:
+            radial-gradient(
+              ellipse at 20% 50%,
+              rgba(13, 148, 136, 0.15) 0%,
+              transparent 60%
+            ),
+            radial-gradient(
+              ellipse at 80% 20%,
+              rgba(17, 29, 53, 0.8) 0%,
+              transparent 50%
+            ),
+            radial-gradient(
+              ellipse at 50% 80%,
+              rgba(15, 118, 110, 0.1) 0%,
+              transparent 60%
+            ),
+            linear-gradient(
+              160deg,
+              var(--bg-deep) 0%,
+              var(--navy-deep) 50%,
+              #0a1628 100%
+            );
+        }
+        50% {
+          background:
+            radial-gradient(
+              ellipse at 40% 30%,
+              rgba(13, 148, 136, 0.18) 0%,
+              transparent 55%
+            ),
+            radial-gradient(
+              ellipse at 70% 60%,
+              rgba(17, 29, 53, 0.7) 0%,
+              transparent 55%
+            ),
+            radial-gradient(
+              ellipse at 30% 70%,
+              rgba(15, 118, 110, 0.12) 0%,
+              transparent 50%
+            ),
+            linear-gradient(
+              170deg,
+              var(--navy-deep) 0%,
+              var(--bg-deep) 50%,
+              #0b1426 100%
+            );
+        }
+        100% {
+          background:
+            radial-gradient(
+              ellipse at 60% 60%,
+              rgba(13, 148, 136, 0.14) 0%,
+              transparent 60%
+            ),
+            radial-gradient(
+              ellipse at 25% 40%,
+              rgba(17, 29, 53, 0.72) 0%,
+              transparent 48%
+            ),
+            radial-gradient(
+              ellipse at 75% 30%,
+              rgba(15, 118, 110, 0.13) 0%,
+              transparent 55%
+            ),
+            linear-gradient(
+              150deg,
+              #0a1628 0%,
+              var(--bg-deep) 50%,
+              var(--navy-deep) 100%
+            );
+        }
+      }
+
+      /* Dashboard layout */
+      .dashboard {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        grid-template-rows: auto 1fr;
+        gap: 16px;
+        padding: 20px;
+        height: 100vh;
+        min-height: 0;
+      }
+
+      /* Glassmorphism panel */
+      .panel {
+        background: var(--glass-bg);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--panel-radius);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: var(--panel-radius);
+        pointer-events: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 18px;
+        border-bottom: 1px solid rgba(45, 212, 191, 0.06);
+        flex-shrink: 0;
+      }
+
+      .panel-header .label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .panel-header .label-accent {
+        color: var(--teal-primary);
+      }
+
+      .panel-header .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--text-secondary);
+        opacity: 0.4;
+      }
+
+      /* ============ AUDIO PANEL (top-left) ============ */
+      .panel-audio {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 20px 24px 18px;
+      }
+
+      .audio-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .audio-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .audio-level-text {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: var(--teal-primary);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .waveform-wide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2.5px;
+        height: 56px;
+        margin-bottom: 18px;
+      }
+
+      .waveform-wide .bar {
+        width: 3px;
+        border-radius: 2px;
+        background: var(--bar-color);
+        box-shadow:
+          0 0 5px var(--bar-glow),
+          0 0 10px rgba(45, 212, 191, 0.1);
+        animation: barPulse var(--dur) ease-in-out infinite alternate;
+        animation-delay: var(--delay);
+      }
+
+      @keyframes barPulse {
+        0% {
+          height: var(--min-h);
+          opacity: 0.45;
+        }
+        100% {
+          height: var(--max-h);
+          opacity: 1;
+        }
+      }
+
+      .mic-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .mic-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 2px solid var(--teal-primary);
+        background: rgba(45, 212, 191, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        box-shadow:
+          0 0 16px var(--teal-glow),
+          0 0 32px rgba(45, 212, 191, 0.12);
+        animation: micGlow 2s ease-in-out infinite alternate;
+      }
+
+      @keyframes micGlow {
+        0% {
+          box-shadow:
+            0 0 12px var(--teal-glow),
+            0 0 24px rgba(45, 212, 191, 0.08);
+        }
+        100% {
+          box-shadow:
+            0 0 20px var(--teal-glow),
+            0 0 40px rgba(45, 212, 191, 0.18);
+        }
+      }
+
+      .mic-btn svg {
+        width: 22px;
+        height: 22px;
+        fill: var(--teal-primary);
+      }
+
+      .mic-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--teal-primary);
+      }
+
+      .mic-status-sub {
+        font-size: 0.65rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      /* ============ SESSION PANEL (top-right) ============ */
+      .panel-session {
+        grid-column: 2;
+        grid-row: 1;
+        padding: 20px 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .session-live-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.22);
+        padding: 5px 14px 5px 11px;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--red-live);
+      }
+
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--red-live);
+        box-shadow:
+          0 0 8px var(--red-glow),
+          0 0 20px rgba(239, 68, 68, 0.3);
+        animation: livePulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes livePulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(0.8);
+        }
+      }
+
+      .session-timer {
+        font-size: 1.7rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.04em;
+        color: var(--text-primary);
+      }
+
+      .session-divider {
+        height: 1px;
+        background: var(--gradient-line);
+        opacity: 0.3;
+      }
+
+      .join-code-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .join-code-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+
+      .join-code-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: rgba(45, 212, 191, 0.06);
+        border: 1px solid rgba(45, 212, 191, 0.18);
+        box-shadow: 0 0 10px rgba(45, 212, 191, 0.08);
+      }
+
+      .join-code-value {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: var(--teal-primary);
+      }
+
+      .copy-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+      }
+
+      .copy-btn:hover {
+        opacity: 1;
+      }
+
+      .copy-btn svg {
+        width: 14px;
+        height: 14px;
+        stroke: var(--teal-primary);
+        fill: none;
+        stroke-width: 2;
+      }
+
+      .stats-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .stat-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .stat-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .stat-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .lang-breakdown {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .lang-stat {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .lang-stat-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .lang-stat-dot.es {
+        background: #2dd4bf;
+      }
+      .lang-stat-dot.pt {
+        background: #a78bfa;
+      }
+      .lang-stat-dot.fr {
+        background: #fbbf24;
+      }
+
+      /* ============ TRANSCRIPT PANELS (bottom row) ============ */
+      .panel-source {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 0;
+      }
+
+      .panel-translation {
+        grid-column: 2;
+        grid-row: 2;
+        min-height: 0;
+      }
+
+      .transcript-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 18px 16px;
+        scroll-behavior: smooth;
+        mask-image: linear-gradient(
+          to bottom,
+          black 0%,
+          black 90%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          black 0%,
+          black 90%,
+          transparent 100%
+        );
+      }
+
+      .transcript-scroll::-webkit-scrollbar {
+        width: 3px;
+      }
+      .transcript-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .transcript-scroll::-webkit-scrollbar-thumb {
+        background: rgba(45, 212, 191, 0.15);
+        border-radius: 10px;
+      }
+
+      .t-segment {
+        font-size: 0.95rem;
+        line-height: 1.65;
+        font-weight: 400;
+        color: rgba(241, 245, 249, 0.75);
+        margin-bottom: 10px;
+        padding: 4px 0;
+        opacity: 0;
+        transform: translateY(6px);
+        animation: tSegIn 0.4s ease-out forwards;
+      }
+
+      .t-segment.latest {
+        color: var(--text-primary);
+        text-shadow: 0 0 20px rgba(45, 212, 191, 0.15);
+      }
+
+      .t-segment.interim {
+        color: var(--cyan-accent);
+        animation:
+          tSegIn 0.4s ease-out forwards,
+          interimPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes tSegIn {
+        0% {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes interimPulse {
+        0%,
+        100% {
+          opacity: 0.85;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      /* Translation tab bar */
+      .tab-bar {
+        display: flex;
+        gap: 2px;
+        padding: 8px 14px;
+        border-bottom: 1px solid rgba(45, 212, 191, 0.06);
+        flex-shrink: 0;
+      }
+
+      .tab-btn {
+        padding: 5px 14px;
+        border-radius: 6px;
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-secondary);
+        font-family: var(--font-main);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      .tab-btn:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .tab-btn.active {
+        color: var(--teal-primary);
+        background: rgba(45, 212, 191, 0.06);
+        border-color: rgba(45, 212, 191, 0.15);
+      }
+
+      /* End session button */
+      .end-session-wrap {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10;
+      }
+
+      .end-session-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--red-live);
+        font-family: var(--font-main);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.1);
+      }
+
+      .end-session-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 0 24px rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.45);
+      }
+
+      .end-session-btn .stop-icon {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        background: var(--red-live);
+      }
+
+      /* ============ RESPONSIVE ============ */
+      @media (max-width: 900px) {
+        .dashboard {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto 1fr 1fr;
+          height: auto;
+          min-height: 100vh;
+        }
+
+        .panel-audio {
+          grid-column: 1;
+          grid-row: 1;
+        }
+        .panel-session {
+          grid-column: 1;
+          grid-row: 2;
+        }
+        .panel-source {
+          grid-column: 1;
+          grid-row: 3;
+          min-height: 300px;
+        }
+        .panel-translation {
+          grid-column: 1;
+          grid-row: 4;
+          min-height: 300px;
+        }
+
+        .end-session-wrap {
+          position: sticky;
+          bottom: 0;
+          right: 0;
+          padding: 16px 20px;
+          display: flex;
+          justify-content: flex-end;
+          background: linear-gradient(to top, var(--bg-deep) 60%, transparent);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-mesh"></div>
+
+    <div class="dashboard">
+      <!-- AUDIO PANEL -->
+      <div class="panel panel-audio">
+        <div class="audio-header">
+          <span class="audio-label">Audio Input</span>
+          <span class="audio-level-text" id="audioLevelText">-12.4 dB</span>
+        </div>
+        <div class="waveform-wide" id="waveformWide"></div>
+        <div class="mic-row">
+          <button class="mic-btn" id="micBtn" title="Toggle microphone">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z" />
+              <path
+                d="M19 11a7 7 0 0 1-14 0"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <line
+                x1="12"
+                y1="19"
+                x2="12"
+                y2="23"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <line
+                x1="8"
+                y1="23"
+                x2="16"
+                y2="23"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+          <div>
+            <div class="mic-status">Microphone Active</div>
+            <div class="mic-status-sub">
+              Input: Default - Built-in Microphone
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SESSION PANEL -->
+      <div class="panel panel-session">
+        <div class="session-live-row">
+          <div class="live-badge">
+            <span class="live-dot"></span>
+            <span>Live</span>
+          </div>
+        </div>
+
+        <div class="session-timer" id="sessionTimer">12:34</div>
+
+        <div class="session-divider"></div>
+
+        <div class="join-code-row">
+          <span class="join-code-label">Join Code</span>
+          <div class="join-code-pill">
+            <span class="join-code-value">K7M2XP</span>
+            <button class="copy-btn" title="Copy code">
+              <svg viewBox="0 0 24 24">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-section">
+          <div class="stat-row">
+            <span class="stat-label">Listeners</span>
+            <span class="stat-value" id="listenerCount">3</span>
+          </div>
+          <div class="lang-breakdown">
+            <div class="lang-stat">
+              <span class="lang-stat-dot es"></span>
+              <span>ES: 2</span>
+            </div>
+            <div class="lang-stat">
+              <span class="lang-stat-dot pt"></span>
+              <span>PT: 1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOURCE TRANSCRIPT -->
+      <div class="panel panel-source">
+        <div class="panel-header">
+          <span class="label">Source</span>
+          <span class="dot"></span>
+          <span class="label label-accent">English</span>
+        </div>
+        <div class="transcript-scroll" id="sourceScroll"></div>
+      </div>
+
+      <!-- TRANSLATION PANEL -->
+      <div class="panel panel-translation">
+        <div class="tab-bar" id="tabBar">
+          <button class="tab-btn active" data-lang="es">ES</button>
+          <button class="tab-btn" data-lang="pt">PT</button>
+          <button class="tab-btn" data-lang="fr">FR</button>
+        </div>
+        <div class="panel-header">
+          <span class="label">Translation</span>
+          <span class="dot"></span>
+          <span class="label label-accent" id="transLangLabel"
+            >Espa&ntilde;ol</span
+          >
+        </div>
+        <div class="transcript-scroll" id="transScroll"></div>
+      </div>
+    </div>
+
+    <!-- End Session -->
+    <div class="end-session-wrap">
+      <button class="end-session-btn">
+        <span class="stop-icon"></span>
+        End Session
+      </button>
+    </div>
+
+    <script>
+      // ============ WAVEFORM ============
+      (() => {
+        const wf = document.getElementById("waveformWide");
+        const barCount = 36;
+        for (let i = 0; i < barCount; i++) {
+          const bar = document.createElement("div");
+          bar.classList.add("bar");
+          const minH = 3 + Math.random() * 7;
+          const maxH = 18 + Math.random() * 36;
+          const dur = 0.35 + Math.random() * 0.55;
+          const delay = Math.random() * 0.9;
+          bar.style.setProperty("--min-h", minH + "px");
+          bar.style.setProperty("--max-h", maxH + "px");
+          bar.style.setProperty("--dur", dur + "s");
+          bar.style.setProperty("--delay", delay + "s");
+          bar.style.height = minH + "px";
+          wf.appendChild(bar);
+        }
+      })();
+
+      // Simulated audio level jitter
+      (() => {
+        const el = document.getElementById("audioLevelText");
+        setInterval(() => {
+          const level = -8 - Math.random() * 18;
+          el.textContent = level.toFixed(1) + " dB";
+        }, 400);
+      })();
+
+      // ============ SESSION TIMER ============
+      (() => {
+        const el = document.getElementById("sessionTimer");
+        let seconds = 12 * 60 + 34;
+        setInterval(() => {
+          seconds++;
+          const m = Math.floor(seconds / 60);
+          const s = seconds % 60;
+          el.textContent =
+            String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+        }, 1000);
+      })();
+
+      // ============ TRANSCRIPT DATA ============
+      const sourceSegments = [
+        {
+          text: "Brothers and sisters, welcome to our ward conference today.",
+          interim: false,
+        },
+        {
+          text: "I\u2019m grateful for the opportunity to speak with you this morning.",
+          interim: false,
+        },
+        {
+          text: "Our theme today is strengthening families through service.",
+          interim: false,
+        },
+        {
+          text: "When we serve others, we draw closer to each other and to our Heavenly Father.",
+          interim: false,
+        },
+        {
+          text: "I\u2019d like to share a story about a family in our ward who exemplified this principle.",
+          interim: false,
+        },
+        {
+          text: "Brother and Sister Garc\u00eda noticed a newly arrived family needed help moving in.",
+          interim: false,
+        },
+        {
+          text: "Without being asked, they organized neighbors to help throughout the entire weekend.",
+          interim: false,
+        },
+        {
+          text: "That small act of service transformed not just the new family, but the entire ward.",
+          interim: false,
+        },
+        { text: "When we open our hearts to service\u2026", interim: true },
+      ];
+
+      const translations = {
+        es: {
+          label: "Espa\u00f1ol",
+          segments: [
+            {
+              text: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+              interim: false,
+            },
+            {
+              text: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+              interim: false,
+            },
+            {
+              text: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+              interim: false,
+            },
+            {
+              text: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+              interim: false,
+            },
+            {
+              text: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+              interim: false,
+            },
+            {
+              text: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+              interim: false,
+            },
+            {
+              text: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+              interim: false,
+            },
+            {
+              text: "Ese peque\u00f1o acto de servicio transform\u00f3 no solo a la familia nueva, sino a todo el barrio.",
+              interim: false,
+            },
+            {
+              text: "Cuando abrimos nuestros corazones al servicio\u2026",
+              interim: true,
+            },
+          ],
+        },
+        pt: {
+          label: "Portugu\u00eas",
+          segments: [
+            {
+              text: "Irm\u00e3os e irm\u00e3s, bem-vindos \u00e0 nossa confer\u00eancia de ala hoje.",
+              interim: false,
+            },
+            {
+              text: "Sou grato pela oportunidade de falar com voc\u00eas esta manh\u00e3.",
+              interim: false,
+            },
+            {
+              text: "Nosso tema hoje \u00e9 fortalecer as fam\u00edlias por meio do servi\u00e7o.",
+              interim: false,
+            },
+            {
+              text: "Quando servimos aos outros, nos aproximamos uns dos outros e de nosso Pai Celestial.",
+              interim: false,
+            },
+            {
+              text: "Gostaria de compartilhar uma hist\u00f3ria sobre uma fam\u00edlia em nossa ala que exemplificou este princ\u00edpio.",
+              interim: false,
+            },
+            {
+              text: "O irm\u00e3o e a irm\u00e3 Garc\u00eda perceberam que uma fam\u00edlia rec\u00e9m-chegada precisava de ajuda para se mudar.",
+              interim: false,
+            },
+            {
+              text: "Sem que ningu\u00e9m pedisse, organizaram os vizinhos para ajudar durante todo o fim de semana.",
+              interim: false,
+            },
+            {
+              text: "Esse pequeno ato de servi\u00e7o transformou n\u00e3o apenas a nova fam\u00edlia, mas toda a ala.",
+              interim: false,
+            },
+            {
+              text: "Quando abrimos nossos cora\u00e7\u00f5es ao servi\u00e7o\u2026",
+              interim: true,
+            },
+          ],
+        },
+        fr: {
+          label: "Fran\u00e7ais",
+          segments: [
+            {
+              text: "Fr\u00e8res et s\u0153urs, bienvenue \u00e0 notre conf\u00e9rence de paroisse aujourd\u2019hui.",
+              interim: false,
+            },
+            {
+              text: "Je suis reconnaissant de l\u2019occasion de vous parler ce matin.",
+              interim: false,
+            },
+            {
+              text: "Notre th\u00e8me aujourd\u2019hui est le renforcement des familles par le service.",
+              interim: false,
+            },
+            {
+              text: "Lorsque nous servons les autres, nous nous rapprochons les uns des autres et de notre P\u00e8re C\u00e9leste.",
+              interim: false,
+            },
+            {
+              text: "J\u2019aimerais partager l\u2019histoire d\u2019une famille de notre paroisse qui a illustr\u00e9 ce principe.",
+              interim: false,
+            },
+            {
+              text: "Fr\u00e8re et s\u0153ur Garc\u00eda ont remarqu\u00e9 qu\u2019une famille nouvellement arriv\u00e9e avait besoin d\u2019aide pour s\u2019installer.",
+              interim: false,
+            },
+            {
+              text: "Sans qu\u2019on le leur demande, ils ont organis\u00e9 les voisins pour aider pendant tout le week-end.",
+              interim: false,
+            },
+            {
+              text: "Ce petit acte de service a transform\u00e9 non seulement la nouvelle famille, mais toute la paroisse.",
+              interim: false,
+            },
+            {
+              text: "Quand nous ouvrons nos c\u0153urs au service\u2026",
+              interim: true,
+            },
+          ],
+        },
+      };
+
+      // ============ RENDERING ============
+      const sourceScroll = document.getElementById("sourceScroll");
+      const transScroll = document.getElementById("transScroll");
+      const transLangLabel = document.getElementById("transLangLabel");
+      let currentLang = "es";
+      let segmentIndex = 0;
+
+      function createSegmentEl(seg, isLatest) {
+        const div = document.createElement("div");
+        div.classList.add("t-segment");
+        if (isLatest) div.classList.add("latest");
+        if (seg.interim) div.classList.add("interim");
+        div.textContent = seg.text;
+        return div;
+      }
+
+      function clearLatest(container) {
+        container
+          .querySelectorAll(".t-segment.latest")
+          .forEach((el) => el.classList.remove("latest"));
+      }
+
+      function removeInterim(container) {
+        container
+          .querySelectorAll(".t-segment.interim")
+          .forEach((el) => el.remove());
+      }
+
+      function autoScroll(container) {
+        requestAnimationFrame(() => {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          });
+        });
+      }
+
+      function addNextSegment() {
+        if (segmentIndex >= sourceSegments.length) return;
+
+        const srcSeg = sourceSegments[segmentIndex];
+        const transSeg = translations[currentLang]?.segments[segmentIndex];
+
+        // Remove interim if this is final
+        if (!srcSeg.interim) {
+          removeInterim(sourceScroll);
+          removeInterim(transScroll);
+        }
+
+        clearLatest(sourceScroll);
+        clearLatest(transScroll);
+
+        sourceScroll.appendChild(createSegmentEl(srcSeg, true));
+        autoScroll(sourceScroll);
+
+        if (transSeg) {
+          transScroll.appendChild(createSegmentEl(transSeg, true));
+          autoScroll(transScroll);
+        }
+
+        segmentIndex++;
+
+        if (segmentIndex < sourceSegments.length) {
+          const delay = srcSeg.interim ? 2500 : 2800 + Math.random() * 1400;
+          setTimeout(addNextSegment, delay);
+        }
+      }
+
+      // Rebuild translation panel for current lang with all segments up to segmentIndex
+      function rebuildTranslation() {
+        transScroll.innerHTML = "";
+        const segs = translations[currentLang]?.segments || [];
+        for (let i = 0; i < segmentIndex && i < segs.length; i++) {
+          const isLatest = i === segmentIndex - 1;
+          transScroll.appendChild(createSegmentEl(segs[i], isLatest));
+        }
+        transLangLabel.textContent =
+          translations[currentLang]?.label || currentLang.toUpperCase();
+        autoScroll(transScroll);
+      }
+
+      // Tab bar
+      document.getElementById("tabBar").addEventListener("click", (e) => {
+        const btn = e.target.closest(".tab-btn");
+        if (!btn) return;
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentLang = btn.dataset.lang;
+        rebuildTranslation();
+      });
+
+      // Start
+      setTimeout(addNextSegment, 1000);
+
+      // ============ COPY BUTTON ============
+      document
+        .querySelector(".copy-btn")
+        .addEventListener("click", function () {
+          navigator.clipboard?.writeText("K7M2XP");
+          this.style.opacity = "1";
+          setTimeout(() => {
+            this.style.opacity = "";
+          }, 1200);
+        });
+    </script>
+  </body>
+</html>

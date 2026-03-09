@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Our Stake - Host Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-top: #f5f3ff;
+        --bg-bottom: #eff6ff;
+        --card-bg: #ffffff;
+        --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --card-radius: 16px;
+        --sheet-radius: 24px;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --accent-teal: #0d9488;
+        --accent-teal-light: #ccfbf1;
+        --accent-green: #22c55e;
+        --accent-green-bg: #dcfce7;
+        --accent-red: #ef4444;
+        --accent-red-light: #fee2e2;
+        --progress-bg: #e2e8f0;
+        --progress-fill: #22c55e;
+        --lang-pill-bg: #f1f5f9;
+        --lang-pill-text: #475569;
+        --interim-border: #cbd5e1;
+        --shimmer-from: #f1f5f9;
+        --shimmer-to: #e2e8f0;
+        --bar-height-1: 8px;
+        --bar-height-2: 16px;
+        --bar-height-3: 24px;
+        --bar-height-4: 18px;
+        --bar-height-5: 12px;
+        --lang-es: #f59e0b;
+        --lang-pt: #10b981;
+        --lang-fr: #3b82f6;
+        --lang-de: #8b5cf6;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family:
+          "Plus Jakarta Sans",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: linear-gradient(
+          180deg,
+          var(--bg-top) 0%,
+          var(--bg-bottom) 100%
+        );
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100dvh;
+      }
+
+      .app-container {
+        width: 100%;
+        max-width: 430px;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .scroll-content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 100px;
+      }
+
+      .scroll-content::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Header Section */
+      .header-section {
+        padding: 16px 20px;
+      }
+
+      .live-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--accent-green);
+        color: #ffffff;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        padding: 6px 14px;
+        border-radius: 20px;
+        animation: livePulse 2s ease-in-out infinite;
+      }
+
+      .live-badge .dot {
+        width: 7px;
+        height: 7px;
+        background: #ffffff;
+        border-radius: 50%;
+        animation: dotBlink 1.5s ease-in-out infinite;
+      }
+
+      @keyframes livePulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+        }
+      }
+
+      @keyframes dotBlink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .live-timer {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Join Code Card */
+      .join-card {
+        background: var(--card-bg);
+        border-radius: var(--card-radius);
+        box-shadow: var(--card-shadow);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+        min-height: 44px;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .join-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .join-card-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .join-code {
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        color: var(--accent-teal);
+      }
+
+      .join-subtitle {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .join-card .copy-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-teal-light);
+        border-radius: 12px;
+        flex-shrink: 0;
+      }
+
+      .copy-icon svg {
+        width: 20px;
+        height: 20px;
+        color: var(--accent-teal);
+      }
+
+      .join-card .copied-text {
+        display: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--accent-green);
+      }
+
+      /* Mic Section */
+      .mic-section {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .mic-card {
+        background: var(--card-bg);
+        border-radius: var(--card-radius);
+        box-shadow: var(--card-shadow);
+        padding: 28px 20px 20px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .mic-button {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        position: relative;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .mic-button.active {
+        background: var(--accent-green);
+        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35);
+        animation: micPulse 2s ease-in-out infinite;
+      }
+
+      .mic-button.inactive {
+        background: var(--progress-bg);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        animation: none;
+      }
+
+      @keyframes micPulse {
+        0%,
+        100% {
+          box-shadow:
+            0 4px 20px rgba(34, 197, 94, 0.35),
+            0 0 0 0 rgba(34, 197, 94, 0.2);
+        }
+        50% {
+          box-shadow:
+            0 4px 20px rgba(34, 197, 94, 0.35),
+            0 0 0 12px rgba(34, 197, 94, 0);
+        }
+      }
+
+      .mic-button:active {
+        transform: scale(0.92);
+      }
+
+      .mic-button svg {
+        width: 28px;
+        height: 28px;
+        color: #ffffff;
+        position: relative;
+        z-index: 1;
+      }
+
+      .mic-button.inactive svg {
+        color: var(--text-muted);
+      }
+
+      /* Audio level bars */
+      .audio-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        height: 28px;
+      }
+
+      .audio-bar {
+        width: 5px;
+        border-radius: 3px;
+        background: var(--accent-teal);
+        transition: height 0.15s ease;
+      }
+
+      .audio-bars.inactive .audio-bar {
+        background: var(--progress-bg);
+        height: 5px !important;
+      }
+
+      .mic-status {
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .mic-status.active {
+        color: var(--accent-teal);
+      }
+
+      .mic-status.inactive {
+        color: var(--text-muted);
+      }
+
+      /* Listener Stats */
+      .stats-section {
+        padding: 0 20px 8px;
+      }
+
+      .stats-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+      }
+
+      .stats-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .stats-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        padding: 14px 18px;
+        min-width: 160px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-left: 4px solid transparent;
+      }
+
+      .stat-card[data-lang="es"] {
+        border-left-color: var(--lang-es);
+      }
+      .stat-card[data-lang="pt"] {
+        border-left-color: var(--lang-pt);
+      }
+      .stat-card[data-lang="fr"] {
+        border-left-color: var(--lang-fr);
+      }
+      .stat-card[data-lang="de"] {
+        border-left-color: var(--lang-de);
+      }
+
+      .stat-flag {
+        font-size: 1.4rem;
+      }
+
+      .stat-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .stat-lang {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .stat-count {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      /* Transcript Section */
+      .transcript-section {
+        padding: 8px 20px 0;
+      }
+
+      .tab-bar {
+        display: flex;
+        background: var(--lang-pill-bg);
+        border-radius: 14px;
+        padding: 4px;
+        margin-bottom: 14px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 10px 0;
+        border: none;
+        background: transparent;
+        border-radius: 11px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        min-height: 44px;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .tab-btn.active {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      .tab-btn:active {
+        transform: scale(0.97);
+      }
+
+      /* Translation language picker (shown when Translation tab is active) */
+      .trans-lang-picker {
+        display: none;
+        gap: 6px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .trans-lang-picker::-webkit-scrollbar {
+        display: none;
+      }
+
+      .trans-lang-picker.visible {
+        display: flex;
+      }
+
+      .trans-lang-pill {
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: none;
+        background: var(--lang-pill-bg);
+        color: var(--lang-pill-text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        min-height: 34px;
+        transition: all 0.2s ease;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .trans-lang-pill.selected {
+        background: var(--accent-teal);
+        color: #ffffff;
+      }
+
+      .trans-lang-pill:active {
+        transform: scale(0.95);
+      }
+
+      /* Transcript cards (smaller) */
+      .transcript-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .t-card {
+        background: var(--card-bg);
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        padding: 12px 14px 10px;
+        position: relative;
+        animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      .t-card:nth-child(odd) {
+        margin-left: 3px;
+      }
+
+      .t-card:nth-child(even) {
+        margin-right: 3px;
+      }
+
+      @keyframes slideUp {
+        0% {
+          transform: translateY(40px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .t-card-time {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        background: var(--lang-pill-bg);
+        color: var(--text-muted);
+        font-size: 0.6rem;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 6px;
+      }
+
+      .t-card-text {
+        font-size: 0.95rem;
+        font-weight: 500;
+        line-height: 1.5;
+        color: var(--text-primary);
+        padding-right: 50px;
+        margin-bottom: 6px;
+      }
+
+      .t-card-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-bottom: 8px;
+      }
+
+      .t-card-progress {
+        height: 2px;
+        background: var(--progress-bg);
+        border-radius: 1px;
+        overflow: hidden;
+      }
+
+      .t-card-progress-fill {
+        height: 100%;
+        background: var(--progress-fill);
+        border-radius: 1px;
+        width: 100%;
+      }
+
+      /* Interim card */
+      .t-card.interim {
+        background: rgba(255, 255, 255, 0.6);
+        box-shadow: none;
+        border: 2px dashed var(--interim-border);
+      }
+
+      .t-card.interim .t-card-text {
+        opacity: 0.55;
+      }
+
+      .t-card.interim .t-card-progress-fill {
+        background: linear-gradient(
+          90deg,
+          var(--shimmer-from),
+          var(--shimmer-to),
+          var(--shimmer-from)
+        );
+        background-size: 200% 100%;
+        animation: shimmerBar 1.5s ease-in-out infinite;
+      }
+
+      @keyframes shimmerBar {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      /* Bottom Action Bar */
+      .bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--card-bg);
+        border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        padding: 16px 20px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 8px));
+        display: flex;
+        gap: 12px;
+        z-index: 20;
+        max-width: 430px;
+        animation: sheetSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        animation-delay: 0.4s;
+      }
+
+      @keyframes sheetSpring {
+        0% {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .action-btn {
+        flex: 1;
+        min-height: 50px;
+        border-radius: 14px;
+        border: none;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.15s ease;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .action-btn:active {
+        transform: scale(0.97);
+      }
+
+      .btn-share {
+        background: transparent;
+        color: var(--accent-teal);
+        border: 2px solid var(--accent-teal);
+      }
+
+      .btn-end {
+        background: var(--accent-red);
+        color: #ffffff;
+      }
+
+      .action-btn svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      /* Desktop styling */
+      @media (min-width: 431px) {
+        body {
+          background: #e8e4f0;
+        }
+        .app-container {
+          margin: 0 auto;
+          border-radius: 32px;
+          overflow: hidden;
+          box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+          background: linear-gradient(
+            180deg,
+            var(--bg-top) 0%,
+            var(--bg-bottom) 100%
+          );
+          max-height: 850px;
+          margin-top: 20px;
+        }
+        .bottom-bar {
+          position: absolute;
+          max-width: 430px;
+          border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="scroll-content">
+        <!-- Header -->
+        <div class="header-section">
+          <div class="live-row">
+            <span class="live-badge"><span class="dot"></span>LIVE</span>
+            <span class="live-timer" id="timer">12:34</span>
+          </div>
+          <div
+            class="join-card"
+            id="joinCard"
+            role="button"
+            tabindex="0"
+            aria-label="Copy join code"
+          >
+            <div class="join-card-left">
+              <span class="join-code">K7M2XP</span>
+              <span class="join-subtitle">Tap to copy link</span>
+              <span class="copied-text" id="copiedText">Copied!</span>
+            </div>
+            <div class="copy-icon">
+              <svg
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mic Section -->
+        <div class="mic-section">
+          <div class="mic-card">
+            <button
+              class="mic-button active"
+              id="micBtn"
+              aria-label="Toggle microphone"
+            >
+              <svg
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                viewBox="0 0 24 24"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                <path d="M19 10v2a7 7 0 01-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
+            </button>
+            <div class="audio-bars" id="audioBars">
+              <div class="audio-bar" style="height: 8px"></div>
+              <div class="audio-bar" style="height: 16px"></div>
+              <div class="audio-bar" style="height: 24px"></div>
+              <div class="audio-bar" style="height: 18px"></div>
+              <div class="audio-bar" style="height: 12px"></div>
+            </div>
+            <span class="mic-status active" id="micStatus">Listening...</span>
+          </div>
+        </div>
+
+        <!-- Listener Stats -->
+        <div class="stats-section">
+          <div class="stats-label">Listeners</div>
+          <div class="stats-scroll">
+            <div class="stat-card" data-lang="es">
+              <span class="stat-flag">&#x1F1EA;&#x1F1F8;</span>
+              <div class="stat-info">
+                <span class="stat-lang">Spanish</span>
+                <span class="stat-count">2 listeners</span>
+              </div>
+            </div>
+            <div class="stat-card" data-lang="pt">
+              <span class="stat-flag">&#x1F1E7;&#x1F1F7;</span>
+              <div class="stat-info">
+                <span class="stat-lang">Portuguese</span>
+                <span class="stat-count">1 listener</span>
+              </div>
+            </div>
+            <div class="stat-card" data-lang="fr">
+              <span class="stat-flag">&#x1F1EB;&#x1F1F7;</span>
+              <div class="stat-info">
+                <span class="stat-lang">French</span>
+                <span class="stat-count">0 listeners</span>
+              </div>
+            </div>
+            <div class="stat-card" data-lang="de">
+              <span class="stat-flag">&#x1F1E9;&#x1F1EA;</span>
+              <div class="stat-info">
+                <span class="stat-lang">German</span>
+                <span class="stat-count">0 listeners</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transcript Section -->
+        <div class="transcript-section">
+          <div class="tab-bar">
+            <button class="tab-btn active" data-tab="source">Source</button>
+            <button class="tab-btn" data-tab="translation">Translation</button>
+          </div>
+
+          <div class="trans-lang-picker" id="transLangPicker">
+            <button class="trans-lang-pill selected" data-lang="es">
+              &#x1F1EA;&#x1F1F8; Spanish
+            </button>
+            <button class="trans-lang-pill" data-lang="pt">
+              &#x1F1E7;&#x1F1F7; Portuguese
+            </button>
+            <button class="trans-lang-pill" data-lang="fr">
+              &#x1F1EB;&#x1F1F7; French
+            </button>
+            <button class="trans-lang-pill" data-lang="de">
+              &#x1F1E9;&#x1F1EA; German
+            </button>
+          </div>
+
+          <div class="transcript-cards" id="transcriptCards">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="bottom-bar">
+        <button class="action-btn btn-share" id="shareBtn">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          Share Join Link
+        </button>
+        <button class="action-btn btn-end" id="endBtn">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            viewBox="0 0 24 24"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="6" y="6" width="12" height="12" rx="2" />
+          </svg>
+          End Session
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const transcriptData = [
+        {
+          en: "Brothers and sisters, welcome to our ward conference today.",
+          es: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+          pt: "Irm\u00e3os e irm\u00e3s, bem-vindos \u00e0 nossa confer\u00eancia de ala hoje.",
+          fr: "Fr\u00e8res et s\u0153urs, bienvenue \u00e0 notre conf\u00e9rence de paroisse aujourd\u2019hui.",
+          de: "Br\u00fcder und Schwestern, willkommen zu unserer Gemeindekonferenz heute.",
+          time: "2:31 PM",
+        },
+        {
+          en: "I\u2019m grateful for the opportunity to speak to you this morning.",
+          es: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+          pt: "Sou grato pela oportunidade de falar com voc\u00eas esta manh\u00e3.",
+          fr: "Je suis reconnaissant de pouvoir vous parler ce matin.",
+          de: "Ich bin dankbar f\u00fcr die Gelegenheit, heute Morgen zu Ihnen zu sprechen.",
+          time: "2:32 PM",
+        },
+        {
+          en: "Our topic today is strengthening families through service.",
+          es: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+          pt: "Nosso tema de hoje \u00e9 fortalecer as fam\u00edlias por meio do servi\u00e7o.",
+          fr: "Notre sujet aujourd\u2019hui est le renforcement des familles par le service.",
+          de: "Unser heutiges Thema ist die St\u00e4rkung der Familien durch Dienst.",
+          time: "2:33 PM",
+        },
+        {
+          en: "When we serve others, we grow closer to each other and to our Heavenly Father.",
+          es: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+          pt: "Quando servimos os outros, nos aproximamos uns dos outros e do nosso Pai Celestial.",
+          fr: "Quand nous servons les autres, nous nous rapprochons les uns des autres et de notre P\u00e8re C\u00e9leste.",
+          de: "Wenn wir anderen dienen, kommen wir einander und unserem himmlischen Vater n\u00e4her.",
+          time: "2:34 PM",
+        },
+        {
+          en: "I\u2019d like to share a story about a family in our ward who exemplified this principle.",
+          es: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+          pt: "Gostaria de compartilhar uma hist\u00f3ria sobre uma fam\u00edlia em nossa ala que exemplificou este princ\u00edpio.",
+          fr: "J\u2019aimerais partager l\u2019histoire d\u2019une famille de notre paroisse qui a illustr\u00e9 ce principe.",
+          de: "Ich m\u00f6chte eine Geschichte \u00fcber eine Familie in unserer Gemeinde erz\u00e4hlen, die dieses Prinzip vorgelebt hat.",
+          time: "2:35 PM",
+        },
+        {
+          en: "Brother and Sister Garc\u00eda noticed a newly moved-in family needed help settling in.",
+          es: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+          pt: "O irm\u00e3o e a irm\u00e3 Garcia perceberam que uma fam\u00edlia rec\u00e9m-chegada precisava de ajuda para se instalar.",
+          fr: "Fr\u00e8re et S\u0153ur Garc\u00eda ont remarqu\u00e9 qu\u2019une famille nouvellement arriv\u00e9e avait besoin d\u2019aide pour s\u2019installer.",
+          de: "Bruder und Schwester Garc\u00eda bemerkten, dass eine neu zugezogene Familie Hilfe beim Einzug brauchte.",
+          time: "2:36 PM",
+        },
+        {
+          en: "Without being asked, they organized neighbors to help throughout the entire weekend.",
+          es: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+          pt: "Sem que ningu\u00e9m pedisse, organizaram os vizinhos para ajudar durante todo o fim de semana.",
+          fr: "Sans qu\u2019on le leur demande, ils ont organis\u00e9 les voisins pour aider tout le week-end.",
+          de: "Ohne gefragt zu werden, organisierten sie Nachbarn, um das ganze Wochenende \u00fcber zu helfen.",
+          time: "2:37 PM",
+        },
+        {
+          en: "That small act of service transformed not just the new family, but the entire ward.",
+          es: "Ese peque\u00f1o acto de servicio transform\u00f3 no solo a la familia nueva, sino a todo el barrio.",
+          pt: "Esse pequeno ato de servi\u00e7o transformou n\u00e3o apenas a nova fam\u00edlia, mas toda a ala.",
+          fr: "Ce petit acte de service a transform\u00e9 non seulement la nouvelle famille, mais toute la paroisse.",
+          de: "Diese kleine Tat des Dienstes hat nicht nur die neue Familie, sondern die ganze Gemeinde ver\u00e4ndert.",
+          time: "2:38 PM",
+        },
+      ];
+
+      const interimData = {
+        en: "When we open our hearts to service...",
+        es: "Cuando abrimos nuestros corazones al servicio...",
+        pt: "Quando abrimos nossos cora\u00e7\u00f5es ao servi\u00e7o...",
+        fr: "Quand nous ouvrons nos c\u0153urs au service...",
+        de: "Wenn wir unsere Herzen dem Dienst \u00f6ffnen...",
+        time: "2:39 PM",
+      };
+
+      let currentTab = "source";
+      let currentTransLang = "es";
+      let cardsShown = 0;
+      let interimShown = false;
+      let micActive = true;
+
+      const container = document.getElementById("transcriptCards");
+      const scrollContent = document.querySelector(".scroll-content");
+
+      // Card creation
+      function createCard(data, isInterim = false) {
+        const card = document.createElement("div");
+        card.className = "t-card" + (isInterim ? " interim" : "");
+
+        let mainText, subText;
+        if (currentTab === "source") {
+          mainText = data.en;
+          subText = null;
+        } else {
+          mainText = data[currentTransLang] || data.es;
+          subText = data.en;
+        }
+
+        card.innerHTML = `
+          <span class="t-card-time">${data.time}</span>
+          <div class="t-card-text">${mainText}</div>
+          ${subText ? `<div class="t-card-sub">${subText}</div>` : ""}
+          <div class="t-card-progress">
+            <div class="t-card-progress-fill" style="width: ${isInterim ? "0" : "100"}%"></div>
+          </div>
+        `;
+        return card;
+      }
+
+      function renderCards() {
+        container.innerHTML = "";
+        const shown = transcriptData.slice(0, cardsShown);
+        shown.forEach((d, i) => {
+          const card = createCard(d);
+          card.style.animationDelay = `${i * 0.04}s`;
+          container.appendChild(card);
+        });
+        if (interimShown) {
+          const ic = createCard(interimData, true);
+          container.appendChild(ic);
+        }
+      }
+
+      function scrollToBottom() {
+        requestAnimationFrame(() => {
+          scrollContent.scrollTo({
+            top: scrollContent.scrollHeight,
+            behavior: "smooth",
+          });
+        });
+      }
+
+      function addNextCard() {
+        if (cardsShown < transcriptData.length) {
+          cardsShown++;
+          const card = createCard(transcriptData[cardsShown - 1]);
+          // Remove interim if present
+          const interim = container.querySelector(".interim");
+          if (interim) interim.remove();
+          container.appendChild(card);
+          scrollToBottom();
+
+          if (cardsShown < transcriptData.length) {
+            setTimeout(addNextCard, 3000 + Math.random() * 1500);
+          } else if (!interimShown) {
+            setTimeout(() => {
+              interimShown = true;
+              container.appendChild(createCard(interimData, true));
+              scrollToBottom();
+            }, 3000);
+          }
+        }
+      }
+
+      // Tab switching
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentTab = btn.dataset.tab;
+
+          const picker = document.getElementById("transLangPicker");
+          if (currentTab === "translation") {
+            picker.classList.add("visible");
+          } else {
+            picker.classList.remove("visible");
+          }
+          renderCards();
+        });
+      });
+
+      // Translation language picker
+      document
+        .getElementById("transLangPicker")
+        .addEventListener("click", (e) => {
+          const pill = e.target.closest(".trans-lang-pill");
+          if (!pill) return;
+          document
+            .querySelectorAll(".trans-lang-pill")
+            .forEach((p) => p.classList.remove("selected"));
+          pill.classList.add("selected");
+          currentTransLang = pill.dataset.lang;
+          renderCards();
+        });
+
+      // Mic toggle
+      const micBtn = document.getElementById("micBtn");
+      const micStatus = document.getElementById("micStatus");
+      const audioBars = document.getElementById("audioBars");
+
+      micBtn.addEventListener("click", () => {
+        micActive = !micActive;
+        if (micActive) {
+          micBtn.classList.remove("inactive");
+          micBtn.classList.add("active");
+          micStatus.textContent = "Listening...";
+          micStatus.classList.remove("inactive");
+          micStatus.classList.add("active");
+          audioBars.classList.remove("inactive");
+        } else {
+          micBtn.classList.remove("active");
+          micBtn.classList.add("inactive");
+          micStatus.textContent = "Mic off";
+          micStatus.classList.remove("active");
+          micStatus.classList.add("inactive");
+          audioBars.classList.add("inactive");
+        }
+      });
+
+      // Animated audio bars
+      function animateBars() {
+        if (!micActive) {
+          requestAnimationFrame(animateBars);
+          return;
+        }
+        const bars = audioBars.querySelectorAll(".audio-bar");
+        bars.forEach((bar) => {
+          const h = 5 + Math.random() * 23;
+          bar.style.height = h + "px";
+        });
+        setTimeout(() => requestAnimationFrame(animateBars), 150);
+      }
+      animateBars();
+
+      // Join card copy
+      const joinCard = document.getElementById("joinCard");
+      const copiedText = document.getElementById("copiedText");
+      joinCard.addEventListener("click", () => {
+        const subtitle = joinCard.querySelector(".join-subtitle");
+        subtitle.style.display = "none";
+        copiedText.style.display = "block";
+        setTimeout(() => {
+          copiedText.style.display = "none";
+          subtitle.style.display = "block";
+        }, 2000);
+      });
+
+      // Timer
+      let timerSeconds = 12 * 60 + 34;
+      function updateTimer() {
+        timerSeconds++;
+        const m = Math.floor(timerSeconds / 60);
+        const s = timerSeconds % 60;
+        document.getElementById("timer").textContent =
+          `${m}:${String(s).padStart(2, "0")}`;
+      }
+      setInterval(updateTimer, 1000);
+
+      // Share button
+      document.getElementById("shareBtn").addEventListener("click", () => {
+        const btn = document.getElementById("shareBtn");
+        btn.textContent = "Link Copied!";
+        btn.style.background = "#CCFBF1";
+        setTimeout(() => {
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share Join Link`;
+          btn.style.background = "transparent";
+        }, 2000);
+      });
+
+      // End button
+      document.getElementById("endBtn").addEventListener("click", () => {
+        if (confirm("End this session?")) {
+          document.querySelector(".live-badge").style.background = "#94A3B8";
+          document.querySelector(".live-badge").innerHTML =
+            '<span class="dot"></span>ENDED';
+        }
+      });
+
+      // Start simulation
+      setTimeout(addNextCard, 1000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Our Stake - Live Visit (Listener)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-top: #f5f3ff;
+        --bg-bottom: #eff6ff;
+        --card-bg: #ffffff;
+        --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --card-radius: 16px;
+        --sheet-radius: 24px;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --accent-teal: #0d9488;
+        --accent-green: #22c55e;
+        --accent-green-light: #dcfce7;
+        --lang-selected-bg: #0d9488;
+        --lang-selected-text: #ffffff;
+        --lang-pill-bg: #f1f5f9;
+        --lang-pill-text: #475569;
+        --progress-bg: #e2e8f0;
+        --progress-fill: #22c55e;
+        --interim-border: #cbd5e1;
+        --shimmer-from: #f1f5f9;
+        --shimmer-to: #e2e8f0;
+        --status-dot: #22c55e;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family:
+          "Plus Jakarta Sans",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: linear-gradient(
+          180deg,
+          var(--bg-top) 0%,
+          var(--bg-bottom) 100%
+        );
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100dvh;
+      }
+
+      .app-container {
+        width: 100%;
+        max-width: 430px;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Header */
+      .header {
+        padding: 16px 20px 0;
+        flex-shrink: 0;
+        z-index: 10;
+      }
+
+      .header-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .header-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        background: var(--status-dot);
+        border-radius: 50%;
+        animation: statusPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes statusPulse {
+        0%,
+        100% {
+          opacity: 1;
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+        }
+        50% {
+          opacity: 0.8;
+          box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+        }
+      }
+
+      .session-bar {
+        margin-top: 8px;
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .session-bar .dot {
+        width: 4px;
+        height: 4px;
+        background: var(--text-muted);
+        border-radius: 50%;
+      }
+
+      /* Transcript area */
+      .transcript-area {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 16px 16px 8px;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .transcript-area::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Cards */
+      .card {
+        background: var(--card-bg);
+        border-radius: var(--card-radius);
+        box-shadow: var(--card-shadow);
+        padding: 16px 18px 12px;
+        margin-bottom: 12px;
+        position: relative;
+        animation: slideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+        transform-origin: bottom center;
+      }
+
+      .card:nth-child(odd) {
+        margin-left: 4px;
+      }
+
+      .card:nth-child(even) {
+        margin-right: 4px;
+      }
+
+      @keyframes slideUp {
+        0% {
+          transform: translateY(40px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .card-timestamp {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        background: var(--lang-pill-bg);
+        color: var(--text-muted);
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 8px;
+        letter-spacing: 0.02em;
+      }
+
+      .card-translation {
+        font-size: 1.25rem;
+        font-weight: 500;
+        line-height: 1.55;
+        color: var(--text-primary);
+        padding-right: 60px;
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+      }
+
+      .card-original {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+        margin-bottom: 10px;
+      }
+
+      .card-progress {
+        height: 3px;
+        background: var(--progress-bg);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .card-progress-fill {
+        height: 100%;
+        background: var(--progress-fill);
+        border-radius: 2px;
+        transition: width 0.8s ease;
+      }
+
+      /* Interim card */
+      .card.interim {
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: none;
+        border: 2px dashed var(--interim-border);
+      }
+
+      .card.interim .card-translation {
+        opacity: 0.6;
+        background: linear-gradient(
+          90deg,
+          var(--text-primary) 40%,
+          transparent 50%,
+          var(--text-primary) 60%
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        animation: shimmerText 2.5s ease-in-out infinite;
+      }
+
+      @keyframes shimmerText {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: -100% 0;
+        }
+      }
+
+      .card.interim .card-progress-fill {
+        background: linear-gradient(
+          90deg,
+          var(--shimmer-from),
+          var(--shimmer-to),
+          var(--shimmer-from)
+        );
+        background-size: 200% 100%;
+        animation: shimmerBar 1.5s ease-in-out infinite;
+        width: 100% !important;
+      }
+
+      @keyframes shimmerBar {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      /* Swipe hint */
+      .swipe-hint {
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-top: -4px;
+        margin-bottom: 12px;
+        opacity: 1;
+        transition: opacity 1.5s ease;
+      }
+
+      .swipe-hint.hidden {
+        opacity: 0;
+      }
+
+      /* Language bar */
+      .language-bar-wrapper {
+        flex-shrink: 0;
+        padding: 0 12px 12px;
+        z-index: 10;
+      }
+
+      .language-bar {
+        background: var(--card-bg);
+        border-radius: var(--sheet-radius);
+        box-shadow:
+          0 -2px 20px rgba(0, 0, 0, 0.06),
+          0 4px 16px rgba(0, 0, 0, 0.08);
+        padding: 6px;
+        display: flex;
+        gap: 4px;
+        animation: sheetSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        animation-delay: 0.3s;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .language-bar::-webkit-scrollbar {
+        display: none;
+      }
+
+      @keyframes sheetSpring {
+        0% {
+          transform: translateY(80px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .lang-pill {
+        flex: 1;
+        min-width: 0;
+        padding: 12px 8px;
+        border-radius: 18px;
+        border: none;
+        background: transparent;
+        color: var(--lang-pill-text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        white-space: nowrap;
+        min-height: 44px;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .lang-pill:active {
+        transform: scale(0.95);
+      }
+
+      .lang-pill.selected {
+        background: var(--lang-selected-bg);
+        color: var(--lang-selected-text);
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+      }
+
+      .lang-pill .flag {
+        font-size: 1.1rem;
+      }
+
+      /* Safe area bottom padding for notch devices */
+      .safe-bottom {
+        height: env(safe-area-inset-bottom, 8px);
+        flex-shrink: 0;
+      }
+
+      /* Desktop styling */
+      @media (min-width: 431px) {
+        body {
+          background: #e8e4f0;
+        }
+        .app-container {
+          margin: 0 auto;
+          border-radius: 32px;
+          overflow: hidden;
+          box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+          background: linear-gradient(
+            180deg,
+            var(--bg-top) 0%,
+            var(--bg-bottom) 100%
+          );
+          max-height: 850px;
+          margin-top: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-main">
+          <span class="header-title">Live Visit</span>
+          <span class="status-dot"></span>
+        </div>
+        <div class="session-bar">
+          <span>Session active</span>
+          <span class="dot"></span>
+          <span id="timer">12:34</span>
+        </div>
+      </div>
+
+      <!-- Transcript Cards -->
+      <div class="transcript-area" id="transcriptArea">
+        <!-- Cards injected by JS -->
+      </div>
+
+      <!-- Language Selector -->
+      <div class="language-bar-wrapper">
+        <div class="language-bar" id="languageBar">
+          <button
+            class="lang-pill selected"
+            data-lang="es"
+            aria-label="Spanish"
+          >
+            <span class="flag">&#x1F1EA;&#x1F1F8;</span> ES
+          </button>
+          <button class="lang-pill" data-lang="pt" aria-label="Portuguese">
+            <span class="flag">&#x1F1E7;&#x1F1F7;</span> PT
+          </button>
+          <button class="lang-pill" data-lang="fr" aria-label="French">
+            <span class="flag">&#x1F1EB;&#x1F1F7;</span> FR
+          </button>
+          <button class="lang-pill" data-lang="de" aria-label="German">
+            <span class="flag">&#x1F1E9;&#x1F1EA;</span> DE
+          </button>
+        </div>
+      </div>
+      <div class="safe-bottom"></div>
+    </div>
+
+    <script>
+      const transcriptData = [
+        {
+          en: "Brothers and sisters, welcome to our ward conference today.",
+          es: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+          pt: "Irm\u00e3os e irm\u00e3s, bem-vindos \u00e0 nossa confer\u00eancia de ala hoje.",
+          fr: "Fr\u00e8res et s\u0153urs, bienvenue \u00e0 notre conf\u00e9rence de paroisse aujourd\u2019hui.",
+          de: "Br\u00fcder und Schwestern, willkommen zu unserer Gemeindekonferenz heute.",
+          time: "2:31 PM",
+        },
+        {
+          en: "I\u2019m grateful for the opportunity to speak to you this morning.",
+          es: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+          pt: "Sou grato pela oportunidade de falar com voc\u00eas esta manh\u00e3.",
+          fr: "Je suis reconnaissant de pouvoir vous parler ce matin.",
+          de: "Ich bin dankbar f\u00fcr die Gelegenheit, heute Morgen zu Ihnen zu sprechen.",
+          time: "2:32 PM",
+        },
+        {
+          en: "Our topic today is strengthening families through service.",
+          es: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+          pt: "Nosso tema de hoje \u00e9 fortalecer as fam\u00edlias por meio do servi\u00e7o.",
+          fr: "Notre sujet aujourd\u2019hui est le renforcement des familles par le service.",
+          de: "Unser heutiges Thema ist die St\u00e4rkung der Familien durch Dienst.",
+          time: "2:33 PM",
+        },
+        {
+          en: "When we serve others, we grow closer to each other and to our Heavenly Father.",
+          es: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+          pt: "Quando servimos os outros, nos aproximamos uns dos outros e do nosso Pai Celestial.",
+          fr: "Quand nous servons les autres, nous nous rapprochons les uns des autres et de notre P\u00e8re C\u00e9leste.",
+          de: "Wenn wir anderen dienen, kommen wir einander und unserem himmlischen Vater n\u00e4her.",
+          time: "2:34 PM",
+        },
+        {
+          en: "I\u2019d like to share a story about a family in our ward who exemplified this principle.",
+          es: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+          pt: "Gostaria de compartilhar uma hist\u00f3ria sobre uma fam\u00edlia em nossa ala que exemplificou este princ\u00edpio.",
+          fr: "J\u2019aimerais partager l\u2019histoire d\u2019une famille de notre paroisse qui a illustr\u00e9 ce principe.",
+          de: "Ich m\u00f6chte eine Geschichte \u00fcber eine Familie in unserer Gemeinde erz\u00e4hlen, die dieses Prinzip vorgelebt hat.",
+          time: "2:35 PM",
+        },
+        {
+          en: "Brother and Sister Garc\u00eda noticed a newly moved-in family needed help settling in.",
+          es: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+          pt: "O irm\u00e3o e a irm\u00e3 Garcia perceberam que uma fam\u00edlia rec\u00e9m-chegada precisava de ajuda para se instalar.",
+          fr: "Fr\u00e8re et S\u0153ur Garc\u00eda ont remarqu\u00e9 qu\u2019une famille nouvellement arriv\u00e9e avait besoin d\u2019aide pour s\u2019installer.",
+          de: "Bruder und Schwester Garc\u00eda bemerkten, dass eine neu zugezogene Familie Hilfe beim Einzug brauchte.",
+          time: "2:36 PM",
+        },
+        {
+          en: "Without being asked, they organized neighbors to help throughout the entire weekend.",
+          es: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+          pt: "Sem que ningu\u00e9m pedisse, organizaram os vizinhos para ajudar durante todo o fim de semana.",
+          fr: "Sans qu\u2019on le leur demande, ils ont organis\u00e9 les voisins pour aider tout le week-end.",
+          de: "Ohne gefragt zu werden, organisierten sie Nachbarn, um das ganze Wochenende \u00fcber zu helfen.",
+          time: "2:37 PM",
+        },
+        {
+          en: "That small act of service transformed not just the new family, but the entire ward.",
+          es: "Ese peque\u00f1o acto de servicio transform\u00f3 no solo a la familia nueva, sino a todo el barrio.",
+          pt: "Esse pequeno ato de servi\u00e7o transformou n\u00e3o apenas a nova fam\u00edlia, mas toda a ala.",
+          fr: "Ce petit acte de service a transform\u00e9 non seulement la nouvelle famille, mais toute la paroisse.",
+          de: "Diese kleine Tat des Dienstes hat nicht nur die neue Familie, sondern die ganze Gemeinde ver\u00e4ndert.",
+          time: "2:38 PM",
+        },
+      ];
+
+      const interimData = {
+        en: "When we open our hearts to service...",
+        es: "Cuando abrimos nuestros corazones al servicio...",
+        pt: "Quando abrimos nossos cora\u00e7\u00f5es ao servi\u00e7o...",
+        fr: "Quand nous ouvrons nos c\u0153urs au service...",
+        de: "Wenn wir unsere Herzen dem Dienst \u00f6ffnen...",
+        time: "2:39 PM",
+      };
+
+      let currentLang = "es";
+      let cardsShown = 0;
+      let interimShown = false;
+      let swipeHintShown = false;
+      const area = document.getElementById("transcriptArea");
+
+      function createCard(data, index, isInterim = false) {
+        const card = document.createElement("div");
+        card.className = "card" + (isInterim ? " interim" : "");
+        card.style.animationDelay = "0.05s";
+
+        const progress = isInterim ? 0 : 100;
+        const translationText = data[currentLang] || data.es;
+        const originalText = data.en;
+
+        card.innerHTML = `
+    <span class="card-timestamp">${data.time}</span>
+    <div class="card-translation">${translationText}</div>
+    <div class="card-original">${originalText}</div>
+    <div class="card-progress">
+      <div class="card-progress-fill" style="width: ${progress}%"></div>
+    </div>
+  `;
+
+        return card;
+      }
+
+      function scrollToBottom() {
+        requestAnimationFrame(() => {
+          area.scrollTo({ top: area.scrollHeight, behavior: "smooth" });
+        });
+      }
+
+      function addNextCard() {
+        // Remove interim if present
+        const interim = area.querySelector(".interim");
+        if (interim) interim.remove();
+
+        if (cardsShown < transcriptData.length) {
+          const card = createCard(transcriptData[cardsShown], cardsShown);
+          area.appendChild(card);
+
+          // Add swipe hint after first card
+          if (cardsShown === 0 && !swipeHintShown) {
+            swipeHintShown = true;
+            const hint = document.createElement("div");
+            hint.className = "swipe-hint";
+            hint.id = "swipeHint";
+            hint.textContent = "Swipe language bar to change";
+            area.appendChild(hint);
+            setTimeout(() => hint.classList.add("hidden"), 4000);
+            setTimeout(() => hint.remove(), 5500);
+          }
+
+          // Animate progress bar
+          const fill = card.querySelector(".card-progress-fill");
+          fill.style.width = "0%";
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              fill.style.width = "100%";
+            });
+          });
+
+          cardsShown++;
+          scrollToBottom();
+
+          if (cardsShown < transcriptData.length) {
+            setTimeout(addNextCard, 3000 + Math.random() * 1500);
+          } else if (!interimShown) {
+            setTimeout(showInterim, 3000);
+          }
+        }
+      }
+
+      function showInterim() {
+        interimShown = true;
+        const card = createCard(interimData, transcriptData.length, true);
+        area.appendChild(card);
+        scrollToBottom();
+      }
+
+      function refreshCards() {
+        const cards = area.querySelectorAll(".card");
+        cards.forEach((card, i) => {
+          const data = i < cardsShown ? transcriptData[i] : interimData;
+          if (!data) return;
+          const translationEl = card.querySelector(".card-translation");
+          const translationText = data[currentLang] || data.es;
+          if (translationEl) translationEl.textContent = translationText;
+        });
+      }
+
+      // Language bar
+      document.getElementById("languageBar").addEventListener("click", (e) => {
+        const pill = e.target.closest(".lang-pill");
+        if (!pill) return;
+        document
+          .querySelectorAll(".lang-pill")
+          .forEach((p) => p.classList.remove("selected"));
+        pill.classList.add("selected");
+        currentLang = pill.dataset.lang;
+        refreshCards();
+      });
+
+      // Timer
+      let timerSeconds = 12 * 60 + 34;
+      function updateTimer() {
+        timerSeconds++;
+        const m = Math.floor(timerSeconds / 60);
+        const s = timerSeconds % 60;
+        document.getElementById("timer").textContent =
+          `${m}:${String(s).padStart(2, "0")}`;
+      }
+      setInterval(updateTimer, 1000);
+
+      // Start simulation
+      setTimeout(addNextCard, 800);
+    </script>
+  </body>
+</html>

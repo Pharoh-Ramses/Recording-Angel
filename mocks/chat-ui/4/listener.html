@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Our Stake - Live Transcript</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0f1a;
+        --bg-mid: #0d1525;
+        --teal-primary: #2dd4bf;
+        --teal-dark: #0f766e;
+        --teal-glow: rgba(45, 212, 191, 0.4);
+        --cyan-accent: #67e8f9;
+        --cyan-glow: rgba(103, 232, 249, 0.3);
+        --navy-deep: #0c1220;
+        --navy-mid: #111d35;
+        --red-live: #ef4444;
+        --red-glow: rgba(239, 68, 68, 0.5);
+        --text-primary: #f1f5f9;
+        --text-secondary: rgba(241, 245, 249, 0.6);
+        --text-interim: var(--cyan-accent);
+        --glass-bg: rgba(15, 23, 42, 0.55);
+        --glass-border: rgba(45, 212, 191, 0.12);
+        --gradient-line: linear-gradient(
+          90deg,
+          transparent,
+          var(--teal-primary),
+          var(--cyan-accent),
+          var(--teal-primary),
+          transparent
+        );
+        --font-main: "Sora", sans-serif;
+        --bar-color: var(--teal-primary);
+        --bar-glow: var(--teal-glow);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--font-main);
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Animated gradient mesh background */
+      .bg-mesh {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% 50%,
+            rgba(13, 148, 136, 0.15) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 80% 20%,
+            rgba(17, 29, 53, 0.8) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 50% 80%,
+            rgba(15, 118, 110, 0.1) 0%,
+            transparent 60%
+          ),
+          linear-gradient(
+            160deg,
+            var(--bg-deep) 0%,
+            var(--navy-deep) 50%,
+            #0a1628 100%
+          );
+        animation: meshShift 12s ease-in-out infinite alternate;
+      }
+
+      @keyframes meshShift {
+        0% {
+          background:
+            radial-gradient(
+              ellipse at 20% 50%,
+              rgba(13, 148, 136, 0.15) 0%,
+              transparent 60%
+            ),
+            radial-gradient(
+              ellipse at 80% 20%,
+              rgba(17, 29, 53, 0.8) 0%,
+              transparent 50%
+            ),
+            radial-gradient(
+              ellipse at 50% 80%,
+              rgba(15, 118, 110, 0.1) 0%,
+              transparent 60%
+            ),
+            linear-gradient(
+              160deg,
+              var(--bg-deep) 0%,
+              var(--navy-deep) 50%,
+              #0a1628 100%
+            );
+        }
+        33% {
+          background:
+            radial-gradient(
+              ellipse at 40% 30%,
+              rgba(13, 148, 136, 0.18) 0%,
+              transparent 55%
+            ),
+            radial-gradient(
+              ellipse at 70% 60%,
+              rgba(17, 29, 53, 0.7) 0%,
+              transparent 55%
+            ),
+            radial-gradient(
+              ellipse at 30% 70%,
+              rgba(15, 118, 110, 0.12) 0%,
+              transparent 50%
+            ),
+            linear-gradient(
+              170deg,
+              var(--navy-deep) 0%,
+              var(--bg-deep) 50%,
+              #0b1426 100%
+            );
+        }
+        66% {
+          background:
+            radial-gradient(
+              ellipse at 60% 60%,
+              rgba(13, 148, 136, 0.12) 0%,
+              transparent 65%
+            ),
+            radial-gradient(
+              ellipse at 30% 40%,
+              rgba(17, 29, 53, 0.75) 0%,
+              transparent 45%
+            ),
+            radial-gradient(
+              ellipse at 70% 30%,
+              rgba(15, 118, 110, 0.14) 0%,
+              transparent 55%
+            ),
+            linear-gradient(
+              150deg,
+              #0a1628 0%,
+              var(--bg-deep) 50%,
+              var(--navy-deep) 100%
+            );
+        }
+        100% {
+          background:
+            radial-gradient(
+              ellipse at 50% 40%,
+              rgba(13, 148, 136, 0.16) 0%,
+              transparent 58%
+            ),
+            radial-gradient(
+              ellipse at 20% 70%,
+              rgba(17, 29, 53, 0.65) 0%,
+              transparent 50%
+            ),
+            radial-gradient(
+              ellipse at 80% 50%,
+              rgba(15, 118, 110, 0.11) 0%,
+              transparent 60%
+            ),
+            linear-gradient(
+              165deg,
+              var(--bg-deep) 0%,
+              #0b1426 50%,
+              var(--navy-deep) 100%
+            );
+        }
+      }
+
+      .app-container {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        height: 100dvh;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+
+      /* Waveform visualization */
+      .waveform-section {
+        padding: 1.25rem 0 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .waveform {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        height: 48px;
+        padding: 0 0.5rem;
+      }
+
+      .waveform .bar {
+        width: 3px;
+        border-radius: 2px;
+        background: var(--bar-color);
+        box-shadow:
+          0 0 6px var(--bar-glow),
+          0 0 12px rgba(45, 212, 191, 0.15);
+        animation: barPulse var(--dur) ease-in-out infinite alternate;
+        animation-delay: var(--delay);
+        transform-origin: center;
+      }
+
+      @keyframes barPulse {
+        0% {
+          height: var(--min-h);
+          opacity: 0.5;
+        }
+        100% {
+          height: var(--max-h);
+          opacity: 1;
+        }
+      }
+
+      /* Status row */
+      .status-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 0.75rem;
+      }
+
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        padding: 4px 12px 4px 10px;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--red-live);
+      }
+
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--red-live);
+        box-shadow:
+          0 0 8px var(--red-glow),
+          0 0 20px rgba(239, 68, 68, 0.3);
+        animation: livePulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes livePulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+          box-shadow:
+            0 0 8px var(--red-glow),
+            0 0 20px rgba(239, 68, 68, 0.3);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(0.85);
+          box-shadow:
+            0 0 4px var(--red-glow),
+            0 0 10px rgba(239, 68, 68, 0.15);
+        }
+      }
+
+      .session-time {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.05em;
+      }
+
+      /* Gradient divider */
+      .divider {
+        height: 1px;
+        margin: 0.75rem 0;
+        background: var(--gradient-line);
+        flex-shrink: 0;
+        opacity: 0.6;
+      }
+
+      /* Transcript area */
+      .transcript-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem 0 1rem;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 3%,
+          black 92%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 3%,
+          black 92%,
+          transparent 100%
+        );
+      }
+
+      .transcript-area::-webkit-scrollbar {
+        width: 3px;
+      }
+      .transcript-area::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .transcript-area::-webkit-scrollbar-thumb {
+        background: rgba(45, 212, 191, 0.2);
+        border-radius: 10px;
+      }
+
+      .segment {
+        font-size: 1.5rem;
+        line-height: 1.6;
+        font-weight: 400;
+        color: var(--text-primary);
+        margin-bottom: 1.25rem;
+        opacity: 0;
+        transform: scale(1.02);
+        animation: segmentIn 0.5s ease-out forwards;
+        padding: 0 0.25rem;
+      }
+
+      .segment.latest {
+        text-shadow:
+          0 0 30px rgba(45, 212, 191, 0.2),
+          0 0 60px rgba(45, 212, 191, 0.08);
+      }
+
+      .segment.interim {
+        color: var(--text-interim);
+        animation:
+          segmentIn 0.5s ease-out forwards,
+          interimPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes segmentIn {
+        0% {
+          opacity: 0;
+          transform: scale(1.02) translateY(8px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      @keyframes interimPulse {
+        0%,
+        100% {
+          opacity: 0.85;
+        }
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      /* Language selector */
+      .language-bar {
+        flex-shrink: 0;
+        padding: 0.75rem 0 1.25rem;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .lang-pill {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 16px;
+        border-radius: 100px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        color: var(--text-secondary);
+        font-family: var(--font-main);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .lang-pill:hover {
+        background: rgba(15, 23, 42, 0.7);
+        border-color: rgba(45, 212, 191, 0.25);
+      }
+
+      .lang-pill.active {
+        color: var(--teal-primary);
+        border-color: var(--teal-primary);
+        box-shadow:
+          0 0 12px var(--teal-glow),
+          0 0 24px rgba(45, 212, 191, 0.12),
+          inset 0 0 12px rgba(45, 212, 191, 0.06);
+        background: rgba(45, 212, 191, 0.08);
+      }
+
+      .lang-pill .flag {
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .lang-pill .code {
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      /* Safe area for phones with notches */
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .language-bar {
+          padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-mesh"></div>
+
+    <div class="app-container">
+      <div class="waveform-section">
+        <div class="waveform" id="waveform"></div>
+        <div class="status-row">
+          <div class="live-badge">
+            <span class="live-dot"></span>
+            <span>Live</span>
+          </div>
+          <span class="session-time" id="sessionTime">12:34</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="transcript-area" id="transcript"></div>
+
+      <div class="language-bar" id="langBar">
+        <button class="lang-pill active" data-lang="es">
+          <span class="flag">🇪🇸</span>
+          <span class="code">ES</span>
+        </button>
+        <button class="lang-pill" data-lang="pt">
+          <span class="flag">🇧🇷</span>
+          <span class="code">PT</span>
+        </button>
+        <button class="lang-pill" data-lang="fr">
+          <span class="flag">🇫🇷</span>
+          <span class="code">FR</span>
+        </button>
+        <button class="lang-pill" data-lang="zh">
+          <span class="flag">🇨🇳</span>
+          <span class="code">ZH</span>
+        </button>
+        <button class="lang-pill" data-lang="ko">
+          <span class="flag">🇰🇷</span>
+          <span class="code">KO</span>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Build waveform bars
+      (() => {
+        const wf = document.getElementById("waveform");
+        const barCount = 18;
+        for (let i = 0; i < barCount; i++) {
+          const bar = document.createElement("div");
+          bar.classList.add("bar");
+          const minH = 4 + Math.random() * 8;
+          const maxH = 20 + Math.random() * 28;
+          const dur = 0.4 + Math.random() * 0.6;
+          const delay = Math.random() * 0.8;
+          bar.style.setProperty("--min-h", minH + "px");
+          bar.style.setProperty("--max-h", maxH + "px");
+          bar.style.setProperty("--dur", dur + "s");
+          bar.style.setProperty("--delay", delay + "s");
+          bar.style.height = minH + "px";
+          wf.appendChild(bar);
+        }
+      })();
+
+      // Transcript data
+      const segments = [
+        {
+          text: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+          interim: false,
+        },
+        {
+          text: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+          interim: false,
+        },
+        {
+          text: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+          interim: false,
+        },
+        {
+          text: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+          interim: false,
+        },
+        {
+          text: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+          interim: false,
+        },
+        {
+          text: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+          interim: false,
+        },
+        {
+          text: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+          interim: false,
+        },
+        {
+          text: "Ese peque\u00f1o acto de servicio transform\u00f3 no solo a la familia nueva, sino a todo el barrio.",
+          interim: false,
+        },
+        {
+          text: "Cuando abrimos nuestros corazones al servicio\u2026",
+          interim: true,
+        },
+      ];
+
+      const transcriptEl = document.getElementById("transcript");
+      let currentIndex = 0;
+
+      function addSegment() {
+        if (currentIndex >= segments.length) return;
+
+        // Remove 'latest' class from previous segments
+        const prev = transcriptEl.querySelectorAll(".segment.latest");
+        prev.forEach((el) => el.classList.remove("latest"));
+
+        // Remove interim class/elements if the new segment is final
+        if (!segments[currentIndex].interim) {
+          const interims = transcriptEl.querySelectorAll(".segment.interim");
+          interims.forEach((el) => el.remove());
+        }
+
+        const seg = segments[currentIndex];
+        const div = document.createElement("div");
+        div.classList.add("segment", "latest");
+        if (seg.interim) div.classList.add("interim");
+        div.textContent = seg.text;
+        transcriptEl.appendChild(div);
+
+        // Auto-scroll
+        requestAnimationFrame(() => {
+          transcriptEl.scrollTo({
+            top: transcriptEl.scrollHeight,
+            behavior: "smooth",
+          });
+        });
+
+        currentIndex++;
+
+        if (currentIndex < segments.length) {
+          const delay = seg.interim ? 2500 : 2800 + Math.random() * 1400;
+          setTimeout(addSegment, delay);
+        }
+      }
+
+      // Start with slight delay
+      setTimeout(addSegment, 1200);
+
+      // Session timer
+      (() => {
+        const timeEl = document.getElementById("sessionTime");
+        let seconds = 12 * 60 + 34; // start at 12:34
+        setInterval(() => {
+          seconds++;
+          const m = Math.floor(seconds / 60);
+          const s = seconds % 60;
+          timeEl.textContent =
+            String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+        }, 1000);
+      })();
+
+      // Language selector interaction
+      document.getElementById("langBar").addEventListener("click", (e) => {
+        const pill = e.target.closest(".lang-pill");
+        if (!pill) return;
+        document
+          .querySelectorAll(".lang-pill")
+          .forEach((p) => p.classList.remove("active"));
+        pill.classList.add("active");
+      });
+    </script>
+  </body>
+</html>

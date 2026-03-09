@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Stake · Live</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --teal: #1a8a7d;
+        --teal-bg: rgba(26, 138, 125, 0.04);
+        --gray-border: #d0d0d0;
+        --gray-light: #b8b8b8;
+        --gray-text: #999;
+        --text-primary: #1a1a1a;
+        --text-secondary: #555;
+        --bg: #ffffff;
+        --bg-warm: #fffdf8;
+        --red-live: #d63031;
+        --font-serif: "Libre Baskerville", Georgia, serif;
+        --font-mono: "Space Mono", "Courier New", monospace;
+      }
+
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: var(--font-serif);
+        color: var(--text-primary);
+        background: var(--bg);
+        line-height: 1.7;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── Header ── */
+      .header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #e8e8e8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        z-index: 100;
+      }
+
+      .header-brand {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .header-brand .separator {
+        color: var(--gray-light);
+      }
+
+      .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--red-live);
+      }
+
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--red-live);
+        border-radius: 50%;
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .lang-badge {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--teal);
+        background: rgba(26, 138, 125, 0.08);
+        padding: 3px 8px;
+        border-radius: 3px;
+      }
+
+      /* ── Main Content ── */
+      .main {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .column {
+        flex: 1;
+        overflow-y: auto;
+        padding: 32px 0 120px;
+        scroll-behavior: smooth;
+      }
+
+      .column-source {
+        border-right: 1px solid #eee;
+      }
+
+      .column-header {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--gray-text);
+        padding: 0 32px 24px 60px;
+      }
+
+      /* ── Segments ── */
+      .segment {
+        display: flex;
+        padding: 14px 32px 14px 20px;
+        border-left: 3px solid transparent;
+        transition: all 0.4s ease;
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      .segment.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .segment.active {
+        border-left-color: var(--teal);
+        background: var(--teal-bg);
+      }
+
+      .segment:not(.active) {
+        border-left: 3px dotted #e0e0e0;
+      }
+
+      .segment-number {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--gray-light);
+        min-width: 28px;
+        padding-top: 3px;
+        text-align: right;
+        margin-right: 12px;
+        user-select: none;
+        flex-shrink: 0;
+      }
+
+      .segment-body {
+        flex: 1;
+      }
+
+      .segment-timestamp {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--gray-text);
+        margin-bottom: 4px;
+        letter-spacing: 0.05em;
+      }
+
+      .segment-text {
+        font-family: var(--font-serif);
+        font-size: 15px;
+        line-height: 1.75;
+        color: var(--text-primary);
+      }
+
+      .segment.active .segment-text {
+        color: #111;
+      }
+
+      .segment-text.interim {
+        font-style: italic;
+        color: var(--text-secondary);
+      }
+
+      .segment-text.interim::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 14px;
+        background: var(--teal);
+        margin-left: 3px;
+        vertical-align: text-bottom;
+        animation: blink-cursor 1s step-end infinite;
+      }
+
+      @keyframes blink-cursor {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ── Footer ── */
+      .footer {
+        border-top: 1px solid #e8e8e8;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--gray-text);
+        letter-spacing: 0.05em;
+        background: var(--bg);
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+      }
+
+      .footer-session {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .footer-listeners {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .footer-listeners svg {
+        width: 12px;
+        height: 12px;
+        fill: none;
+        stroke: var(--gray-text);
+        stroke-width: 1.5;
+      }
+
+      /* ── Mobile Toggle ── */
+      .mobile-toggle {
+        display: none;
+        position: fixed;
+        bottom: 52px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border: none;
+        background: var(--text-primary);
+        color: #fff;
+        padding: 10px 24px;
+        border-radius: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        transition: background 0.2s ease;
+      }
+
+      .mobile-toggle:active {
+        background: var(--teal);
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 767px) {
+        .main {
+          flex-direction: column;
+        }
+
+        .column {
+          padding: 20px 0 100px;
+        }
+
+        .column-source {
+          border-right: none;
+        }
+
+        .column.hidden-mobile {
+          display: none;
+        }
+
+        .column-header {
+          padding-left: 48px;
+        }
+
+        .segment {
+          padding: 12px 20px 12px 12px;
+        }
+
+        .segment-number {
+          min-width: 24px;
+          font-size: 10px;
+        }
+
+        .segment-text {
+          font-size: 14px;
+        }
+
+        .mobile-toggle {
+          display: block;
+        }
+
+        .header {
+          padding: 12px 16px;
+        }
+
+        .footer {
+          padding: 10px 16px;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .column-header {
+          padding-left: 56px;
+        }
+      }
+
+      /* ── Scrollbar Styling ── */
+      .column::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .column::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .column::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-brand">
+        Our Stake <span class="separator">·</span> Live
+      </div>
+      <div class="header-right">
+        <span class="lang-badge">EN → ES</span>
+        <div class="live-indicator">
+          <span class="live-dot"></span>
+          Live
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="column column-source" id="col-source">
+        <div class="column-header">Source — English</div>
+        <div class="segments" id="segments-source"></div>
+      </div>
+      <div class="column column-translation hidden-mobile" id="col-translation">
+        <div class="column-header">Translation — Español</div>
+        <div class="segments" id="segments-translation"></div>
+      </div>
+    </div>
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" id="mobile-toggle">Show Translation</button>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span class="footer-session">Session K7M2XP</span>
+      <span class="footer-listeners">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span id="listener-count">3 listeners</span>
+      </span>
+    </footer>
+
+    <script>
+      // ── Mock Data ──
+      const sourceSegments = [
+        "Brothers and sisters, welcome to our ward conference today.",
+        "I'm grateful for the opportunity to speak with you this morning.",
+        "Our theme today is strengthening families through service.",
+        "When we serve others, we draw closer to each other and to our Heavenly Father.",
+        "I'd like to share a story about a family in our ward who exemplified this principle.",
+        "Brother and Sister García noticed a newly arrived family needed help moving in.",
+        "Without being asked, they organized neighbors to help throughout the entire weekend.",
+        "That small act of service transformed not just the new family, but the entire ward.",
+      ];
+
+      const translationSegments = [
+        "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+        "Estoy agradecido por la oportunidad de hablarles esta mañana.",
+        "Nuestro tema de hoy es fortalecer a las familias a través del servicio.",
+        "Cuando servimos a otros, nos acercamos más unos a otros y a nuestro Padre Celestial.",
+        "Me gustaría compartir una historia sobre una familia en nuestro barrio que ejemplificó este principio.",
+        "El hermano y la hermana García notaron que una familia recién llegada necesitaba ayuda para mudarse.",
+        "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+        "Ese pequeño acto de servicio transformó no solo a la familia nueva, sino a todo el barrio.",
+        "Cuando abrimos nuestros corazones al servicio...",
+      ];
+
+      const startTime = new Date();
+      startTime.setMinutes(startTime.getMinutes() - 1);
+      let segmentIndex = 0;
+
+      const sourceContainer = document.getElementById("segments-source");
+      const translationContainer = document.getElementById(
+        "segments-translation",
+      );
+      const colSource = document.getElementById("col-source");
+      const colTranslation = document.getElementById("col-translation");
+
+      function formatTimestamp(offset) {
+        const mins = Math.floor(offset / 60);
+        const secs = offset % 60;
+        return (
+          String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0")
+        );
+      }
+
+      function createSegmentEl(number, timestamp, text, isActive, isInterim) {
+        const el = document.createElement("div");
+        el.className = "segment" + (isActive ? " active" : "");
+
+        const numEl = document.createElement("div");
+        numEl.className = "segment-number";
+        numEl.textContent = number;
+
+        const bodyEl = document.createElement("div");
+        bodyEl.className = "segment-body";
+
+        const tsEl = document.createElement("div");
+        tsEl.className = "segment-timestamp";
+        tsEl.textContent = timestamp;
+
+        const textEl = document.createElement("div");
+        textEl.className = "segment-text" + (isInterim ? " interim" : "");
+        textEl.textContent = text;
+
+        bodyEl.appendChild(tsEl);
+        bodyEl.appendChild(textEl);
+        el.appendChild(numEl);
+        el.appendChild(bodyEl);
+
+        return el;
+      }
+
+      function deactivateAll(container) {
+        container.querySelectorAll(".segment.active").forEach((el) => {
+          el.classList.remove("active");
+        });
+      }
+
+      function addSegment() {
+        if (segmentIndex >= sourceSegments.length) return;
+
+        const num = segmentIndex + 1;
+        const ts = formatTimestamp(4 + segmentIndex * 4);
+
+        // Deactivate previous
+        deactivateAll(sourceContainer);
+        deactivateAll(translationContainer);
+
+        // Source segment
+        const srcEl = createSegmentEl(
+          num,
+          ts,
+          sourceSegments[segmentIndex],
+          true,
+          false,
+        );
+        sourceContainer.appendChild(srcEl);
+        requestAnimationFrame(() => srcEl.classList.add("visible"));
+
+        // Translation segment (may have interim on last one)
+        const isLastTranslation =
+          segmentIndex === translationSegments.length - 2;
+        const hasTranslation = segmentIndex < translationSegments.length;
+
+        if (hasTranslation) {
+          const trEl = createSegmentEl(
+            num,
+            ts,
+            translationSegments[segmentIndex],
+            true,
+            false,
+          );
+          translationContainer.appendChild(trEl);
+          requestAnimationFrame(() => trEl.classList.add("visible"));
+        }
+
+        // Auto-scroll both columns
+        requestAnimationFrame(() => {
+          colSource.scrollTop = colSource.scrollHeight;
+          colTranslation.scrollTop = colTranslation.scrollHeight;
+        });
+
+        segmentIndex++;
+
+        // After last source segment, add the interim translation
+        if (segmentIndex === sourceSegments.length) {
+          setTimeout(() => {
+            deactivateAll(translationContainer);
+            const interimEl = createSegmentEl(
+              9,
+              formatTimestamp(4 + 8 * 4),
+              translationSegments[8],
+              true,
+              true,
+            );
+            translationContainer.appendChild(interimEl);
+            requestAnimationFrame(() => interimEl.classList.add("visible"));
+            requestAnimationFrame(() => {
+              colTranslation.scrollTop = colTranslation.scrollHeight;
+            });
+          }, 2000);
+        }
+      }
+
+      // ── Simulate segments appearing ──
+      function scheduleNextSegment() {
+        if (segmentIndex >= sourceSegments.length) return;
+        const delay = 3000 + Math.random() * 1000;
+        setTimeout(() => {
+          addSegment();
+          scheduleNextSegment();
+        }, delay);
+      }
+
+      // Start with first segment immediately, then schedule rest
+      addSegment();
+      scheduleNextSegment();
+
+      // ── Synced Scrolling ──
+      let isSyncing = false;
+
+      function syncScroll(source, target) {
+        if (isSyncing) return;
+        isSyncing = true;
+        const ratio =
+          source.scrollTop / (source.scrollHeight - source.clientHeight || 1);
+        target.scrollTop = ratio * (target.scrollHeight - target.clientHeight);
+        requestAnimationFrame(() => {
+          isSyncing = false;
+        });
+      }
+
+      colSource.addEventListener("scroll", () =>
+        syncScroll(colSource, colTranslation),
+      );
+      colTranslation.addEventListener("scroll", () =>
+        syncScroll(colTranslation, colSource),
+      );
+
+      // ── Mobile Toggle ──
+      const toggleBtn = document.getElementById("mobile-toggle");
+      let showingSource = true;
+
+      toggleBtn.addEventListener("click", () => {
+        showingSource = !showingSource;
+        if (showingSource) {
+          colSource.classList.remove("hidden-mobile");
+          colTranslation.classList.add("hidden-mobile");
+          toggleBtn.textContent = "Show Translation";
+        } else {
+          colSource.classList.add("hidden-mobile");
+          colTranslation.classList.remove("hidden-mobile");
+          toggleBtn.textContent = "Show Source";
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Stake — Host Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-primary: #1a1e2e;
+        --bg-secondary: #151826;
+        --bg-panel: #1f2337;
+        --bg-panel-hover: #252a40;
+        --text-primary: #f0f0f2;
+        --text-secondary: rgba(240, 240, 242, 0.55);
+        --text-interim: rgba(240, 240, 242, 0.4);
+        --accent-green: #34d399;
+        --accent-green-glow: rgba(52, 211, 153, 0.25);
+        --accent-red: #f87171;
+        --accent-red-hover: #ef4444;
+        --accent-blue: #60a5fa;
+        --glass-bg: rgba(255, 255, 255, 0.06);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-border-hover: rgba(255, 255, 255, 0.18);
+        --font-serif: "Playfair Display", Georgia, serif;
+        --font-sans: "DM Sans", -apple-system, sans-serif;
+        --font-mono: "JetBrains Mono", "SF Mono", monospace;
+        --bar-height: 72px;
+        --top-bar-height: 56px;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ============================================
+       TOP BAR
+       ============================================ */
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--top-bar-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--glass-border);
+        z-index: 100;
+      }
+
+      .top-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+      }
+
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent-green);
+      }
+
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        box-shadow: 0 0 8px var(--accent-green-glow);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.45;
+          transform: scale(0.8);
+        }
+      }
+
+      .join-code {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 6px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+      }
+
+      .join-code .code {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        color: var(--text-primary);
+      }
+
+      .copy-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: none;
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        color: var(--text-secondary);
+        font-family: var(--font-sans);
+        font-size: 0.65rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .copy-btn:hover {
+        color: var(--text-primary);
+        border-color: var(--glass-border-hover);
+        background: var(--glass-bg);
+      }
+
+      .copy-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .listener-count {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .listener-count svg {
+        width: 14px;
+        height: 14px;
+        opacity: 0.6;
+      }
+
+      .lang-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 6px;
+        padding: 0.3rem 1.8rem 0.3rem 0.6rem;
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.2s ease;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='rgba(240,240,242,0.5)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.6rem center;
+      }
+
+      .lang-select:hover {
+        border-color: var(--glass-border-hover);
+      }
+
+      .lang-select option {
+        background: var(--bg-panel);
+        color: var(--text-primary);
+      }
+
+      /* ============================================
+       SPLIT COLUMNS
+       ============================================ */
+      .columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        position: fixed;
+        top: var(--top-bar-height);
+        bottom: var(--bar-height);
+        left: 0;
+        right: 0;
+        background: var(--glass-border);
+      }
+
+      .column {
+        background: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .column-header {
+        flex-shrink: 0;
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        background: var(--bg-secondary);
+      }
+
+      .column-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        scroll-behavior: smooth;
+      }
+
+      .column-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .column-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .column-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+      }
+
+      .column-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .segment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .segment {
+        font-family: var(--font-serif);
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: var(--text-primary);
+        opacity: 0;
+        transform: translateY(20px);
+        animation: segIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .segment.interim {
+        color: var(--text-interim);
+        font-style: italic;
+      }
+
+      .segment.interim::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 1em;
+        background: var(--text-interim);
+        margin-left: 3px;
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+      }
+
+      .segment.dimmed {
+        color: var(--text-secondary);
+        transition: color 1s ease;
+      }
+
+      @keyframes segIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ============================================
+       BOTTOM CONTROL BAR
+       ============================================ */
+      .control-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--bar-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--glass-border);
+        z-index: 100;
+      }
+
+      .control-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      /* Waveform */
+      .waveform {
+        display: flex;
+        align-items: center;
+        gap: 2.5px;
+        height: 32px;
+        padding: 0 0.25rem;
+      }
+
+      .waveform .bar {
+        width: 3px;
+        border-radius: 3px;
+        background: var(--accent-green);
+        opacity: 0.7;
+        animation: wave 1.2s ease-in-out infinite;
+      }
+
+      .waveform .bar:nth-child(1) {
+        height: 8px;
+        animation-delay: 0s;
+      }
+      .waveform .bar:nth-child(2) {
+        height: 16px;
+        animation-delay: 0.1s;
+      }
+      .waveform .bar:nth-child(3) {
+        height: 24px;
+        animation-delay: 0.15s;
+      }
+      .waveform .bar:nth-child(4) {
+        height: 12px;
+        animation-delay: 0.25s;
+      }
+      .waveform .bar:nth-child(5) {
+        height: 20px;
+        animation-delay: 0.05s;
+      }
+      .waveform .bar:nth-child(6) {
+        height: 28px;
+        animation-delay: 0.2s;
+      }
+      .waveform .bar:nth-child(7) {
+        height: 14px;
+        animation-delay: 0.3s;
+      }
+      .waveform .bar:nth-child(8) {
+        height: 22px;
+        animation-delay: 0.08s;
+      }
+      .waveform .bar:nth-child(9) {
+        height: 10px;
+        animation-delay: 0.22s;
+      }
+      .waveform .bar:nth-child(10) {
+        height: 18px;
+        animation-delay: 0.12s;
+      }
+      .waveform .bar:nth-child(11) {
+        height: 26px;
+        animation-delay: 0.18s;
+      }
+      .waveform .bar:nth-child(12) {
+        height: 8px;
+        animation-delay: 0.28s;
+      }
+
+      @keyframes wave {
+        0%,
+        100% {
+          transform: scaleY(0.4);
+        }
+        50% {
+          transform: scaleY(1);
+        }
+      }
+
+      /* Mic button */
+      .mic-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 2px solid var(--accent-green);
+        background: rgba(52, 211, 153, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .mic-btn:hover {
+        background: rgba(52, 211, 153, 0.2);
+        box-shadow: 0 0 16px var(--accent-green-glow);
+      }
+
+      .mic-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: var(--accent-green);
+      }
+
+      .control-center {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .timer {
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        letter-spacing: 0.05em;
+        min-width: 5ch;
+        text-align: center;
+      }
+
+      .timer-label {
+        font-size: 0.6rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .control-right {
+        display: flex;
+        align-items: center;
+      }
+
+      .end-btn {
+        background: rgba(248, 113, 113, 0.1);
+        border: 1px solid rgba(248, 113, 113, 0.25);
+        border-radius: 8px;
+        padding: 0.5rem 1.1rem;
+        color: var(--accent-red);
+        font-family: var(--font-sans);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .end-btn:hover {
+        background: rgba(248, 113, 113, 0.18);
+        border-color: rgba(248, 113, 113, 0.4);
+        color: var(--accent-red-hover);
+      }
+
+      /* ============================================
+       RESPONSIVE
+       ============================================ */
+      @media (max-width: 768px) {
+        .columns {
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr 1fr;
+        }
+
+        .segment {
+          font-size: 1rem;
+          line-height: 1.75;
+        }
+
+        .waveform {
+          display: none;
+        }
+
+        .top-bar {
+          padding: 0 0.75rem;
+          flex-wrap: wrap;
+          height: auto;
+          min-height: var(--top-bar-height);
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
+          gap: 0.5rem;
+        }
+
+        .join-code .code {
+          font-size: 0.7rem;
+        }
+
+        .control-bar {
+          padding: 0 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============ TOP BAR ============ -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          LIVE
+        </div>
+        <div class="join-code">
+          <span class="code">K7M2XP</span>
+          <button class="copy-btn" id="copyBtn">
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="5" y="5" width="9" height="9" rx="1.5" />
+              <path
+                d="M5 11H3.5A1.5 1.5 0 012 9.5v-7A1.5 1.5 0 013.5 1h7A1.5 1.5 0 0112 2.5V5"
+              />
+            </svg>
+            Copy Link
+          </button>
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <div class="listener-count">
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 8a3 3 0 100-6 3 3 0 000 6zm-5 6a5 5 0 0110 0H3z" />
+          </svg>
+          3 listeners
+        </div>
+        <select class="lang-select" id="langSelect">
+          <option value="es" selected>Espa&ntilde;ol</option>
+          <option value="pt">Portugu&ecirc;s</option>
+          <option value="fr">Fran&ccedil;ais</option>
+          <option value="zh">中文</option>
+          <option value="ko">한국어</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ============ SPLIT COLUMNS ============ -->
+    <div class="columns">
+      <!-- Source -->
+      <div class="column">
+        <div class="column-header">English (Source)</div>
+        <div class="column-scroll" id="sourceScroll">
+          <div class="segment-list" id="sourceList"></div>
+        </div>
+      </div>
+      <!-- Translation -->
+      <div class="column">
+        <div class="column-header" id="translationHeader">
+          Espa&ntilde;ol (Translation)
+        </div>
+        <div class="column-scroll" id="transScroll">
+          <div class="segment-list" id="transList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ BOTTOM CONTROL BAR ============ -->
+    <div class="control-bar">
+      <div class="control-left">
+        <button class="mic-btn" id="micBtn" title="Toggle microphone">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 1a4 4 0 00-4 4v6a4 4 0 008 0V5a4 4 0 00-4-4z" />
+            <path
+              d="M19 11a7 7 0 01-14 0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <line
+              x1="12"
+              y1="19"
+              x2="12"
+              y2="23"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <line
+              x1="8"
+              y1="23"
+              x2="16"
+              y2="23"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+        <div class="waveform" id="waveform">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      </div>
+      <div class="control-center">
+        <div>
+          <div class="timer" id="timer">0:00</div>
+          <div class="timer-label">Elapsed</div>
+        </div>
+      </div>
+      <div class="control-right">
+        <button class="end-btn" id="endBtn">End Session</button>
+      </div>
+    </div>
+
+    <script>
+      /* ---- Data ---- */
+      const sourceSegments = [
+        {
+          text: "Brothers and sisters, welcome to our ward conference today.",
+          interim: false,
+        },
+        {
+          text: "I\u2019m grateful for the opportunity to speak with you this morning.",
+          interim: false,
+        },
+        {
+          text: "Our theme today is strengthening families through service.",
+          interim: false,
+        },
+        {
+          text: "When we serve others, we draw closer to each other and to our Heavenly Father.",
+          interim: false,
+        },
+        {
+          text: "I\u2019d like to share a story about a family in our ward who exemplified this principle.",
+          interim: false,
+        },
+        {
+          text: "Brother and Sister Garc\u00eda noticed a newly arrived family needed help moving in.",
+          interim: false,
+        },
+        {
+          text: "Without being asked, they organized neighbors to help throughout the entire weekend.",
+          interim: false,
+        },
+        {
+          text: "That small act of service transformed not just the new family, but the entire ward.",
+          interim: false,
+        },
+        { text: "When we open our hearts to service\u2026", interim: true },
+      ];
+
+      const transSegments = [
+        {
+          text: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+          interim: false,
+        },
+        {
+          text: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+          interim: false,
+        },
+        {
+          text: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+          interim: false,
+        },
+        {
+          text: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+          interim: false,
+        },
+        {
+          text: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+          interim: false,
+        },
+        {
+          text: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+          interim: false,
+        },
+        {
+          text: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+          interim: false,
+        },
+        {
+          text: "Ese peque\u00f1o acto de servicio transform\u00f3 no solo a la familia nueva, sino a todo el barrio.",
+          interim: false,
+        },
+        {
+          text: "Cuando abrimos nuestros corazones al servicio\u2026",
+          interim: true,
+        },
+      ];
+
+      const sourceList = document.getElementById("sourceList");
+      const transList = document.getElementById("transList");
+      const sourceScroll = document.getElementById("sourceScroll");
+      const transScroll = document.getElementById("transScroll");
+
+      const DIM_THRESHOLD = 5;
+      let index = 0;
+
+      function addSegment() {
+        if (index >= sourceSegments.length) return;
+
+        const src = sourceSegments[index];
+        const trs = transSegments[index];
+
+        // Create source element
+        const srcEl = document.createElement("div");
+        srcEl.className = "segment" + (src.interim ? " interim" : "");
+        srcEl.textContent = src.text;
+        sourceList.appendChild(srcEl);
+
+        // Create translation element
+        const trsEl = document.createElement("div");
+        trsEl.className = "segment" + (trs.interim ? " interim" : "");
+        trsEl.textContent = trs.text;
+        transList.appendChild(trsEl);
+
+        // Dim older segments
+        [sourceList, transList].forEach((list) => {
+          const segs = list.querySelectorAll(".segment");
+          segs.forEach((s, i) => {
+            if (i < segs.length - DIM_THRESHOLD) {
+              s.classList.add("dimmed");
+            }
+          });
+        });
+
+        // Auto-scroll both columns
+        requestAnimationFrame(() => {
+          sourceScroll.scrollTo({
+            top: sourceScroll.scrollHeight,
+            behavior: "smooth",
+          });
+          transScroll.scrollTo({
+            top: transScroll.scrollHeight,
+            behavior: "smooth",
+          });
+        });
+
+        index++;
+
+        if (index < sourceSegments.length) {
+          const delay = 3000 + Math.random() * 1500;
+          setTimeout(addSegment, delay);
+        }
+      }
+
+      // Start adding segments
+      setTimeout(addSegment, 1500);
+
+      /* ---- Timer ---- */
+      let seconds = 754; // Start at 12:34
+      const timerEl = document.getElementById("timer");
+
+      function updateTimer() {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        timerEl.textContent = m + ":" + String(s).padStart(2, "0");
+        seconds++;
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+
+      /* ---- Copy button interaction ---- */
+      document.getElementById("copyBtn").addEventListener("click", function () {
+        const btn = this;
+        const original = btn.innerHTML;
+        btn.innerHTML = `
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+          <polyline points="3 8 6.5 11.5 13 5"/>
+        </svg>
+        Copied!
+      `;
+        btn.style.color = "var(--accent-green)";
+        setTimeout(() => {
+          btn.innerHTML = original;
+          btn.style.color = "";
+        }, 2000);
+      });
+
+      /* ---- Mic toggle interaction ---- */
+      let micActive = true;
+      document.getElementById("micBtn").addEventListener("click", function () {
+        micActive = !micActive;
+        const waveform = document.getElementById("waveform");
+        if (micActive) {
+          this.style.borderColor = "var(--accent-green)";
+          this.style.background = "rgba(52, 211, 153, 0.1)";
+          this.querySelector("svg").style.fill = "var(--accent-green)";
+          waveform.style.opacity = "1";
+        } else {
+          this.style.borderColor = "var(--accent-red)";
+          this.style.background = "rgba(248, 113, 113, 0.1)";
+          this.querySelector("svg").style.fill = "var(--accent-red)";
+          waveform.style.opacity = "0.25";
+        }
+      });
+    </script>
+  </body>
+</html>

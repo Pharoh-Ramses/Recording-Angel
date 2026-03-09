@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Live Visit — Our Stake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #faf9f6;
+        --bg-warm: #f5f3ee;
+        --teal: #0d9488;
+        --teal-light: #ccfbf1;
+        --teal-dark: #0f766e;
+        --text-primary: #1c1917;
+        --text-secondary: #78716c;
+        --text-muted: #a8a29e;
+        --bubble-bg: #ffffff;
+        --shadow-sm:
+          0 1px 3px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+        --shadow-md: 0 4px 12px rgba(28, 25, 23, 0.08);
+        --radius: 16px;
+        --header-height: 56px;
+      }
+
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: var(--bg);
+        color: var(--text-primary);
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+      }
+
+      /* ── Top Bar ── */
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        background: rgba(250, 249, 246, 0.72);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border-bottom: 1px solid rgba(28, 25, 23, 0.06);
+      }
+
+      .top-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        flex-shrink: 0;
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+        }
+      }
+
+      .top-bar-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: -0.01em;
+        color: var(--text-primary);
+      }
+
+      /* ── Language Switcher ── */
+      .lang-switcher {
+        display: flex;
+        background: rgba(28, 25, 23, 0.06);
+        border-radius: 10px;
+        padding: 3px;
+        gap: 2px;
+      }
+
+      .lang-option {
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+        border: none;
+        background: transparent;
+        font-family: "Outfit", sans-serif;
+        letter-spacing: 0.02em;
+      }
+
+      .lang-option.active {
+        background: white;
+        color: var(--teal-dark);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      /* ── Transcript Area ── */
+      .transcript-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: calc(var(--header-height) + 16px) 16px 100px;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .transcript-area::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* ── Chat Bubble ── */
+      .bubble-wrapper {
+        margin-bottom: 16px;
+        max-width: 92%;
+        opacity: 0;
+        transform: translateX(-24px) scale(0.97);
+        animation: bubble-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
+      @keyframes bubble-in {
+        0% {
+          opacity: 0;
+          transform: translateX(-24px) scale(0.97);
+        }
+        60% {
+          transform: translateX(4px) scale(1.005);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0) scale(1);
+        }
+      }
+
+      .source-text {
+        font-family: "Source Serif 4", serif;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        padding: 0 14px;
+        margin-bottom: 4px;
+        font-style: italic;
+        line-height: 1.4;
+      }
+
+      .bubble {
+        background: var(--bubble-bg);
+        border-radius: var(--radius);
+        border-top-left-radius: 4px;
+        padding: 14px 16px 10px;
+        box-shadow: var(--shadow-sm);
+        border-left: 3px solid var(--teal);
+        position: relative;
+      }
+
+      .bubble-text {
+        font-family: "Source Serif 4", serif;
+        font-size: 1.05rem;
+        line-height: 1.55;
+        color: var(--text-primary);
+        font-weight: 400;
+      }
+
+      .bubble-meta {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .lang-badge {
+        font-family: "Outfit", sans-serif;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        background: var(--teal-light);
+        color: var(--teal-dark);
+        padding: 2px 7px;
+        border-radius: 6px;
+      }
+
+      .timestamp {
+        font-family: "Outfit", sans-serif;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ── Typing Indicator ── */
+      .typing-indicator {
+        display: none;
+        margin-bottom: 16px;
+        max-width: 92%;
+        opacity: 0;
+        transform: translateX(-24px) scale(0.97);
+      }
+
+      .typing-indicator.visible {
+        display: block;
+        animation: bubble-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
+      .typing-bubble {
+        background: var(--bubble-bg);
+        border-radius: var(--radius);
+        border-top-left-radius: 4px;
+        padding: 14px 20px;
+        box-shadow: var(--shadow-sm);
+        border-left: 3px solid var(--teal);
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      .typing-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        animation: bounce-dot 1.4s ease-in-out infinite;
+      }
+
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.16s;
+      }
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.32s;
+      }
+
+      @keyframes bounce-dot {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        30% {
+          transform: translateY(-6px);
+          opacity: 1;
+        }
+      }
+
+      /* ── Scroll-to-bottom FAB ── */
+      .scroll-fab {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: var(--teal);
+        color: white;
+        border: none;
+        border-radius: 24px;
+        padding: 10px 20px;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(13, 148, 136, 0.35);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition:
+          transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+          opacity 0.25s ease;
+        z-index: 90;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .scroll-fab.visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .scroll-fab svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ── Session Info Footer ── */
+      .session-info {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        padding: 8px;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        background: linear-gradient(to top, var(--bg) 60%, transparent);
+        pointer-events: none;
+        padding-top: 32px;
+      }
+
+      @media (min-width: 600px) {
+        .transcript-area {
+          max-width: 540px;
+          margin: 0 auto;
+          padding-left: 24px;
+          padding-right: 24px;
+        }
+        .bubble-wrapper {
+          max-width: 85%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="status-dot"></span>
+        <span class="top-bar-title">Live Visit</span>
+      </div>
+      <div class="lang-switcher">
+        <button class="lang-option" data-lang="EN">EN</button>
+        <button class="lang-option active" data-lang="ES">ES</button>
+        <button class="lang-option" data-lang="PT">PT</button>
+      </div>
+    </header>
+
+    <!-- Transcript -->
+    <main class="transcript-area" id="transcript"></main>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+
+    <!-- Scroll FAB -->
+    <button class="scroll-fab" id="scrollFab">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+      New messages below
+    </button>
+
+    <!-- Session Info -->
+    <div class="session-info">Ward Conference &middot; Code K7M2XP</div>
+
+    <script>
+      const messages = [
+        {
+          time: "2:31 PM",
+          source: "Brothers and sisters, welcome to our ward conference today.",
+          text: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+        },
+        {
+          time: "2:31 PM",
+          source:
+            "I'm grateful for the opportunity to speak with you this morning.",
+          text: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+        },
+        {
+          time: "2:32 PM",
+          source: "Our theme today is strengthening families through service.",
+          text: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+        },
+        {
+          time: "2:33 PM",
+          source:
+            "When we serve others, we draw closer to each other and to our Heavenly Father.",
+          text: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+        },
+        {
+          time: "2:33 PM",
+          source:
+            "I'd like to share a story about a family in our ward who exemplified this principle.",
+          text: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+        },
+        {
+          time: "2:34 PM",
+          source:
+            "Brother and Sister Garc\u00eda noticed a newly arrived family needed help moving in.",
+          text: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+        },
+        {
+          time: "2:35 PM",
+          source:
+            "Without being asked, they organized neighbors to help throughout the entire weekend.",
+          text: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+        },
+        {
+          time: "2:35 PM",
+          source: null,
+          text: "Ese peque\u00f1o acto de servicio transform\u00f3\u2026",
+          interim: true,
+        },
+      ];
+
+      const transcript = document.getElementById("transcript");
+      const typingIndicator = document.getElementById("typingIndicator");
+      const scrollFab = document.getElementById("scrollFab");
+      let currentIndex = 0;
+      let autoScroll = true;
+
+      function isNearBottom() {
+        const threshold = 120;
+        return (
+          transcript.scrollHeight -
+            transcript.scrollTop -
+            transcript.clientHeight <
+          threshold
+        );
+      }
+
+      transcript.addEventListener("scroll", () => {
+        autoScroll = isNearBottom();
+        scrollFab.classList.toggle("visible", !autoScroll);
+      });
+
+      scrollFab.addEventListener("click", () => {
+        autoScroll = true;
+        scrollFab.classList.remove("visible");
+        scrollToBottom();
+      });
+
+      function scrollToBottom() {
+        transcript.scrollTo({
+          top: transcript.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+
+      function showTyping() {
+        typingIndicator.classList.add("visible");
+        transcript.appendChild(typingIndicator);
+        if (autoScroll) scrollToBottom();
+      }
+
+      function hideTyping() {
+        typingIndicator.classList.remove("visible");
+      }
+
+      function addMessage(msg) {
+        hideTyping();
+
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("bubble-wrapper");
+
+        let html = "";
+
+        if (msg.source) {
+          html += `<div class="source-text">${msg.source}</div>`;
+        }
+
+        html += `<div class="bubble">`;
+        html += `<div class="bubble-text">${msg.text}${msg.interim ? '<span style="animation: blink 1s step-end infinite; color: var(--teal);">|</span>' : ""}</div>`;
+        html += `<div class="bubble-meta">`;
+        html += `<span class="lang-badge">ES</span>`;
+        html += `<span class="timestamp">${msg.time}</span>`;
+        html += `</div>`;
+        html += `</div>`;
+
+        wrapper.innerHTML = html;
+        transcript.insertBefore(wrapper, typingIndicator);
+
+        if (autoScroll) {
+          requestAnimationFrame(() => scrollToBottom());
+        }
+      }
+
+      function nextMessage() {
+        if (currentIndex >= messages.length) return;
+
+        const msg = messages[currentIndex];
+        currentIndex++;
+
+        addMessage(msg);
+
+        if (currentIndex < messages.length) {
+          const delay = 2800 + Math.random() * 1600;
+          setTimeout(() => {
+            showTyping();
+            const typingDuration = 800 + Math.random() * 700;
+            setTimeout(nextMessage, typingDuration);
+          }, delay);
+        }
+      }
+
+      // Add blink keyframes dynamically
+      const blinkStyle = document.createElement("style");
+      blinkStyle.textContent = `@keyframes blink { 50% { opacity: 0; } }`;
+      document.head.appendChild(blinkStyle);
+
+      // Language switcher interaction
+      document.querySelectorAll(".lang-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelector(".lang-option.active")
+            .classList.remove("active");
+          btn.classList.add("active");
+        });
+      });
+
+      // Start the simulation
+      setTimeout(() => {
+        showTyping();
+        setTimeout(nextMessage, 1200);
+      }, 800);
+    </script>
+  </body>
+</html>

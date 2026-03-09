@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Our Stake — Live Translation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-primary: #1a1e2e;
+        --bg-secondary: #151826;
+        --text-primary: #f0f0f2;
+        --text-interim: rgba(240, 240, 242, 0.45);
+        --accent-green: #34d399;
+        --accent-green-glow: rgba(52, 211, 153, 0.3);
+        --glass-bg: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --font-serif: "Playfair Display", Georgia, serif;
+        --font-sans: "DM Sans", -apple-system, sans-serif;
+        --segment-spacing: 1.6rem;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-serif);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ---- Top bar ---- */
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        z-index: 100;
+        background: linear-gradient(
+          to bottom,
+          var(--bg-primary) 60%,
+          transparent
+        );
+        pointer-events: none;
+      }
+
+      .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-sans);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent-green);
+        pointer-events: auto;
+      }
+
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        box-shadow: 0 0 6px var(--accent-green-glow);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.85);
+        }
+      }
+
+      .language-pill {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 100px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        font-family: var(--font-sans);
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: rgba(240, 240, 242, 0.7);
+        pointer-events: auto;
+      }
+
+      .language-pill .flag {
+        font-style: normal;
+        font-size: 0.85rem;
+      }
+
+      /* ---- Transcript container ---- */
+      .transcript-viewport {
+        position: fixed;
+        inset: 0;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        padding: 5rem 1.5rem 8rem;
+      }
+
+      .transcript-viewport::-webkit-scrollbar {
+        display: none;
+      }
+
+      .transcript {
+        max-width: 620px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--segment-spacing);
+        min-height: 100%;
+        justify-content: flex-end;
+      }
+
+      /* ---- Segments ---- */
+      .segment {
+        font-size: 1.5rem;
+        line-height: 1.85;
+        font-weight: 400;
+        color: var(--text-primary);
+        opacity: 0;
+        transform: translateY(28px);
+        animation: segmentIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .segment.interim {
+        color: var(--text-interim);
+        font-style: italic;
+      }
+
+      .segment.interim::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 1.1em;
+        background: var(--text-interim);
+        margin-left: 3px;
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes segmentIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Older segments gently dim */
+      .segment.dimmed {
+        color: rgba(240, 240, 242, 0.55);
+        transition: color 1.2s ease;
+      }
+
+      /* ---- Bottom gradient ---- */
+      .bottom-fade {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 7rem;
+        background: linear-gradient(to top, var(--bg-primary) 15%, transparent);
+        pointer-events: none;
+        z-index: 50;
+      }
+
+      /* ---- Session ended state ---- */
+      .session-ended {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: var(--bg-primary);
+        opacity: 0;
+        animation: fadeInEnded 1s ease forwards;
+      }
+
+      .session-ended.visible {
+        display: flex;
+      }
+
+      .session-ended .divider {
+        width: 48px;
+        height: 1px;
+        background: rgba(240, 240, 242, 0.2);
+        margin-bottom: 1.5rem;
+      }
+
+      .session-ended .message {
+        font-family: var(--font-sans);
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(240, 240, 242, 0.4);
+      }
+
+      @keyframes fadeInEnded {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* ---- Responsive ---- */
+      @media (max-width: 480px) {
+        .segment {
+          font-size: 1.35rem;
+          line-height: 1.9;
+        }
+
+        .transcript-viewport {
+          padding: 4.5rem 1.15rem 7rem;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .segment {
+          font-size: 1.65rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="live-indicator" id="liveIndicator">
+        <span class="live-dot"></span>
+        LIVE
+      </div>
+      <div class="language-pill">
+        <span class="flag">🇪🇸</span>
+        ES · Espa&ntilde;ol
+      </div>
+    </div>
+
+    <!-- Transcript viewport -->
+    <div class="transcript-viewport" id="viewport">
+      <div class="transcript" id="transcript"></div>
+    </div>
+
+    <!-- Bottom gradient -->
+    <div class="bottom-fade"></div>
+
+    <!-- Session ended overlay -->
+    <div class="session-ended" id="sessionEnded">
+      <div class="divider"></div>
+      <div class="message">Session ended</div>
+    </div>
+
+    <script>
+      const segments = [
+        {
+          text: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+          interim: false,
+        },
+        {
+          text: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+          interim: false,
+        },
+        {
+          text: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+          interim: false,
+        },
+        {
+          text: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+          interim: false,
+        },
+        {
+          text: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+          interim: false,
+        },
+        {
+          text: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+          interim: false,
+        },
+        {
+          text: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+          interim: false,
+        },
+        {
+          text: "Ese peque\u00f1o acto de servicio transform\u00f3 no solo a la familia nueva, sino a todo el barrio.",
+          interim: false,
+        },
+        {
+          text: "Cuando abrimos nuestros corazones al servicio\u2026",
+          interim: true,
+        },
+      ];
+
+      const transcriptEl = document.getElementById("transcript");
+      const viewportEl = document.getElementById("viewport");
+      const sessionEndedEl = document.getElementById("sessionEnded");
+      const liveIndicator = document.getElementById("liveIndicator");
+
+      let index = 0;
+      const DIM_THRESHOLD = 4; // segments older than this get dimmed
+
+      function addSegment() {
+        if (index >= segments.length) {
+          // Show session ended after a pause
+          setTimeout(() => {
+            liveIndicator.style.opacity = "0";
+            liveIndicator.style.transition = "opacity 0.6s ease";
+            sessionEndedEl.classList.add("visible");
+          }, 3000);
+          return;
+        }
+
+        const seg = segments[index];
+        const el = document.createElement("div");
+        el.className = "segment" + (seg.interim ? " interim" : "");
+        el.textContent = seg.text;
+        transcriptEl.appendChild(el);
+
+        // Dim older segments
+        const allSegments = transcriptEl.querySelectorAll(".segment");
+        allSegments.forEach((s, i) => {
+          if (i < allSegments.length - DIM_THRESHOLD) {
+            s.classList.add("dimmed");
+          }
+        });
+
+        // Auto-scroll to bottom
+        requestAnimationFrame(() => {
+          viewportEl.scrollTo({
+            top: viewportEl.scrollHeight,
+            behavior: "smooth",
+          });
+        });
+
+        index++;
+
+        // Schedule next segment with slight variance
+        const delay = 3000 + Math.random() * 1500;
+        setTimeout(addSegment, delay);
+      }
+
+      // Start after a brief pause
+      setTimeout(addSegment, 1200);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Host Dashboard — Our Stake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #faf9f6;
+        --bg-warm: #f5f3ee;
+        --teal: #0d9488;
+        --teal-light: #ccfbf1;
+        --teal-dark: #0f766e;
+        --teal-muted: #5eead4;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #22c55e;
+        --text-primary: #1c1917;
+        --text-secondary: #57534e;
+        --text-muted: #a8a29e;
+        --card-bg: #ffffff;
+        --border: rgba(28, 25, 23, 0.08);
+        --shadow-sm:
+          0 1px 3px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+        --shadow-md: 0 4px 12px rgba(28, 25, 23, 0.08);
+        --radius: 14px;
+        --header-height: 128px;
+      }
+
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: var(--bg);
+        color: var(--text-primary);
+        min-height: 100dvh;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+      }
+
+      /* ── Sticky Header ── */
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(250, 249, 246, 0.8);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-shrink: 0;
+      }
+
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 5px 12px;
+        border-radius: 8px;
+      }
+
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #22c55e;
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+        }
+      }
+
+      .timer {
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+      }
+
+      .header-center {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .join-code-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg-warm);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 6px 10px 6px 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .join-code-pill:hover {
+        background: #edebe6;
+      }
+
+      .join-code-pill:active {
+        transform: scale(0.98);
+      }
+
+      .join-code-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .join-code-value {
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--text-primary);
+        font-family: "Outfit", monospace;
+      }
+
+      .copy-icon {
+        width: 16px;
+        height: 16px;
+        color: var(--text-muted);
+      }
+
+      .listener-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .listener-count svg {
+        width: 16px;
+        height: 16px;
+        color: var(--text-muted);
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .mic-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        background: var(--teal);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(13, 148, 136, 0.3);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+        position: relative;
+      }
+
+      .mic-btn::after {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid rgba(13, 148, 136, 0.2);
+        animation: mic-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes mic-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.12);
+          opacity: 0;
+        }
+      }
+
+      .mic-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(13, 148, 136, 0.4);
+      }
+
+      .mic-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .end-btn {
+        border: none;
+        background: transparent;
+        color: var(--red);
+        font-family: "Outfit", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 14px;
+        border-radius: 10px;
+        transition: background 0.15s;
+      }
+
+      .end-btn:hover {
+        background: var(--red-light);
+      }
+
+      /* ── Language Pills Row ── */
+      .lang-pills {
+        display: flex;
+        gap: 8px;
+        padding: 0 20px 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .lang-pills::-webkit-scrollbar {
+        display: none;
+      }
+
+      .lang-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        border: 1.5px solid var(--border);
+        background: white;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+
+      .lang-pill.active {
+        border-color: var(--teal);
+        background: var(--teal-light);
+        color: var(--teal-dark);
+      }
+
+      .lang-pill-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+
+      /* ── Cards Area ── */
+      .cards-area {
+        padding: 16px 20px 100px;
+        max-width: 720px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: card-in 0.45s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      }
+
+      @keyframes card-in {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px 0;
+      }
+
+      .speaker-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--teal-dark);
+        background: var(--teal-light);
+        padding: 3px 10px;
+        border-radius: 6px;
+      }
+
+      .card-time {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .card-source {
+        padding: 10px 16px 0;
+        font-family: "Source Serif 4", serif;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+
+      .card-translations {
+        padding: 10px 16px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .translation-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        background: var(--bg-warm);
+        border-radius: 10px;
+      }
+
+      .translation-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 3px 8px;
+        border-radius: 6px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .translation-badge.es {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .translation-badge.pt {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .translation-text {
+        font-family: "Source Serif 4", serif;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: var(--text-secondary);
+        flex: 1;
+      }
+
+      .translation-status {
+        flex-shrink: 0;
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+      }
+
+      .status-check {
+        width: 16px;
+        height: 16px;
+        color: var(--green);
+      }
+
+      .status-spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--border);
+        border-top-color: var(--teal);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Scroll FAB ── */
+      .scroll-fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--teal);
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(13, 148, 136, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          opacity 0.2s ease;
+        z-index: 90;
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+        pointer-events: none;
+      }
+
+      .scroll-fab.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .scroll-fab svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── Interim card styling ── */
+      .card.interim .card-source {
+        color: var(--text-secondary);
+      }
+
+      .card.interim .card-source::after {
+        content: "|";
+        animation: blink 1s step-end infinite;
+        color: var(--teal);
+        margin-left: 2px;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 480px) {
+        .header-top {
+          padding: 10px 14px;
+          gap: 8px;
+        }
+
+        .join-code-pill {
+          padding: 5px 8px 5px 12px;
+        }
+
+        .cards-area {
+          padding: 12px 14px 100px;
+        }
+
+        .header-center {
+          order: 3;
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      /* Tooltip for copy */
+      .copied-toast {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: var(--text-primary);
+        color: white;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 10px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.25s ease;
+        z-index: 200;
+      }
+
+      .copied-toast.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-top">
+        <div class="header-left">
+          <div class="live-badge">
+            <span class="live-dot"></span>
+            LIVE
+          </div>
+          <span class="timer" id="timer">12:34</span>
+        </div>
+
+        <div class="header-center">
+          <div class="join-code-pill" id="joinCodePill" title="Click to copy">
+            <div>
+              <div class="join-code-label">Join Code</div>
+              <div class="join-code-value">K7M2XP</div>
+            </div>
+            <svg
+              class="copy-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              ></path>
+            </svg>
+          </div>
+
+          <div class="listener-count">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>3 listeners</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="mic-btn" title="Microphone active">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
+              ></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
+          <button class="end-btn">End Session</button>
+        </div>
+      </div>
+
+      <!-- Language Pills -->
+      <div class="lang-pills">
+        <div class="lang-pill active">
+          <span class="lang-pill-dot"></span>
+          ES (2)
+        </div>
+        <div class="lang-pill active">
+          <span class="lang-pill-dot"></span>
+          PT (1)
+        </div>
+        <div class="lang-pill">FR (0)</div>
+        <div class="lang-pill">ZH (0)</div>
+      </div>
+    </header>
+
+    <!-- Cards -->
+    <main class="cards-area" id="cardsArea"></main>
+
+    <!-- Scroll FAB -->
+    <button class="scroll-fab" id="scrollFab">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
+    <!-- Copy Toast -->
+    <div class="copied-toast" id="copiedToast">Copied!</div>
+
+    <script>
+      const segments = [
+        {
+          time: "2:31 PM",
+          source: "Brothers and sisters, welcome to our ward conference today.",
+          translations: [
+            {
+              lang: "ES",
+              text: "Hermanos y hermanas, bienvenidos a nuestra conferencia de barrio hoy.",
+              done: true,
+            },
+            {
+              lang: "PT",
+              text: "Irm\u00e3os e irm\u00e3s, bem-vindos \u00e0 nossa confer\u00eancia da ala hoje.",
+              done: true,
+            },
+          ],
+        },
+        {
+          time: "2:31 PM",
+          source:
+            "I\u2019m grateful for the opportunity to speak with you this morning.",
+          translations: [
+            {
+              lang: "ES",
+              text: "Estoy agradecido por la oportunidad de hablarles esta ma\u00f1ana.",
+              done: true,
+            },
+          ],
+        },
+        {
+          time: "2:32 PM",
+          source: "Our theme today is strengthening families through service.",
+          translations: [
+            {
+              lang: "ES",
+              text: "Nuestro tema de hoy es fortalecer a las familias a trav\u00e9s del servicio.",
+              done: true,
+            },
+            {
+              lang: "PT",
+              text: "Nosso tema de hoje \u00e9 fortalecer as fam\u00edlias por meio do servi\u00e7o.",
+              done: true,
+            },
+          ],
+        },
+        {
+          time: "2:33 PM",
+          source:
+            "When we serve others, we draw closer to each other and to our Heavenly Father.",
+          translations: [
+            {
+              lang: "ES",
+              text: "Cuando servimos a otros, nos acercamos m\u00e1s unos a otros y a nuestro Padre Celestial.",
+              done: true,
+            },
+          ],
+        },
+        {
+          time: "2:33 PM",
+          source:
+            "I\u2019d like to share a story about a family in our ward who exemplified this principle.",
+          translations: [
+            {
+              lang: "ES",
+              text: "Me gustar\u00eda compartir una historia sobre una familia en nuestro barrio que ejemplific\u00f3 este principio.",
+              done: true,
+            },
+          ],
+        },
+        {
+          time: "2:34 PM",
+          source:
+            "Brother and Sister Garc\u00eda noticed a newly arrived family needed help moving in.",
+          translations: [
+            {
+              lang: "ES",
+              text: "El hermano y la hermana Garc\u00eda notaron que una familia reci\u00e9n llegada necesitaba ayuda para mudarse.",
+              done: true,
+            },
+            {
+              lang: "PT",
+              text: "O irm\u00e3o e a irm\u00e3 Garc\u00eda notaram que uma fam\u00edlia rec\u00e9m-chegada precisava de ajuda para se mudar.",
+              done: false,
+            },
+          ],
+        },
+        {
+          time: "2:35 PM",
+          source:
+            "Without being asked, they organized neighbors to help throughout the entire weekend.",
+          translations: [
+            {
+              lang: "ES",
+              text: "Sin que nadie se los pidiera, organizaron a los vecinos para ayudar durante todo el fin de semana.",
+              done: false,
+            },
+          ],
+        },
+        {
+          time: "2:35 PM",
+          source: "That small act of service transformed\u2026",
+          interim: true,
+          translations: [
+            {
+              lang: "ES",
+              text: "Ese peque\u00f1o acto de servicio transform\u00f3\u2026",
+              done: false,
+            },
+          ],
+        },
+      ];
+
+      const cardsArea = document.getElementById("cardsArea");
+      const scrollFab = document.getElementById("scrollFab");
+      let currentIndex = 0;
+      let autoScroll = true;
+
+      function isNearBottom() {
+        return (
+          document.documentElement.scrollHeight -
+            window.scrollY -
+            window.innerHeight <
+          120
+        );
+      }
+
+      window.addEventListener("scroll", () => {
+        autoScroll = isNearBottom();
+        scrollFab.classList.toggle("visible", !autoScroll);
+      });
+
+      scrollFab.addEventListener("click", () => {
+        autoScroll = true;
+        scrollFab.classList.remove("visible");
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth",
+        });
+      });
+
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+
+      function buildCard(seg, index) {
+        const card = document.createElement("div");
+        card.className = "card" + (seg.interim ? " interim" : "");
+        card.style.animationDelay = "0.05s";
+
+        let translationsHTML = seg.translations
+          .map(
+            (t) => `
+      <div class="translation-row">
+        <span class="translation-badge ${t.lang.toLowerCase()}">${t.lang}</span>
+        <span class="translation-text">${t.text}</span>
+        <span class="translation-status">
+          ${
+            t.done
+              ? '<svg class="status-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+              : '<div class="status-spinner"></div>'
+          }
+        </span>
+      </div>
+    `,
+          )
+          .join("");
+
+        card.innerHTML = `
+      <div class="card-header">
+        <span class="speaker-label">Speaker</span>
+        <span class="card-time">${seg.time}</span>
+      </div>
+      <div class="card-source">${seg.source}</div>
+      <div class="card-translations">
+        ${translationsHTML}
+      </div>
+    `;
+
+        return card;
+      }
+
+      function addCard() {
+        if (currentIndex >= segments.length) return;
+
+        const seg = segments[currentIndex];
+        const card = buildCard(seg, currentIndex);
+        cardsArea.appendChild(card);
+        currentIndex++;
+
+        if (autoScroll) {
+          requestAnimationFrame(() => scrollToBottom());
+        }
+
+        if (currentIndex < segments.length) {
+          const delay = 3000 + Math.random() * 1500;
+          setTimeout(addCard, delay);
+        }
+      }
+
+      // Timer
+      let timerSeconds = 12 * 60 + 34;
+      const timerEl = document.getElementById("timer");
+
+      setInterval(() => {
+        timerSeconds++;
+        const m = Math.floor(timerSeconds / 60);
+        const s = timerSeconds % 60;
+        timerEl.textContent = `${m}:${String(s).padStart(2, "0")}`;
+      }, 1000);
+
+      // Copy join code
+      const joinCodePill = document.getElementById("joinCodePill");
+      const copiedToast = document.getElementById("copiedToast");
+
+      joinCodePill.addEventListener("click", () => {
+        navigator.clipboard.writeText("K7M2XP").catch(() => {});
+        copiedToast.classList.add("show");
+        setTimeout(() => copiedToast.classList.remove("show"), 1200);
+      });
+
+      // Start simulation
+      setTimeout(addCard, 600);
+    </script>
+  </body>
+</html>
