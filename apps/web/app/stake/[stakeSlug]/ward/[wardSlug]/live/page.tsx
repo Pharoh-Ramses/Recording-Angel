@@ -7,8 +7,10 @@ import { api } from "@/convex/_generated/api";
 import { createLiveSession } from "@/app/actions/live-session";
 import { useRecordingAngelSocket } from "@/hooks/use-recording-angel-socket";
 import { useAudioCapture } from "@/hooks/use-audio-capture";
-import { Button } from "@/components/ui/button";
-import { Copy, Globe, Mic, MicOff, Radio, Square, Check } from "lucide-react";
+import { playfairDisplay, dmSans, jetbrainsMono } from "@/app/live/fonts";
+import { AnimatedSegment } from "@/components/live/animated-segment";
+import { LiveIndicator } from "@/components/live/live-indicator";
+import { Waveform } from "@/components/live/waveform";
 import { toast } from "sonner";
 import type { TranscriptMessage } from "@/hooks/use-recording-angel-socket";
 
@@ -261,10 +263,17 @@ export default function LiveDashboardPage() {
 
   if (!canManage) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">
-          You don&apos;t have permission to manage live sessions.
-        </p>
+      <div
+        className={`theme-teleprompter ${playfairDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      >
+        <div
+          className="flex items-center justify-center h-64"
+          style={{ backgroundColor: "var(--tp-bg-primary)" }}
+        >
+          <p className="text-[var(--tp-text-secondary)]">
+            You don&apos;t have permission to manage live sessions.
+          </p>
+        </div>
       </div>
     );
   }
@@ -272,16 +281,44 @@ export default function LiveDashboardPage() {
   // Idle state
   if (sessionState.phase === "idle") {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <Radio className="h-12 w-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Live Visit</h2>
-        <p className="text-sm text-muted-foreground text-center max-w-sm">
-          Start a live session to broadcast real-time translated text to
-          listeners.
-        </p>
-        <Button onClick={handleCreateSession} disabled={creating}>
-          {creating ? "Creating..." : "Start Session"}
-        </Button>
+      <div
+        className={`theme-teleprompter ${playfairDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      >
+        <div
+          className="flex flex-col items-center justify-center h-64 gap-4"
+          style={{ backgroundColor: "var(--tp-bg-primary)" }}
+        >
+          <svg
+            className="h-12 w-12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--tp-text-secondary)"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4" />
+            <circle cx="12" cy="12" r="2" />
+            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4" />
+            <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
+          </svg>
+          <h2 className="text-xl font-semibold text-[var(--tp-text-primary)]">
+            Live Visit
+          </h2>
+          <p className="text-sm text-[var(--tp-text-secondary)] text-center max-w-sm">
+            Start a live session to broadcast real-time translated text to
+            listeners.
+          </p>
+          <button
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            style={{ backgroundColor: "var(--tp-accent-green)", color: "#fff" }}
+            onClick={handleCreateSession}
+            disabled={creating}
+          >
+            {creating ? "Creating..." : "Start Session"}
+          </button>
+        </div>
       </div>
     );
   }
@@ -289,25 +326,100 @@ export default function LiveDashboardPage() {
   // Created state — show join code, wait for Go Live
   if (sessionState.phase === "created") {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-6">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Join Code</p>
-          <p className="text-5xl font-mono font-bold tracking-[0.3em]">
-            {sessionState.joinCode}
-          </p>
+      <div
+        className={`theme-teleprompter ${playfairDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      >
+        <div
+          className="flex flex-col items-center justify-center h-64 gap-6"
+          style={{ backgroundColor: "var(--tp-bg-primary)" }}
+        >
+          <div className="text-center">
+            <p className="text-sm text-[var(--tp-text-secondary)] mb-2">
+              Join Code
+            </p>
+            <p
+              className="text-5xl font-bold tracking-[0.3em]"
+              style={{
+                fontFamily: "var(--font-jetbrains)",
+                color: "var(--tp-text-primary)",
+              }}
+            >
+              {sessionState.joinCode}
+            </p>
+          </div>
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+            style={{
+              backgroundColor: "var(--tp-glass-bg)",
+              border: "1px solid var(--tp-glass-border)",
+              color: "var(--tp-text-primary)",
+            }}
+            onClick={handleCopyCode}
+          >
+            {copied ? (
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="3 8 6.5 11.5 13 5" />
+              </svg>
+            ) : (
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="5" y="5" width="9" height="9" rx="1.5" />
+                <path d="M5 11H3.5A1.5 1.5 0 012 9.5v-7A1.5 1.5 0 013.5 1h7A1.5 1.5 0 0112 2.5V5" />
+              </svg>
+            )}
+            {copied ? "Copied!" : "Copy Join Link"}
+          </button>
+          <button
+            className="flex items-center gap-2 px-6 py-3 rounded-lg text-base font-semibold cursor-pointer"
+            style={{ backgroundColor: "var(--tp-accent-green)", color: "#fff" }}
+            onClick={handleGoLive}
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1a4 4 0 00-4 4v6a4 4 0 008 0V5a4 4 0 00-4-4z" />
+              <path
+                d="M19 11a7 7 0 01-14 0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="12"
+                y1="19"
+                x2="12"
+                y2="23"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="8"
+                y1="23"
+                x2="16"
+                y2="23"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            Go Live
+          </button>
         </div>
-        <Button variant="outline" onClick={handleCopyCode} className="gap-2">
-          {copied ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          {copied ? "Copied!" : "Copy Join Link"}
-        </Button>
-        <Button size="lg" onClick={handleGoLive} className="gap-2">
-          <Mic className="h-5 w-5" />
-          Go Live
-        </Button>
       </div>
     );
   }
@@ -320,136 +432,288 @@ export default function LiveDashboardPage() {
       : [];
 
     return (
-      <div className="flex flex-col h-full gap-4">
-        {/* Top bar: status, join code, controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-green-600">
-              <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-              <span className="font-semibold">LIVE</span>
-            </div>
-            <span className="text-muted-foreground text-sm">
-              {formatTime(elapsed)}
-            </span>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              {micStatus === "active" ? (
-                <Mic className="h-4 w-4 text-green-600" />
-              ) : (
-                <MicOff className="h-4 w-4 text-destructive" />
-              )}
-              <span>
-                {micStatus === "active" ? "Mic on" : (micError ?? "Mic off")}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-mono font-bold tracking-wider">
-              {sessionState.joinCode}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyCode}
-              className="gap-1.5"
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" />
-              )}
-              {copied ? "Copied!" : "Copy Link"}
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleEndSession}
-              className="gap-1.5"
-            >
-              <Square className="h-3.5 w-3.5" />
-              End
-            </Button>
-          </div>
-        </div>
-
-        {/* Language picker for preview column */}
-        {translationLanguages.length > 0 && (
-          <div className="flex items-center gap-2 shrink-0">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Preview:</span>
-            <select
-              value={previewLang ?? ""}
-              onChange={(e) => setPreviewLang(e.target.value)}
-              className="bg-transparent border border-border rounded px-2 py-1 text-sm"
-            >
-              {translationLanguages.map((lang) => (
-                <option key={lang} value={lang}>
-                  {LANGUAGE_LABELS[lang] ?? lang}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Transcript columns */}
+      <div
+        className={`theme-teleprompter ${playfairDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      >
         <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto border border-border rounded-lg"
+          className="flex flex-col h-dvh"
+          style={{ backgroundColor: "var(--tp-bg-primary)" }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border min-h-full">
-            {/* Source column */}
-            <div className="p-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                {LANGUAGE_LABELS[sourceLang] ?? sourceLang} (Source)
-              </p>
-              <div className="space-y-2">
-                {sourceSegments.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Waiting for speech...
-                  </p>
-                )}
-                {sourceSegments.map((seg) => (
-                  <p
-                    key={seg.id}
-                    className={`text-sm leading-relaxed ${
-                      seg.isFinal
-                        ? "text-foreground"
-                        : "text-muted-foreground italic"
-                    }`}
-                  >
-                    {seg.text}
-                  </p>
-                ))}
+          {/* ===== TOP BAR (56px) ===== */}
+          <div
+            className="shrink-0 h-14 flex items-center justify-between px-6"
+            style={{
+              backgroundColor: "var(--tp-bg-secondary)",
+              borderBottom: "1px solid var(--tp-glass-border)",
+            }}
+          >
+            {/* Left: LIVE badge + Join code + Copy */}
+            <div className="flex items-center gap-5">
+              <LiveIndicator status="live" />
+              <div
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-md"
+                style={{
+                  backgroundColor: "var(--tp-glass-bg)",
+                  border: "1px solid var(--tp-glass-border)",
+                }}
+              >
+                <span
+                  className="text-[0.8rem] font-medium tracking-[0.15em] text-[var(--tp-text-primary)]"
+                  style={{ fontFamily: "var(--font-jetbrains)" }}
+                >
+                  {sessionState.joinCode}
+                </span>
+                <button
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[0.65rem] font-medium cursor-pointer transition-colors"
+                  style={{
+                    border: "1px solid var(--tp-glass-border)",
+                    color: "var(--tp-text-secondary)",
+                  }}
+                  onClick={handleCopyCode}
+                >
+                  {copied ? (
+                    <svg
+                      className="w-3 h-3"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 8 6.5 11.5 13 5" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-3 h-3"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="5" y="5" width="9" height="9" rx="1.5" />
+                      <path d="M5 11H3.5A1.5 1.5 0 012 9.5v-7A1.5 1.5 0 013.5 1h7A1.5 1.5 0 0112 2.5V5" />
+                    </svg>
+                  )}
+                  {copied ? "Copied!" : "Copy Link"}
+                </button>
               </div>
             </div>
 
-            {/* Preview translation column */}
-            {previewLang && (
-              <div className="p-4">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                  {LANGUAGE_LABELS[previewLang] ?? previewLang} (Translation)
-                </p>
-                <div className="space-y-2">
-                  {previewSegments.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      Waiting for translation...
+            {/* Right: Listener count + Language dropdown */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 text-[0.75rem] font-medium text-[var(--tp-text-secondary)]">
+                <svg
+                  className="w-3.5 h-3.5 opacity-60"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M8 8a3 3 0 100-6 3 3 0 000 6zm-5 6a5 5 0 0110 0H3z" />
+                </svg>
+                0 listeners
+              </div>
+              {translationLanguages.length > 0 && (
+                <select
+                  value={previewLang ?? ""}
+                  onChange={(e) => setPreviewLang(e.target.value)}
+                  className="appearance-none rounded-md px-2.5 py-1.5 text-[0.75rem] font-medium outline-none cursor-pointer"
+                  style={{
+                    backgroundColor: "var(--tp-glass-bg)",
+                    border: "1px solid var(--tp-glass-border)",
+                    color: "var(--tp-text-primary)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
+                >
+                  {translationLanguages.map((lang) => (
+                    <option
+                      key={lang}
+                      value={lang}
+                      style={{ background: "var(--tp-bg-panel)" }}
+                    >
+                      {LANGUAGE_LABELS[lang] ?? lang}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+
+          {/* ===== SPLIT COLUMNS ===== */}
+          <div
+            className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0"
+            style={{ gap: "1px", backgroundColor: "var(--tp-glass-border)" }}
+          >
+            {/* Source column */}
+            <div
+              className="flex flex-col overflow-hidden"
+              style={{ backgroundColor: "var(--tp-bg-primary)" }}
+            >
+              <div
+                className="shrink-0 px-6 py-3 text-[0.65rem] font-semibold tracking-[0.14em] uppercase text-[var(--tp-text-secondary)]"
+                style={{
+                  backgroundColor: "var(--tp-bg-secondary)",
+                  borderBottom: "1px solid var(--tp-glass-border)",
+                }}
+              >
+                {LANGUAGE_LABELS[sourceLang] ?? sourceLang} (Source)
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+                <div className="flex flex-col gap-5">
+                  {sourceSegments.length === 0 && (
+                    <p className="text-sm text-[var(--tp-text-secondary)]">
+                      Waiting for speech...
                     </p>
                   )}
-                  {previewSegments.map((seg) => (
-                    <p
+                  {sourceSegments.map((seg, i) => (
+                    <AnimatedSegment
                       key={seg.id}
-                      className={`text-sm leading-relaxed ${
-                        seg.isFinal
-                          ? "text-foreground"
-                          : "text-muted-foreground italic"
-                      }`}
-                    >
-                      {seg.text}
-                    </p>
+                      text={seg.text}
+                      isFinal={seg.isFinal}
+                      isDimmed={i < sourceSegments.length - 5}
+                      className="text-[1.15rem]"
+                    />
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Translation preview column */}
+            {previewLang && (
+              <div
+                className="flex flex-col overflow-hidden"
+                style={{ backgroundColor: "var(--tp-bg-primary)" }}
+              >
+                <div
+                  className="shrink-0 px-6 py-3 text-[0.65rem] font-semibold tracking-[0.14em] uppercase text-[var(--tp-text-secondary)]"
+                  style={{
+                    backgroundColor: "var(--tp-bg-secondary)",
+                    borderBottom: "1px solid var(--tp-glass-border)",
+                  }}
+                >
+                  {LANGUAGE_LABELS[previewLang] ?? previewLang} (Translation)
+                </div>
+                <div
+                  ref={scrollRef}
+                  className="flex-1 overflow-y-auto p-6 scroll-smooth"
+                >
+                  <div className="flex flex-col gap-5">
+                    {previewSegments.length === 0 && (
+                      <p className="text-sm text-[var(--tp-text-secondary)]">
+                        Waiting for translation...
+                      </p>
+                    )}
+                    {previewSegments.map((seg, i) => (
+                      <AnimatedSegment
+                        key={seg.id}
+                        text={seg.text}
+                        isFinal={seg.isFinal}
+                        isDimmed={i < previewSegments.length - 5}
+                        className="text-[1.15rem]"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
+          </div>
+
+          {/* ===== BOTTOM CONTROL BAR (72px) ===== */}
+          <div
+            className="shrink-0 h-[72px] flex items-center justify-between px-6"
+            style={{
+              backgroundColor: "var(--tp-bg-secondary)",
+              borderTop: "1px solid var(--tp-glass-border)",
+            }}
+          >
+            {/* Left: Mic button + Waveform */}
+            <div className="flex items-center gap-4">
+              <button
+                className="w-[42px] h-[42px] rounded-full flex items-center justify-center cursor-pointer transition-all shrink-0"
+                style={{
+                  border: `2px solid ${micStatus === "active" ? "var(--tp-accent-green)" : "var(--tp-accent-red)"}`,
+                  backgroundColor:
+                    micStatus === "active"
+                      ? "rgba(52, 211, 153, 0.1)"
+                      : "rgba(248, 113, 113, 0.1)",
+                }}
+                onClick={async () => {
+                  if (micStatus === "active") {
+                    stopMic();
+                  } else {
+                    await startMic();
+                  }
+                }}
+                title="Toggle microphone"
+              >
+                <svg
+                  className="w-[18px] h-[18px]"
+                  viewBox="0 0 24 24"
+                  fill={
+                    micStatus === "active"
+                      ? "var(--tp-accent-green)"
+                      : "var(--tp-accent-red)"
+                  }
+                >
+                  <path d="M12 1a4 4 0 00-4 4v6a4 4 0 008 0V5a4 4 0 00-4-4z" />
+                  <path
+                    d="M19 11a7 7 0 01-14 0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1="12"
+                    y1="19"
+                    x2="12"
+                    y2="23"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1="8"
+                    y1="23"
+                    x2="16"
+                    y2="23"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+              <div className="hidden md:block">
+                <Waveform active={micStatus === "active"} />
+              </div>
+            </div>
+
+            {/* Center: Timer */}
+            <div className="text-center">
+              <div
+                className="text-[1.1rem] font-medium tracking-[0.05em] text-[var(--tp-text-primary)]"
+                style={{ fontFamily: "var(--font-jetbrains)", minWidth: "5ch" }}
+              >
+                {formatTime(elapsed)}
+              </div>
+              <div className="text-[0.6rem] font-medium tracking-[0.1em] uppercase text-[var(--tp-text-secondary)]">
+                Elapsed
+              </div>
+            </div>
+
+            {/* Right: End button */}
+            <button
+              className="px-4 py-2 rounded-lg text-[0.75rem] font-semibold tracking-[0.04em] cursor-pointer transition-colors"
+              style={{
+                backgroundColor: "rgba(248, 113, 113, 0.1)",
+                border: "1px solid rgba(248, 113, 113, 0.25)",
+                color: "var(--tp-accent-red)",
+              }}
+              onClick={handleEndSession}
+            >
+              End Session
+            </button>
           </div>
         </div>
       </div>
@@ -458,17 +722,31 @@ export default function LiveDashboardPage() {
 
   // Ended state
   return (
-    <div className="flex flex-col items-center justify-center h-64 gap-4">
-      <p className="text-lg font-semibold">Session Ended</p>
-      <p className="text-sm text-muted-foreground">
-        The transcript has been saved.
-      </p>
-      <Button
-        onClick={() => setSessionState({ phase: "idle" })}
-        variant="outline"
+    <div
+      className={`theme-teleprompter ${playfairDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+    >
+      <div
+        className="flex flex-col items-center justify-center h-64 gap-4"
+        style={{ backgroundColor: "var(--tp-bg-primary)" }}
       >
-        Start New Session
-      </Button>
+        <p className="text-lg font-semibold text-[var(--tp-text-primary)]">
+          Session Ended
+        </p>
+        <p className="text-sm text-[var(--tp-text-secondary)]">
+          The transcript has been saved.
+        </p>
+        <button
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+          style={{
+            backgroundColor: "var(--tp-glass-bg)",
+            border: "1px solid var(--tp-glass-border)",
+            color: "var(--tp-text-primary)",
+          }}
+          onClick={() => setSessionState({ phase: "idle" })}
+        >
+          Start New Session
+        </button>
+      </div>
     </div>
   );
 }
