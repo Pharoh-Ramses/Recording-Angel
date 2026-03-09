@@ -116,6 +116,65 @@
   --sidebar-ring: oklch(0.674 0.117 224.648);
 }
 
+/* Teleprompter dark theme — scoped to .theme-teleprompter */
+.theme-teleprompter {
+  --tp-bg-primary: #1a1e2e;
+  --tp-bg-secondary: #151826;
+  --tp-bg-panel: #1f2337;
+  --tp-text-primary: #f0f0f2;
+  --tp-text-secondary: rgba(240, 240, 242, 0.55);
+  --tp-text-interim: rgba(240, 240, 242, 0.4);
+  --tp-text-dimmed: rgba(240, 240, 242, 0.55);
+  --tp-accent-green: #34d399;
+  --tp-accent-green-glow: rgba(52, 211, 153, 0.25);
+  --tp-accent-red: #f87171;
+  --tp-accent-red-hover: #ef4444;
+  --tp-glass-bg: rgba(255, 255, 255, 0.06);
+  --tp-glass-bg-hover: rgba(255, 255, 255, 0.1);
+  --tp-glass-border: rgba(255, 255, 255, 0.1);
+  --tp-glass-border-hover: rgba(255, 255, 255, 0.18);
+}
+
+/* Teleprompter animations */
+@keyframes tp-segment-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tp-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes tp-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes tp-wave {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
