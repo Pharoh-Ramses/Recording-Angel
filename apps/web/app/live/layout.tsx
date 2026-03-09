@@ -8,11 +8,6 @@ export default function LiveLayout({
   return (
     <div
       className={`theme-teleprompter min-h-dvh flex flex-col ${playfairDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
-      style={{
-        backgroundColor: "var(--tp-bg-primary)",
-        color: "var(--tp-text-primary)",
-        fontFamily: "var(--font-dm-sans)",
-      }}
     >
       {children}
     </div>

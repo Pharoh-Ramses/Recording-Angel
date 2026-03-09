@@ -124,7 +124,7 @@
   --tp-text-primary: #f0f0f2;
   --tp-text-secondary: rgba(240, 240, 242, 0.55);
   --tp-text-interim: rgba(240, 240, 242, 0.4);
-  --tp-text-dimmed: rgba(240, 240, 242, 0.55);
+  --tp-text-dimmed: rgba(240, 240, 242, 0.45);
   --tp-accent-green: #34d399;
   --tp-accent-green-glow: rgba(52, 211, 153, 0.25);
   --tp-accent-red: #f87171;
@@ -133,6 +133,9 @@
   --tp-glass-bg-hover: rgba(255, 255, 255, 0.1);
   --tp-glass-border: rgba(255, 255, 255, 0.1);
   --tp-glass-border-hover: rgba(255, 255, 255, 0.18);
+  background-color: var(--tp-bg-primary);
+  color: var(--tp-text-primary);
+  font-family: var(--font-dm-sans), sans-serif;
 }
 
 /* Teleprompter animations */
