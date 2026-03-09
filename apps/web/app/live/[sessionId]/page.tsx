@@ -6,8 +6,9 @@ import {
   useRecordingAngelSocket,
   type TranscriptMessage,
 } from "@/hooks/use-recording-angel-socket";
-import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
+import { AnimatedSegment } from "@/components/live/animated-segment";
+import { LiveIndicator } from "@/components/live/live-indicator";
+import { GlassLanguagePill } from "@/components/live/glass-language-pill";
 
 interface Segment {
   id: number;
@@ -165,22 +166,37 @@ function TranscriptViewInner() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm space-y-6 text-center">
           <div>
-            <h2 className="text-2xl font-bold">Select Your Language</h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h2 className="text-2xl font-bold text-[var(--tp-text-primary)]">
+              Select Your Language
+            </h2>
+            <p className="text-sm text-[var(--tp-text-secondary)] mt-1">
               Choose the language you want to read
             </p>
           </div>
           <div className="space-y-2">
             {languages.map((lang) => (
-              <Button
+              <button
                 key={lang}
-                variant="outline"
-                className="w-full h-12 text-lg"
+                className="w-full h-12 text-lg rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                style={{
+                  backgroundColor: "var(--tp-glass-bg)",
+                  border: "1px solid var(--tp-glass-border)",
+                  color: "var(--tp-text-primary)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    "var(--tp-glass-bg-hover)";
+                  e.currentTarget.style.borderColor =
+                    "var(--tp-glass-border-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--tp-glass-bg)";
+                  e.currentTarget.style.borderColor = "var(--tp-glass-border)";
+                }}
                 onClick={() => handleJoinWithLanguage(lang)}
               >
-                <Globe className="h-5 w-5 mr-2" />
                 {LANGUAGE_LABELS[lang] ?? lang.toUpperCase()}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
@@ -189,69 +205,91 @@ function TranscriptViewInner() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      {/* Status bar */}
-      <div className="px-4 py-2 border-b border-border flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2">
-          <span
-            className={`h-2 w-2 rounded-full ${
+    <div className="flex-1 flex flex-col relative overflow-hidden">
+      {/* Top bar — fixed, gradient background */}
+      <div
+        className="fixed top-0 left-0 right-0 flex justify-between items-center px-5 py-4 z-50 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, var(--tp-bg-primary) 60%, transparent)",
+        }}
+      >
+        <div className="pointer-events-auto">
+          <LiveIndicator
+            status={
               sessionEnded
-                ? "bg-muted-foreground"
+                ? "ended"
                 : status === "connected"
-                  ? "bg-green-500"
-                  : "bg-yellow-500"
-            }`}
+                  ? "live"
+                  : "connecting"
+            }
           />
-          <span className="text-muted-foreground">
-            {sessionEnded
-              ? "Session ended"
-              : status === "connected"
-                ? "Live"
-                : "Connecting..."}
-          </span>
         </div>
-        {selectedLang && languages.length > 1 && !sessionEnded && (
-          <select
-            value={selectedLang}
-            onChange={(e) => handleSwitchLanguage(e.target.value)}
-            className="bg-transparent border border-border rounded px-2 py-1 text-sm"
-          >
-            {languages.map((lang) => (
-              <option key={lang} value={lang}>
-                {LANGUAGE_LABELS[lang] ?? lang}
-              </option>
-            ))}
-          </select>
+        {selectedLang && !sessionEnded && (
+          <div className="pointer-events-auto">
+            <GlassLanguagePill
+              language={selectedLang}
+              languages={languages}
+              onSwitch={handleSwitchLanguage}
+            />
+          </div>
         )}
       </div>
 
-      {/* Transcript */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto space-y-3">
+      {/* Transcript viewport */}
+      <div
+        ref={scrollRef}
+        className="fixed inset-0 overflow-y-auto scroll-smooth"
+        style={{
+          WebkitOverflowScrolling: "touch",
+          padding: "5rem 1.5rem 8rem",
+        }}
+      >
+        <div className="max-w-[620px] mx-auto flex flex-col gap-6 min-h-full justify-end">
           {segments.length === 0 && !sessionEnded && (
-            <p className="text-center text-muted-foreground text-lg">
+            <p className="text-center text-[var(--tp-text-secondary)] text-lg">
               Waiting for speaker...
             </p>
           )}
-          {segments.map((seg) => (
-            <p
+          {segments.map((seg, i) => (
+            <AnimatedSegment
               key={seg.id}
-              className={`text-lg leading-relaxed ${
-                seg.isFinal ? "text-foreground" : "text-muted-foreground italic"
-              }`}
-            >
-              {seg.text}
-            </p>
+              text={seg.text}
+              isFinal={seg.isFinal}
+              isDimmed={i < segments.length - 4}
+              className="text-[1.5rem] max-[480px]:text-[1.35rem] min-[768px]:text-[1.65rem]"
+            />
           ))}
-          {sessionEnded && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                This session has ended. The transcript has been saved.
-              </p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Bottom gradient fade */}
+      <div
+        className="fixed bottom-0 left-0 right-0 h-28 pointer-events-none z-50"
+        style={{
+          background:
+            "linear-gradient(to top, var(--tp-bg-primary) 15%, transparent)",
+        }}
+      />
+
+      {/* Session ended overlay */}
+      {sessionEnded && (
+        <div
+          className="fixed inset-0 flex flex-col items-center justify-center z-[200] animate-[tp-segment-in_1s_ease_forwards]"
+          style={{ backgroundColor: "var(--tp-bg-primary)" }}
+        >
+          <div
+            className="w-12 h-px mb-6"
+            style={{ backgroundColor: "rgba(240, 240, 242, 0.2)" }}
+          />
+          <p
+            className="text-[0.85rem] font-medium tracking-[0.08em] uppercase"
+            style={{ color: "rgba(240, 240, 242, 0.4)" }}
+          >
+            Session ended
+          </p>
+        </div>
+      )}
     </div>
   );
 }
