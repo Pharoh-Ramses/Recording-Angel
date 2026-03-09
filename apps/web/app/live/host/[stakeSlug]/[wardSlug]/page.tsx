@@ -70,7 +70,8 @@ export default function LiveDashboardPage() {
   >({});
   const [previewLang, setPreviewLang] = useState<string | null>(null);
   const segmentCounter = useRef(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const sourceScrollRef = useRef<HTMLDivElement>(null);
+  const translationScrollRef = useRef<HTMLDivElement>(null);
 
   // Source language is always "en" (the speaker's language)
   const sourceLang = "en";
@@ -160,10 +161,14 @@ export default function LiveDashboardPage() {
     });
   }, []);
 
-  // Auto-scroll transcript panel
+  // Auto-scroll both transcript panels to latest content
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
+    sourceScrollRef.current?.scrollTo({
+      top: sourceScrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+    translationScrollRef.current?.scrollTo({
+      top: translationScrollRef.current.scrollHeight,
       behavior: "smooth",
     });
   }, [segmentsByLang]);
@@ -543,7 +548,10 @@ export default function LiveDashboardPage() {
             >
               {LANGUAGE_LABELS[sourceLang] ?? sourceLang} (Source)
             </div>
-            <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+            <div
+              ref={sourceScrollRef}
+              className="flex-1 overflow-y-auto p-6 scroll-smooth"
+            >
               <div className="flex flex-col gap-5">
                 {sourceSegments.length === 0 && (
                   <p className="text-sm text-[var(--tp-text-secondary)]">
@@ -579,7 +587,7 @@ export default function LiveDashboardPage() {
                 {LANGUAGE_LABELS[previewLang] ?? previewLang} (Translation)
               </div>
               <div
-                ref={scrollRef}
+                ref={translationScrollRef}
                 className="flex-1 overflow-y-auto p-6 scroll-smooth"
               >
                 <div className="flex flex-col gap-5">
