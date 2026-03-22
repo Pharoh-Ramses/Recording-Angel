@@ -137,7 +137,8 @@ export const pendingPosts = query({
 
     const enrichedPage = await Promise.all(
       results.page.map(async (post) => {
-        const member = await ctx.db.get(post.authorId);
+        const memberId = post.authorMemberId ?? post.authorId;
+        const member = memberId ? await ctx.db.get(memberId) : null;
         const user = member ? await ctx.db.get(member.userId) : null;
         return { ...post, author: user };
       })

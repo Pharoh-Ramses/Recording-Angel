@@ -41,7 +41,8 @@ export const create = mutation({
     );
 
     const postId = await ctx.db.insert("posts", {
-      authorId: member._id,
+      authorType: "member",
+      authorMemberId: member._id,
       wardId: args.wardId,
       stakeId: member.stakeId,
       scope: "ward",
@@ -97,7 +98,8 @@ export const listByWard = query({
     // Enrich with author data
     const enrichedPage = await Promise.all(
       results.page.map(async (post) => {
-        const member = await ctx.db.get(post.authorId);
+        const memberId = post.authorMemberId ?? post.authorId;
+        const member = memberId ? await ctx.db.get(memberId) : null;
         const user = member ? await ctx.db.get(member.userId) : null;
         return { ...post, author: user };
       })
@@ -126,7 +128,8 @@ export const listByStake = query({
 
     const enrichedPage = await Promise.all(
       results.page.map(async (post) => {
-        const member = await ctx.db.get(post.authorId);
+        const memberId = post.authorMemberId ?? post.authorId;
+        const member = memberId ? await ctx.db.get(memberId) : null;
         const user = member ? await ctx.db.get(member.userId) : null;
         const ward = await ctx.db.get(post.wardId);
         return { ...post, author: user, ward };
@@ -143,7 +146,8 @@ export const getById = query({
     const post = await ctx.db.get(postId);
     if (!post || post.status !== "approved") return null;
 
-    const member = await ctx.db.get(post.authorId);
+    const memberId = post.authorMemberId ?? post.authorId;
+    const member = memberId ? await ctx.db.get(memberId) : null;
     const user = member ? await ctx.db.get(member.userId) : null;
     const ward = await ctx.db.get(post.wardId);
     const stake = await ctx.db.get(post.stakeId);
@@ -198,7 +202,10 @@ export const listForAdmin = query({
 
     const enriched = await Promise.all(
       results.page.map(async (post) => {
-        const authorMember = await ctx.db.get(post.authorId);
+        const authorMemberId = post.authorMemberId ?? post.authorId;
+        const authorMember = authorMemberId
+          ? await ctx.db.get(authorMemberId)
+          : null;
         const authorUser = authorMember
           ? await ctx.db
               .query("users")
@@ -250,7 +257,8 @@ export const upcomingEvents = query({
 
     const enriched = await Promise.all(
       events.map(async (post) => {
-        const member = await ctx.db.get(post.authorId);
+        const memberId = post.authorMemberId ?? post.authorId;
+        const member = memberId ? await ctx.db.get(memberId) : null;
         const user = member ? await ctx.db.get(member.userId) : null;
         return { ...post, author: user };
       })

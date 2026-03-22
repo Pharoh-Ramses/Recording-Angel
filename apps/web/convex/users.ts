@@ -55,7 +55,9 @@ export const deleteByClerkId = internalMutation({
       // Delete member's posts (and poll data for poll-type posts)
       const posts = await ctx.db
         .query("posts")
-        .withIndex("byAuthorId", (q) => q.eq("authorId", member._id))
+        .withIndex("byAuthorMemberId", (q) =>
+          q.eq("authorMemberId", member._id)
+        )
         .collect();
       for (const post of posts) {
         if (post.type === "poll") {
