@@ -10,10 +10,12 @@
 
 import type * as comments from "../comments.js";
 import type * as http from "../http.js";
+import type * as lib_missionaryAuth from "../lib/missionaryAuth.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_postAuthors from "../lib/postAuthors.js";
 import type * as members from "../members.js";
 import type * as migrations from "../migrations.js";
+import type * as missionaries from "../missionaries.js";
 import type * as moderation from "../moderation.js";
 import type * as polls from "../polls.js";
 import type * as posts from "../posts.js";
@@ -33,10 +35,12 @@ import type {
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   http: typeof http;
+  "lib/missionaryAuth": typeof lib_missionaryAuth;
   "lib/permissions": typeof lib_permissions;
   "lib/postAuthors": typeof lib_postAuthors;
   members: typeof members;
   migrations: typeof migrations;
+  missionaries: typeof missionaries;
   moderation: typeof moderation;
   polls: typeof polls;
   posts: typeof posts;
