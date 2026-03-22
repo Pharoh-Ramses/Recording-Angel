@@ -6,7 +6,9 @@ import {
   getActiveMissionaryAssignment,
   getAuthenticatedMissionary,
   getMissionaryAccessForWard,
-  requireWardMissionLeader,
+  getTransferAuthorizationWardIds,
+  hasWardPermission,
+  requireWardPermission,
 } from "./lib/missionaryAuth"
 
 type MissionaryCtx = QueryCtx | MutationCtx
@@ -29,15 +31,14 @@ async function getMissionaryActiveAssignmentById(
   return activeAssignments[0] ?? null
 }
 
-async function requireMissionaryWardAccess(
+async function requireMissionaryViewPermission(
   ctx: MissionaryCtx,
   wardId: Id<"wards">,
 ) {
-  const access = await getMissionaryAccessForWard(ctx, wardId)
-  if (!access.isWardMissionLeader && !access.isAssignedMissionary) {
-    throw new Error("Missionary ward access required")
+  const allowed = await hasWardPermission(ctx, wardId, "missionary:view")
+  if (!allowed) {
+    throw new Error("Missing permission: missionary:view")
   }
-  return access
 }
 
 export const myWardAccess = query({
@@ -73,7 +74,7 @@ export const myActiveAssignment = query({
 export const listForWard = query({
   args: { wardId: v.id("wards") },
   handler: async (ctx, { wardId }) => {
-    await requireMissionaryWardAccess(ctx, wardId)
+    await requireMissionaryViewPermission(ctx, wardId)
 
     const assignments = await ctx.db
       .query("missionaryAssignments")
@@ -129,10 +130,14 @@ export const getById = query({
       }
     }
 
-    const access = await requireMissionaryWardAccess(ctx, activeAssignment.wardId)
+    const canViewMissionary = await hasWardPermission(
+      ctx,
+      activeAssignment.wardId,
+      "missionary:view",
+    )
 
-    if (!access.isWardMissionLeader && viewerMissionary?._id !== missionaryId) {
-      throw new Error("Missionary ward access required")
+    if (!canViewMissionary && viewerMissionary?._id !== missionaryId) {
+      throw new Error("Missing permission: missionary:view")
     }
 
     const [ward, stake] = await Promise.all([
@@ -159,7 +164,8 @@ export const createMissionary = mutation({
     phoneNumber: v.optional(v.string()),
   },
   handler: async (ctx, { wardId, userId, name, email, phoneNumber }) => {
-    await requireWardMissionLeader(ctx, wardId)
+    await requireWardPermission(ctx, wardId, "missionary:manage")
+    await requireWardPermission(ctx, wardId, "missionary_assignment:manage")
 
     const [ward, user, existingMissionary] = await Promise.all([
       ctx.db.get(wardId),
@@ -208,7 +214,7 @@ export const updateMissionaryProfile = mutation({
     missionaryId: v.id("missionaries"),
     name: v.string(),
     email: v.string(),
-    phoneNumber: v.optional(v.string()),
+    phoneNumber: v.string(),
   },
   handler: async (ctx, { missionaryId, name, email, phoneNumber }) => {
     const missionary = await ctx.db.get(missionaryId)
@@ -227,23 +233,14 @@ export const updateMissionaryProfile = mutation({
         throw new Error("Ward mission leader access required")
       }
 
-      await requireWardMissionLeader(ctx, activeAssignment.wardId)
+      await requireWardPermission(ctx, activeAssignment.wardId, "missionary:manage")
     }
 
-    const patch: {
-      name: string
-      email: string
-      phoneNumber?: string
-    } = {
+    await ctx.db.patch(missionaryId, {
       name,
       email,
-    }
-
-    if (phoneNumber !== undefined) {
-      patch.phoneNumber = phoneNumber
-    }
-
-    await ctx.db.patch(missionaryId, patch)
+      phoneNumber,
+    })
   },
 })
 
@@ -271,10 +268,21 @@ export const transferMissionary = mutation({
       throw new Error("Missionary has no active assignment")
     }
 
-    await requireWardMissionLeader(ctx, currentAssignment.wardId)
-
     if (currentAssignment.wardId === wardId) {
       throw new Error("Missionary is already assigned to this ward")
+    }
+
+    const authorizationWardIds = getTransferAuthorizationWardIds(
+      currentAssignment.wardId,
+      wardId,
+    ) as Id<"wards">[]
+
+    for (const authorizationWardId of authorizationWardIds) {
+      await requireWardPermission(
+        ctx,
+        authorizationWardId,
+        "missionary_assignment:manage",
+      )
     }
 
     const endedAt = Date.now()

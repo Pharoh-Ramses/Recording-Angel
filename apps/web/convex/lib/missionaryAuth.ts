@@ -1,6 +1,6 @@
 import { Id } from "../_generated/dataModel"
 import { MutationCtx, QueryCtx } from "../_generated/server"
-import { getAuthenticatedMember, hasPermission } from "./permissions"
+import { Permission, getAuthenticatedMember, hasPermission } from "./permissions"
 
 type AuthCtx = QueryCtx | MutationCtx
 
@@ -13,19 +13,35 @@ export type MissionaryAccess = {
 }
 
 export function buildMissionaryAccess({
-  isWardMissionLeader,
   isAssignedMissionary,
+  canManageMissionaries,
+  canManageAssignments,
+  canManageCalendars,
 }: {
-  isWardMissionLeader: boolean
   isAssignedMissionary: boolean
+  canManageMissionaries: boolean
+  canManageAssignments: boolean
+  canManageCalendars: boolean
 }): MissionaryAccess {
+  const isWardMissionLeader =
+    canManageMissionaries || canManageAssignments || canManageCalendars
+
   return {
     isWardMissionLeader,
     isAssignedMissionary,
-    canManageMissionaries: isWardMissionLeader,
-    canManageCalendars: isWardMissionLeader || isAssignedMissionary,
+    canManageMissionaries,
+    canManageCalendars: canManageCalendars || isAssignedMissionary,
     canCreateMissionaryAnnouncements: isAssignedMissionary,
   }
+}
+
+export function getTransferAuthorizationWardIds(
+  sourceWardId: string,
+  destinationWardId: string,
+) {
+  return sourceWardId === destinationWardId
+    ? [sourceWardId]
+    : [sourceWardId, destinationWardId]
 }
 
 export async function getAuthenticatedUser(ctx: AuthCtx) {
@@ -79,17 +95,38 @@ export async function getActiveMissionaryAssignment(
   return activeAssignments[0] ?? null
 }
 
-export async function isWardMissionLeader(ctx: AuthCtx, wardId: Id<"wards">) {
+export async function hasWardPermission(
+  ctx: AuthCtx,
+  wardId: Id<"wards">,
+  permission: Permission,
+) {
   const member = await getAuthenticatedMember(ctx as QueryCtx, wardId)
   if (!member) {
     return false
   }
 
-  return await hasPermission(
-    ctx as QueryCtx,
-    member._id,
-    "missionary:manage",
-  )
+  return await hasPermission(ctx as QueryCtx, member._id, permission)
+}
+
+export async function isWardMissionLeader(ctx: AuthCtx, wardId: Id<"wards">) {
+  const permissions = await Promise.all([
+    hasWardPermission(ctx, wardId, "missionary:manage"),
+    hasWardPermission(ctx, wardId, "missionary_assignment:manage"),
+    hasWardPermission(ctx, wardId, "missionary_calendar:manage"),
+  ])
+
+  return permissions.some(Boolean)
+}
+
+export async function requireWardPermission(
+  ctx: AuthCtx,
+  wardId: Id<"wards">,
+  permission: Permission,
+) {
+  const allowed = await hasWardPermission(ctx, wardId, permission)
+  if (!allowed) {
+    throw new Error(`Missing permission: ${permission}`)
+  }
 }
 
 export async function requireWardMissionLeader(
@@ -106,13 +143,17 @@ export async function getMissionaryAccessForWard(
   ctx: AuthCtx,
   wardId: Id<"wards">,
 ) {
-  const [isWardMissionLeaderForWard, assignment] = await Promise.all([
-    isWardMissionLeader(ctx, wardId),
+  const [assignment, canManageMissionaries, canManageAssignments, canManageCalendars] = await Promise.all([
     getActiveMissionaryAssignment(ctx, wardId),
+    hasWardPermission(ctx, wardId, "missionary:manage"),
+    hasWardPermission(ctx, wardId, "missionary_assignment:manage"),
+    hasWardPermission(ctx, wardId, "missionary_calendar:manage"),
   ])
 
   return buildMissionaryAccess({
-    isWardMissionLeader: isWardMissionLeaderForWard,
     isAssignedMissionary: !!assignment,
+    canManageMissionaries,
+    canManageAssignments,
+    canManageCalendars,
   })
 }
