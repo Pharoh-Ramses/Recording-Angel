@@ -35,11 +35,11 @@ function normalizeView(view: string | null | undefined): MissionaryCalendarUrlSt
 }
 
 export function parseMissionaryCalendarQuery(
-  searchParams: SearchParamsLike,
+  searchParams?: SearchParamsLike | null,
 ): MissionaryCalendarUrlState {
   return {
-    month: normalizeMonth(searchParams.get("month")) ?? getFallbackMonth(),
-    view: normalizeView(searchParams.get("view")),
+    month: normalizeMonth(searchParams?.get("month")) ?? getFallbackMonth(),
+    view: normalizeView(searchParams?.get("view")),
   }
 }
 
