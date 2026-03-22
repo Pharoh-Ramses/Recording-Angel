@@ -31,6 +31,18 @@ const WARD_SYSTEM_ROLES = [
     name: "member",
     permissions: ["post:create", "comment:create"],
   },
+  {
+    name: "ward_mission_leader",
+    permissions: [
+      "missionary:view",
+      "missionary:manage",
+      "missionary_assignment:manage",
+      "companionship:manage",
+      "missionary_calendar:manage",
+      "missionary_calendar_group:manage",
+      "missionary_post:approve",
+    ],
+  },
 ];
 
 const STAKE_SYSTEM_ROLES = [
