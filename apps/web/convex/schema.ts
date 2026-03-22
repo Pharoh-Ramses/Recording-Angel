@@ -161,10 +161,7 @@ export default defineSchema({
 
   // Posts (core content)
   posts: defineTable({
-    authorId: v.optional(v.id("members")),
-    authorType: v.optional(
-      v.union(v.literal("member"), v.literal("missionary"))
-    ),
+    authorType: v.union(v.literal("member"), v.literal("missionary")),
     authorMemberId: v.optional(v.id("members")),
     authorMissionaryId: v.optional(v.id("missionaries")),
     wardId: v.id("wards"),

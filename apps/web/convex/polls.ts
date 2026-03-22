@@ -139,8 +139,9 @@ export const getPinnedPolls = query({
 
     return Promise.all(
       pinned.map(async (post) => {
-        const memberId = post.authorMemberId ?? post.authorId;
-        const member = memberId ? await ctx.db.get(memberId) : null;
+        const member = post.authorMemberId
+          ? await ctx.db.get(post.authorMemberId)
+          : null;
         const user = member
           ? await ctx.db
               .query("users")
@@ -239,9 +240,8 @@ export const listApprovedForWard = query({
 
     return Promise.all(
       polls.map(async (post) => {
-        const authorMemberId = post.authorMemberId ?? post.authorId;
-        const authorMember = authorMemberId
-          ? await ctx.db.get(authorMemberId)
+        const authorMember = post.authorMemberId
+          ? await ctx.db.get(post.authorMemberId)
           : null;
         const authorUser = authorMember
           ? await ctx.db
