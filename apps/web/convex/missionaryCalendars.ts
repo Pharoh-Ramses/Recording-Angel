@@ -4,6 +4,11 @@ import { Id } from "./_generated/dataModel"
 import { MutationCtx, QueryCtx, mutation, query } from "./_generated/server"
 import { planCompanionshipMembershipUpdates } from "./lib/missionaryCalendars"
 import {
+  getPublicDinnerClaimError,
+  normalizePublicMissionaryCalendarToken,
+  toPublicMissionaryCalendarSummary,
+} from "./lib/publicMissionaryCalendar"
+import {
   canManageMissionaryCalendarGroup,
   getActiveMissionaryAssignment,
   requireWardMissionLeader,
@@ -43,7 +48,7 @@ async function getPublicCalendarGroupByToken(
   ctx: CalendarCtx,
   token: string,
 ) {
-  const normalizedToken = token.trim()
+  const normalizedToken = normalizePublicMissionaryCalendarToken(token)
   if (!normalizedToken) {
     return null
   }
@@ -468,10 +473,7 @@ export const getPublicCalendarByToken = query({
       return null
     }
 
-    return {
-      _id: calendarGroup._id,
-      name: calendarGroup.name,
-    }
+    return toPublicMissionaryCalendarSummary(calendarGroup)
   },
 })
 
@@ -590,10 +592,15 @@ export const claimPublicDinnerSlot = mutation({
       .withIndex("bySlotId", (q) => q.eq("slotId", slotId))
       .collect()
 
-    const reservation = existingReservation[0]
+    const claimError = getPublicDinnerClaimError({
+      hasExistingReservation: existingReservation.length > 0,
+      publicCalendarGroupId: calendarGroup._id,
+      slotCalendarGroupId: slot.calendarGroupId,
+      slotStatus: slot.status,
+    })
 
-    if (slot.status !== "open" || reservation) {
-      throw new Error("Dinner slot already claimed")
+    if (claimError) {
+      throw new Error(claimError)
     }
 
     await ctx.db.patch(slotId, { status: "reserved" })

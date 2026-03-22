@@ -14,6 +14,7 @@ import type * as lib_missionaryAuth from "../lib/missionaryAuth.js";
 import type * as lib_missionaryCalendars from "../lib/missionaryCalendars.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_postAuthors from "../lib/postAuthors.js";
+import type * as lib_publicMissionaryCalendar from "../lib/publicMissionaryCalendar.js";
 import type * as members from "../members.js";
 import type * as migrations from "../migrations.js";
 import type * as missionaries from "../missionaries.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   "lib/missionaryCalendars": typeof lib_missionaryCalendars;
   "lib/permissions": typeof lib_permissions;
   "lib/postAuthors": typeof lib_postAuthors;
+  "lib/publicMissionaryCalendar": typeof lib_publicMissionaryCalendar;
   members: typeof members;
   migrations: typeof migrations;
   missionaries: typeof missionaries;

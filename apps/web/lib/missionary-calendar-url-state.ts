@@ -8,7 +8,11 @@ type SearchParamsLike = {
 }
 
 function getFallbackMonth() {
-  return new Date().toISOString().slice(0, 7)
+  const today = new Date()
+  const year = String(today.getFullYear())
+  const month = String(today.getMonth() + 1).padStart(2, "0")
+
+  return `${year}-${month}`
 }
 
 function normalizeMonth(month: string | null | undefined) {

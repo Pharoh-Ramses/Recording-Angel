@@ -19,12 +19,42 @@ describe("missionary calendar URL state", () => {
   })
 
   test("parseMissionaryCalendarQuery falls back for missing query input", () => {
-    const state = parseMissionaryCalendarQuery()
+    const OriginalDate = globalThis.Date
 
-    assert.deepEqual(state, {
-      month: new Date().toISOString().slice(0, 7),
-      view: "month",
-    })
+    class MockDate extends OriginalDate {
+      constructor(...args: ConstructorParameters<typeof Date>) {
+        super(args.length > 0 ? args[0] : "2026-04-01T06:30:00.000Z")
+      }
+
+      override getFullYear() {
+        return 2026
+      }
+
+      override getMonth() {
+        return 2
+      }
+
+      override toISOString() {
+        return "2026-04-01T06:30:00.000Z"
+      }
+
+      static override now() {
+        return new OriginalDate("2026-04-01T06:30:00.000Z").valueOf()
+      }
+    }
+
+    globalThis.Date = MockDate as DateConstructor
+
+    try {
+      const state = parseMissionaryCalendarQuery()
+
+      assert.deepEqual(state, {
+        month: "2026-03",
+        view: "month",
+      })
+    } finally {
+      globalThis.Date = OriginalDate
+    }
   })
 
   test("parseMissionaryCalendarQuery falls back for invalid query input", () => {
