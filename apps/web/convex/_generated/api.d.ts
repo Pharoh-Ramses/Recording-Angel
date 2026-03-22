@@ -11,6 +11,7 @@
 import type * as comments from "../comments.js";
 import type * as http from "../http.js";
 import type * as lib_missionaryAuth from "../lib/missionaryAuth.js";
+import type * as lib_missionaryCalendars from "../lib/missionaryCalendars.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_postAuthors from "../lib/postAuthors.js";
 import type * as members from "../members.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   http: typeof http;
   "lib/missionaryAuth": typeof lib_missionaryAuth;
+  "lib/missionaryCalendars": typeof lib_missionaryCalendars;
   "lib/permissions": typeof lib_permissions;
   "lib/postAuthors": typeof lib_postAuthors;
   members: typeof members;

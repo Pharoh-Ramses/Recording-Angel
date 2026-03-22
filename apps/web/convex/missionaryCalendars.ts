@@ -2,6 +2,7 @@ import { v } from "convex/values"
 
 import { Id } from "./_generated/dataModel"
 import { MutationCtx, QueryCtx, mutation, query } from "./_generated/server"
+import { planCompanionshipMembershipUpdates } from "./lib/missionaryCalendars"
 import {
   canManageMissionaryCalendarGroup,
   getActiveMissionaryAssignment,
@@ -232,17 +233,39 @@ export const setCompanionshipMissionaries = mutation({
       )
       .collect()
 
-    const activeMemberships = existingMemberships.filter(
-      (membership) => membership.status === "active",
+    const otherActiveMemberships = await Promise.all(
+      uniqueMissionaryIds.map(async (missionaryId) => {
+        const memberships = await ctx.db
+          .query("companionshipMissionaries")
+          .withIndex("byMissionaryId", (q) => q.eq("missionaryId", missionaryId))
+          .collect()
+
+        return memberships.filter((membership) => membership.status === "active")
+      }),
     )
-    const desiredMissionaryIds = new Set(uniqueMissionaryIds)
-    const activeMissionaryIds = new Set(
-      activeMemberships.map((membership) => membership.missionaryId),
+
+    const activeMembershipsById = new Map(
+      [...existingMemberships, ...otherActiveMemberships.flat()]
+        .filter((membership) => membership.status === "active")
+        .map((membership) => [membership._id, membership]),
     )
+    const { membershipIdsToDeactivate, missionaryIdsToActivate } =
+      planCompanionshipMembershipUpdates({
+        companionshipId,
+        desiredMissionaryIds: uniqueMissionaryIds,
+        activeMemberships: Array.from(activeMembershipsById.values()).map(
+          (membership) => ({
+            membershipId: membership._id,
+            companionshipId: membership.companionshipId,
+            missionaryId: membership.missionaryId,
+          }),
+        ),
+      })
     const now = Date.now()
 
-    for (const membership of activeMemberships) {
-      if (!desiredMissionaryIds.has(membership.missionaryId)) {
+    for (const membershipId of membershipIdsToDeactivate) {
+      const membership = activeMembershipsById.get(membershipId)
+      if (membership) {
         await ctx.db.patch(membership._id, {
           endedAt: now,
           status: "inactive",
@@ -250,15 +273,13 @@ export const setCompanionshipMissionaries = mutation({
       }
     }
 
-    for (const missionaryId of uniqueMissionaryIds) {
-      if (!activeMissionaryIds.has(missionaryId)) {
-        await ctx.db.insert("companionshipMissionaries", {
-          companionshipId,
-          missionaryId,
-          startedAt: now,
-          status: "active",
-        })
-      }
+    for (const missionaryId of missionaryIdsToActivate) {
+      await ctx.db.insert("companionshipMissionaries", {
+        companionshipId,
+        missionaryId,
+        startedAt: now,
+        status: "active",
+      })
     }
   },
 })
