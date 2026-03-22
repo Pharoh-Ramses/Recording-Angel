@@ -44,6 +44,21 @@ export function getTransferAuthorizationWardIds(
     : [sourceWardId, destinationWardId]
 }
 
+export function canManageMissionaryCalendarGroup({
+  isWardMissionLeader,
+  hasActiveAssignmentInWard,
+  belongsToMappedCompanionship,
+}: {
+  isWardMissionLeader: boolean
+  hasActiveAssignmentInWard: boolean
+  belongsToMappedCompanionship: boolean
+}) {
+  return (
+    isWardMissionLeader ||
+    (hasActiveAssignmentInWard && belongsToMappedCompanionship)
+  )
+}
+
 export async function getAuthenticatedUser(ctx: AuthCtx) {
   const identity = await ctx.auth.getUserIdentity()
   if (!identity) {

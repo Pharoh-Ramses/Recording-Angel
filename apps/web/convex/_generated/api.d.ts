@@ -16,6 +16,7 @@ import type * as lib_postAuthors from "../lib/postAuthors.js";
 import type * as members from "../members.js";
 import type * as migrations from "../migrations.js";
 import type * as missionaries from "../missionaries.js";
+import type * as missionaryCalendars from "../missionaryCalendars.js";
 import type * as moderation from "../moderation.js";
 import type * as polls from "../polls.js";
 import type * as posts from "../posts.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   members: typeof members;
   migrations: typeof migrations;
   missionaries: typeof missionaries;
+  missionaryCalendars: typeof missionaryCalendars;
   moderation: typeof moderation;
   polls: typeof polls;
   posts: typeof posts;

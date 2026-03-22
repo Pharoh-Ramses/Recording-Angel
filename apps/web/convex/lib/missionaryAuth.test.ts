@@ -3,6 +3,7 @@ import { describe, test } from "node:test"
 
 import {
   buildMissionaryAccess,
+  canManageMissionaryCalendarGroup,
   getTransferAuthorizationWardIds,
 } from "./missionaryAuth"
 
@@ -72,5 +73,40 @@ describe("getTransferAuthorizationWardIds", () => {
 
   test("deduplicates transfer authorization when wards match", () => {
     assert.deepEqual(getTransferAuthorizationWardIds("same", "same"), ["same"])
+  })
+})
+
+describe("canManageMissionaryCalendarGroup", () => {
+  test("allows ward mission leaders to manage any mapped group", () => {
+    assert.equal(
+      canManageMissionaryCalendarGroup({
+        isWardMissionLeader: true,
+        hasActiveAssignmentInWard: false,
+        belongsToMappedCompanionship: false,
+      }),
+      true,
+    )
+  })
+
+  test("allows assigned missionaries to manage their mapped group", () => {
+    assert.equal(
+      canManageMissionaryCalendarGroup({
+        isWardMissionLeader: false,
+        hasActiveAssignmentInWard: true,
+        belongsToMappedCompanionship: true,
+      }),
+      true,
+    )
+  })
+
+  test("rejects missionaries without a current mapped assignment", () => {
+    assert.equal(
+      canManageMissionaryCalendarGroup({
+        isWardMissionLeader: false,
+        hasActiveAssignmentInWard: false,
+        belongsToMappedCompanionship: true,
+      }),
+      false,
+    )
   })
 })
