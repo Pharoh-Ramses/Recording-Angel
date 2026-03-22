@@ -6,6 +6,7 @@ import {
   hasPermission,
   requirePermission,
 } from "./lib/permissions";
+import { resolvePostAuthor } from "./lib/postAuthors";
 import { paginationOptsValidator } from "convex/server";
 
 export const create = mutation({
@@ -98,11 +99,8 @@ export const listByWard = query({
     // Enrich with author data
     const enrichedPage = await Promise.all(
       results.page.map(async (post) => {
-        const member = post.authorMemberId
-          ? await ctx.db.get(post.authorMemberId)
-          : null;
-        const user = member ? await ctx.db.get(member.userId) : null;
-        return { ...post, author: user };
+        const author = await resolvePostAuthor(ctx, post);
+        return { ...post, author };
       })
     );
 
@@ -129,12 +127,9 @@ export const listByStake = query({
 
     const enrichedPage = await Promise.all(
       results.page.map(async (post) => {
-        const member = post.authorMemberId
-          ? await ctx.db.get(post.authorMemberId)
-          : null;
-        const user = member ? await ctx.db.get(member.userId) : null;
+        const author = await resolvePostAuthor(ctx, post);
         const ward = await ctx.db.get(post.wardId);
-        return { ...post, author: user, ward };
+        return { ...post, author, ward };
       })
     );
 
@@ -148,14 +143,11 @@ export const getById = query({
     const post = await ctx.db.get(postId);
     if (!post || post.status !== "approved") return null;
 
-    const member = post.authorMemberId
-      ? await ctx.db.get(post.authorMemberId)
-      : null;
-    const user = member ? await ctx.db.get(member.userId) : null;
+    const author = await resolvePostAuthor(ctx, post);
     const ward = await ctx.db.get(post.wardId);
     const stake = await ctx.db.get(post.stakeId);
 
-    return { ...post, author: user, ward, stake };
+    return { ...post, author, ward, stake };
   },
 });
 
@@ -205,18 +197,10 @@ export const listForAdmin = query({
 
     const enriched = await Promise.all(
       results.page.map(async (post) => {
-        const authorMember = post.authorMemberId
-          ? await ctx.db.get(post.authorMemberId)
-          : null;
-        const authorUser = authorMember
-          ? await ctx.db
-              .query("users")
-              .filter((q) => q.eq(q.field("_id"), authorMember.userId))
-              .unique()
-          : null;
+        const author = await resolvePostAuthor(ctx, post);
         return {
           ...post,
-          author: authorUser ? { name: authorUser.name } : null,
+          author: author ? { name: author.name } : null,
         };
       })
     );
@@ -259,11 +243,8 @@ export const upcomingEvents = query({
 
     const enriched = await Promise.all(
       events.map(async (post) => {
-        const member = post.authorMemberId
-          ? await ctx.db.get(post.authorMemberId)
-          : null;
-        const user = member ? await ctx.db.get(member.userId) : null;
-        return { ...post, author: user };
+        const author = await resolvePostAuthor(ctx, post);
+        return { ...post, author };
       })
     );
 

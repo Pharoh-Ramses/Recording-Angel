@@ -5,6 +5,7 @@ import {
   requirePermission,
   hasPermission,
 } from "./lib/permissions";
+import { resolvePostAuthor } from "./lib/postAuthors";
 
 export const vote = mutation({
   args: {
@@ -139,19 +140,13 @@ export const getPinnedPolls = query({
 
     return Promise.all(
       pinned.map(async (post) => {
-        const member = post.authorMemberId
-          ? await ctx.db.get(post.authorMemberId)
-          : null;
-        const user = member
-          ? await ctx.db
-              .query("users")
-              .filter((q) => q.eq(q.field("_id"), member.userId))
-              .unique()
-          : null;
+        const author = await resolvePostAuthor(ctx, post);
 
         return {
           ...post,
-          author: user ? { name: user.name, imageUrl: user.imageUrl } : null,
+          author: author
+            ? { name: author.name, imageUrl: author.imageUrl }
+            : null,
         };
       })
     );
@@ -240,15 +235,7 @@ export const listApprovedForWard = query({
 
     return Promise.all(
       polls.map(async (post) => {
-        const authorMember = post.authorMemberId
-          ? await ctx.db.get(post.authorMemberId)
-          : null;
-        const authorUser = authorMember
-          ? await ctx.db
-              .query("users")
-              .filter((q) => q.eq(q.field("_id"), authorMember.userId))
-              .unique()
-          : null;
+        const author = await resolvePostAuthor(ctx, post);
 
         // Get total votes
         const options = await ctx.db
@@ -267,8 +254,8 @@ export const listApprovedForWard = query({
 
         return {
           ...post,
-          author: authorUser
-            ? { name: authorUser.name, imageUrl: authorUser.imageUrl }
+          author: author
+            ? { name: author.name, imageUrl: author.imageUrl }
             : null,
           totalVotes,
         };
