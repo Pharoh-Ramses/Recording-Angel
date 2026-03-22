@@ -39,6 +39,39 @@ async function getCalendarGroupOrThrow(
   return calendarGroup
 }
 
+async function getPublicCalendarGroupByToken(
+  ctx: CalendarCtx,
+  token: string,
+) {
+  const normalizedToken = token.trim()
+  if (!normalizedToken) {
+    return null
+  }
+
+  const calendarGroup = await ctx.db
+    .query("missionaryCalendarGroups")
+    .withIndex("byShareToken", (q) => q.eq("shareToken", normalizedToken))
+    .unique()
+
+  if (!calendarGroup || calendarGroup.status !== "active") {
+    return null
+  }
+
+  return calendarGroup
+}
+
+async function requirePublicCalendarGroupByToken(
+  ctx: CalendarCtx,
+  token: string,
+) {
+  const calendarGroup = await getPublicCalendarGroupByToken(ctx, token)
+  if (!calendarGroup) {
+    throw new Error("Public calendar not found")
+  }
+
+  return calendarGroup
+}
+
 async function getSlotOrThrow(
   ctx: CalendarCtx,
   slotId: Id<"missionaryDinnerSlots">,
@@ -427,6 +460,48 @@ export const listSlotsForGroup = query({
   },
 })
 
+export const getPublicCalendarByToken = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const calendarGroup = await getPublicCalendarGroupByToken(ctx, token)
+    if (!calendarGroup) {
+      return null
+    }
+
+    return {
+      _id: calendarGroup._id,
+      name: calendarGroup.name,
+    }
+  },
+})
+
+export const listPublicSlots = query({
+  args: {
+    token: v.string(),
+    from: v.string(),
+    to: v.string(),
+  },
+  handler: async (ctx, { token, from, to }) => {
+    if (from > to) {
+      throw new Error("Invalid slot range")
+    }
+
+    const calendarGroup = await getPublicCalendarGroupByToken(ctx, token)
+    if (!calendarGroup) {
+      return []
+    }
+
+    const slots = await ctx.db
+      .query("missionaryDinnerSlots")
+      .withIndex("byCalendarGroupIdAndDate", (q) =>
+        q.eq("calendarGroupId", calendarGroup._id).gte("date", from).lte("date", to),
+      )
+      .collect()
+
+    return slots.sort((a, b) => a.date.localeCompare(b.date))
+  },
+})
+
 export const saveDinnerSlot = mutation({
   args: {
     calendarGroupId: v.id("missionaryCalendarGroups"),
@@ -482,5 +557,52 @@ export const deleteDinnerSlot = mutation({
     }
 
     await ctx.db.delete(slotId)
+  },
+})
+
+export const claimPublicDinnerSlot = mutation({
+  args: {
+    token: v.string(),
+    slotId: v.id("missionaryDinnerSlots"),
+    volunteerName: v.string(),
+    volunteerPhone: v.string(),
+  },
+  handler: async (ctx, { token, slotId, volunteerName, volunteerPhone }) => {
+    const calendarGroup = await requirePublicCalendarGroupByToken(ctx, token)
+    const normalizedVolunteerName = volunteerName.trim()
+    const normalizedVolunteerPhone = volunteerPhone.trim()
+
+    if (!normalizedVolunteerName) {
+      throw new Error("Volunteer name is required")
+    }
+
+    if (!normalizedVolunteerPhone) {
+      throw new Error("Volunteer phone is required")
+    }
+
+    const slot = await getSlotOrThrow(ctx, slotId)
+    if (slot.calendarGroupId !== calendarGroup._id) {
+      throw new Error("Dinner slot does not belong to public calendar")
+    }
+
+    const existingReservation = await ctx.db
+      .query("missionaryDinnerReservations")
+      .withIndex("bySlotId", (q) => q.eq("slotId", slotId))
+      .collect()
+
+    const reservation = existingReservation[0]
+
+    if (slot.status !== "open" || reservation) {
+      throw new Error("Dinner slot already claimed")
+    }
+
+    await ctx.db.patch(slotId, { status: "reserved" })
+
+    return await ctx.db.insert("missionaryDinnerReservations", {
+      slotId,
+      volunteerName: normalizedVolunteerName,
+      volunteerPhone: normalizedVolunteerPhone,
+      claimedAt: Date.now(),
+    })
   },
 })
