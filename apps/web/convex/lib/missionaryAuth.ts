@@ -43,13 +43,11 @@ export function buildMissionaryAccess({
     canManageCompanionships ||
     canManageCalendars
   const canAccessMissionaryAdmin =
-    isAssignedMissionary ||
     canViewMissionaries ||
     canManageMissionaries ||
     canManageAssignments ||
     canManageCompanionships ||
-    canManageCalendars ||
-    canApproveMissionaryAnnouncements
+    canManageCalendars
 
   return {
     canAccessMissionaryAdmin,
@@ -175,6 +173,7 @@ export async function isWardMissionLeader(ctx: AuthCtx, wardId: Id<"wards">) {
   const permissions = await Promise.all([
     hasWardPermission(ctx, wardId, "missionary:manage"),
     hasWardPermission(ctx, wardId, "missionary_assignment:manage"),
+    hasWardPermission(ctx, wardId, "companionship:manage"),
     hasWardPermission(ctx, wardId, "missionary_calendar:manage"),
   ])
 

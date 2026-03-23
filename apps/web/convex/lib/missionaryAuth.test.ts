@@ -21,7 +21,7 @@ describe("buildMissionaryAccess", () => {
         canApproveMissionaryAnnouncements: false,
       }),
       {
-        canAccessMissionaryAdmin: true,
+        canAccessMissionaryAdmin: false,
         isWardMissionLeader: false,
         isAssignedMissionary: true,
         canViewMissionaries: false,
@@ -102,7 +102,7 @@ describe("buildMissionaryAccess", () => {
         canApproveMissionaryAnnouncements: false,
       }),
       {
-        canAccessMissionaryAdmin: true,
+        canAccessMissionaryAdmin: false,
         isWardMissionLeader: false,
         isAssignedMissionary: true,
         canViewMissionaries: false,
@@ -117,7 +117,7 @@ describe("buildMissionaryAccess", () => {
     )
   })
 
-  test("allows announcement-only reviewers into the admin page without mission leader status", () => {
+  test("does not expose the admin page to announcement-only reviewers", () => {
     assert.deepEqual(
       buildMissionaryAccess({
         isAssignedMissionary: false,
@@ -129,7 +129,7 @@ describe("buildMissionaryAccess", () => {
         canApproveMissionaryAnnouncements: true,
       }),
       {
-        canAccessMissionaryAdmin: true,
+        canAccessMissionaryAdmin: false,
         isWardMissionLeader: false,
         isAssignedMissionary: false,
         canViewMissionaries: false,
@@ -139,6 +139,33 @@ describe("buildMissionaryAccess", () => {
         canManageCalendars: false,
         canCreateMissionaryAnnouncements: false,
         canApproveMissionaryAnnouncements: true,
+        canPublishMissionaryAnnouncements: false,
+      },
+    )
+  })
+
+  test("treats companionship managers as ward mission leaders", () => {
+    assert.deepEqual(
+      buildMissionaryAccess({
+        isAssignedMissionary: false,
+        canViewMissionaries: false,
+        canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: true,
+        canManageCalendars: false,
+        canApproveMissionaryAnnouncements: false,
+      }),
+      {
+        canAccessMissionaryAdmin: true,
+        isWardMissionLeader: true,
+        isAssignedMissionary: false,
+        canViewMissionaries: false,
+        canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: true,
+        canManageCalendars: false,
+        canCreateMissionaryAnnouncements: false,
+        canApproveMissionaryAnnouncements: false,
         canPublishMissionaryAnnouncements: false,
       },
     )

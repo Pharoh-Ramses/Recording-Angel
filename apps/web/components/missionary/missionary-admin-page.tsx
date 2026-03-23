@@ -128,9 +128,11 @@ function MissionaryAdminManager({
   const canShowTransfersSection =
     access.canViewMissionaries && access.canManageAssignments;
   const canShowCompanionshipSection =
-    access.canManageCompanionships && access.canViewMissionaries;
-  const canShowCalendarGroupsSection = access.canManageCalendars;
-  const canShowAnnouncementsSection = access.canApproveMissionaryAnnouncements;
+    access.isWardMissionLeader && access.canManageCompanionships && access.canViewMissionaries;
+  const canShowCalendarGroupsSection =
+    access.isWardMissionLeader && access.canManageCalendars;
+  const canShowAnnouncementsSection =
+    access.isWardMissionLeader && access.canApproveMissionaryAnnouncements;
   const shouldLoadMissionaries =
     access.canViewMissionaries || canShowCompanionshipSection || canShowTransfersSection;
   const shouldLoadCompanionships =
@@ -839,11 +841,18 @@ function MissionaryAdminManager({
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">
-            Calendar groups plus pending missionary announcements
+            {canShowCalendarGroupsSection && canShowAnnouncementsSection
+              ? "Calendar groups plus pending missionary announcements"
+              : canShowCalendarGroupsSection
+                ? "Calendar groups"
+                : "Pending missionary announcements"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Configure consolidated calendars and work through the missionary review
-            queue.
+            {canShowCalendarGroupsSection && canShowAnnouncementsSection
+              ? "Configure consolidated calendars and work through the missionary review queue."
+              : canShowCalendarGroupsSection
+                ? "Configure consolidated calendars for missionary companionships."
+                : "Review missionary announcements before they reach the ward feed."}
           </p>
         </div>
 
