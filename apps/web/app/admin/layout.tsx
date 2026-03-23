@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { Permission } from "@/convex/lib/permissions";
 import {
   Users,
   Shield,
@@ -14,15 +15,27 @@ import {
   BarChart3,
   Settings,
   ArrowLeft,
+  BookUser,
 } from "lucide-react";
 import { Suspense } from "react";
 
-const navItems = [
+const navItems: {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  permissions: Permission[];
+}[] = [
   {
     href: "/admin/members",
     label: "Members",
     icon: Users,
     permissions: ["member:approve", "member:view"],
+  },
+  {
+    href: "/admin/missionaries",
+    label: "Missionaries",
+    icon: BookUser,
+    permissions: ["missionary:view", "missionary:manage"],
   },
   {
     href: "/admin/moderation",
@@ -90,7 +103,7 @@ function AdminLayoutInner({
     : "/";
 
   const visibleNav = navItems.filter((item) =>
-    item.permissions.some((p) => permissions?.includes(p as any))
+    item.permissions.some((p) => permissions?.includes(p))
   );
 
   return (
