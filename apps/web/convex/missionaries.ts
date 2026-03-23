@@ -10,6 +10,7 @@ import {
   getMissionaryAccessForWard,
   getTransferAuthorizationWardIds,
   hasWardPermission,
+  requireWardMissionLeader,
   requireWardPermission,
 } from "./lib/missionaryAuth"
 import { resolvePostAuthor } from "./lib/postAuthors"
@@ -354,7 +355,7 @@ export const listPendingAnnouncements = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, { wardId, paginationOpts }) => {
-    await requireWardPermission(ctx, wardId, "missionary_post:approve")
+    await requireWardMissionLeader(ctx, wardId)
 
     const results = await ctx.db
       .query("posts")
@@ -394,7 +395,7 @@ export const approveAnnouncement = mutation({
       throw new Error("Missionary announcement is not pending review")
     }
 
-    await requireWardPermission(ctx, post.wardId, "missionary_post:approve")
+    await requireWardMissionLeader(ctx, post.wardId)
 
     await ctx.db.patch(postId, {
       status: "approved",
@@ -422,7 +423,7 @@ export const rejectAnnouncement = mutation({
       throw new Error("Missionary announcement is not pending review")
     }
 
-    await requireWardPermission(ctx, post.wardId, "missionary_post:approve")
+    await requireWardMissionLeader(ctx, post.wardId)
 
     await ctx.db.patch(postId, {
       status: "rejected",
