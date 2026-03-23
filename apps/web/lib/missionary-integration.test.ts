@@ -5,6 +5,7 @@ import {
   canAccessMissionaryHub,
   getPostTypeBadgeLabel,
   getWardFeedEntryPoint,
+  shouldShowFilteredFeedEmptyState,
 } from "./missionary-integration"
 
 describe("getPostTypeBadgeLabel", () => {
@@ -78,6 +79,43 @@ describe("canAccessMissionaryHub", () => {
         isWardMissionLeader: false,
       }),
       false,
+    )
+  })
+
+  test("matches missionary page access for read-only admin access", () => {
+    assert.equal(
+      canAccessMissionaryHub({
+        canAccessMissionaryAdmin: true,
+        isAssignedMissionary: false,
+        isWardMissionLeader: false,
+      } as never),
+      true,
+    )
+  })
+})
+
+describe("shouldShowFilteredFeedEmptyState", () => {
+  test("keeps the empty state hidden while more pages can still be loaded", () => {
+    assert.equal(
+      shouldShowFilteredFeedEmptyState({
+        filteredResultsCount: 0,
+        hasAnyResults: true,
+        status: "CanLoadMore",
+        typeFilter: "missionary_announcement",
+      }),
+      false,
+    )
+  })
+
+  test("shows the empty state once filtering is exhausted", () => {
+    assert.equal(
+      shouldShowFilteredFeedEmptyState({
+        filteredResultsCount: 0,
+        hasAnyResults: true,
+        status: "Exhausted",
+        typeFilter: "missionary_announcement",
+      }),
+      true,
     )
   })
 })

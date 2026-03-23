@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { PostCard } from "./post-card";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
+import { shouldShowFilteredFeedEmptyState } from "@/lib/missionary-integration";
 
 type PostCardWard = { name: string; slug?: string };
 
@@ -62,7 +63,14 @@ export function Feed({ wardId, stakeId, mode, typeFilter, isMember }: FeedProps)
     ? feed.results.filter((post) => post.type === typeFilter)
     : feed.results;
 
-  if (filteredResults.length === 0) {
+  if (
+    shouldShowFilteredFeedEmptyState({
+      filteredResultsCount: filteredResults.length,
+      hasAnyResults: feed.results.length > 0,
+      status: feed.status,
+      typeFilter,
+    })
+  ) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
         No posts yet. Be the first to share something!
