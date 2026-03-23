@@ -20,14 +20,14 @@ export function buildMissionaryAccess({
   canManageAssignments,
   canManageCalendars,
   canApproveMissionaryAnnouncements,
-  canPublishMissionaryAnnouncements,
+  canPublishMissionaryAnnouncements = false,
 }: {
   isAssignedMissionary: boolean
   canManageMissionaries: boolean
   canManageAssignments: boolean
   canManageCalendars: boolean
   canApproveMissionaryAnnouncements: boolean
-  canPublishMissionaryAnnouncements: boolean
+  canPublishMissionaryAnnouncements?: boolean
 }): MissionaryAccess {
   const isWardMissionLeader =
     canManageMissionaries || canManageAssignments || canManageCalendars
@@ -174,14 +174,12 @@ export async function getMissionaryAccessForWard(
     canManageAssignments,
     canManageCalendars,
     canApproveMissionaryAnnouncements,
-    canPublishMissionaryAnnouncements,
   ] = await Promise.all([
     getActiveMissionaryAssignment(ctx, wardId),
     hasWardPermission(ctx, wardId, "missionary:manage"),
     hasWardPermission(ctx, wardId, "missionary_assignment:manage"),
     hasWardPermission(ctx, wardId, "missionary_calendar:manage"),
     hasWardPermission(ctx, wardId, "missionary_post:approve"),
-    hasWardPermission(ctx, wardId, "missionary_post:publish_directly"),
   ])
 
   return buildMissionaryAccess({
@@ -190,6 +188,5 @@ export async function getMissionaryAccessForWard(
     canManageAssignments,
     canManageCalendars,
     canApproveMissionaryAnnouncements,
-    canPublishMissionaryAnnouncements,
   })
 }

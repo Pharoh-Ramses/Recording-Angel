@@ -16,7 +16,6 @@ describe("buildMissionaryAccess", () => {
         canManageAssignments: false,
         canManageCalendars: false,
         canApproveMissionaryAnnouncements: false,
-        canPublishMissionaryAnnouncements: false,
       }),
       {
         isWardMissionLeader: false,
@@ -38,7 +37,6 @@ describe("buildMissionaryAccess", () => {
         canManageAssignments: true,
         canManageCalendars: true,
         canApproveMissionaryAnnouncements: true,
-        canPublishMissionaryAnnouncements: false,
       }),
       {
         isWardMissionLeader: true,
@@ -60,7 +58,6 @@ describe("buildMissionaryAccess", () => {
         canManageAssignments: false,
         canManageCalendars: false,
         canApproveMissionaryAnnouncements: false,
-        canPublishMissionaryAnnouncements: false,
       }),
       {
         isWardMissionLeader: false,
@@ -74,7 +71,7 @@ describe("buildMissionaryAccess", () => {
     )
   })
 
-  test("allows direct publish only for assigned missionaries with explicit publish capability", () => {
+  test("keeps direct publish disabled by default for assigned missionaries", () => {
     assert.deepEqual(
       buildMissionaryAccess({
         isAssignedMissionary: true,
@@ -82,7 +79,6 @@ describe("buildMissionaryAccess", () => {
         canManageAssignments: false,
         canManageCalendars: false,
         canApproveMissionaryAnnouncements: false,
-        canPublishMissionaryAnnouncements: true,
       }),
       {
         isWardMissionLeader: false,
@@ -91,7 +87,7 @@ describe("buildMissionaryAccess", () => {
         canManageCalendars: true,
         canCreateMissionaryAnnouncements: true,
         canApproveMissionaryAnnouncements: false,
-        canPublishMissionaryAnnouncements: true,
+        canPublishMissionaryAnnouncements: false,
       },
     )
   })
