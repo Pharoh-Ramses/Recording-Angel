@@ -1,4 +1,6 @@
+import { paginationOptsValidator } from "convex/server"
 import { v } from "convex/values"
+import { internal } from "./_generated/api"
 import { mutation, query } from "./_generated/server"
 import { Id } from "./_generated/dataModel"
 import { MutationCtx, QueryCtx } from "./_generated/server"
@@ -10,6 +12,7 @@ import {
   hasWardPermission,
   requireWardPermission,
 } from "./lib/missionaryAuth"
+import { resolvePostAuthor } from "./lib/postAuthors"
 
 type MissionaryCtx = QueryCtx | MutationCtx
 
@@ -297,6 +300,133 @@ export const transferMissionary = mutation({
       stakeId: newWard.stakeId,
       startedAt: endedAt,
       status: "active",
+    })
+  },
+})
+
+export const createAnnouncement = mutation({
+  args: {
+    wardId: v.id("wards"),
+    title: v.string(),
+    content: v.string(),
+  },
+  handler: async (ctx, { wardId, title, content }) => {
+    const [missionary, assignment] = await Promise.all([
+      getAuthenticatedMissionary(ctx),
+      getActiveMissionaryAssignment(ctx, wardId),
+    ])
+
+    if (!missionary || !assignment) {
+      throw new Error("Assigned missionary access required")
+    }
+
+    const canPublishDirectly = await hasWardPermission(
+      ctx,
+      wardId,
+      "missionary_post:publish_directly",
+    )
+
+    const postId = await ctx.db.insert("posts", {
+      authorType: "missionary",
+      authorMissionaryId: missionary._id,
+      wardId,
+      stakeId: assignment.stakeId,
+      scope: "ward",
+      type: "missionary_announcement",
+      title,
+      content,
+      status: canPublishDirectly ? "approved" : "pending_review",
+    })
+
+    if (canPublishDirectly) {
+      await ctx.scheduler.runAfter(0, internal.translations.translatePost, {
+        postId,
+      })
+    }
+
+    return postId
+  },
+})
+
+export const listPendingAnnouncements = query({
+  args: {
+    wardId: v.id("wards"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { wardId, paginationOpts }) => {
+    await requireWardPermission(ctx, wardId, "missionary_post:approve")
+
+    const results = await ctx.db
+      .query("posts")
+      .withIndex("byWardIdAndStatus", (q) =>
+        q.eq("wardId", wardId).eq("status", "pending_review"),
+      )
+      .filter((q) => q.eq(q.field("type"), "missionary_announcement"))
+      .order("desc")
+      .paginate(paginationOpts)
+
+    const page = await Promise.all(
+      results.page.map(async (post) => {
+        const author = await resolvePostAuthor(ctx, post)
+        return { ...post, author }
+      }),
+    )
+
+    return {
+      ...results,
+      page,
+    }
+  },
+})
+
+export const approveAnnouncement = mutation({
+  args: {
+    postId: v.id("posts"),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { postId, notes }) => {
+    const post = await ctx.db.get(postId)
+    if (!post || post.type !== "missionary_announcement") {
+      throw new Error("Missionary announcement not found")
+    }
+
+    if (post.status !== "pending_review") {
+      throw new Error("Missionary announcement is not pending review")
+    }
+
+    await requireWardPermission(ctx, post.wardId, "missionary_post:approve")
+
+    await ctx.db.patch(postId, {
+      status: "approved",
+      moderationNotes: notes ?? "Approved by ward mission leader",
+    })
+
+    await ctx.scheduler.runAfter(0, internal.translations.translatePost, {
+      postId,
+    })
+  },
+})
+
+export const rejectAnnouncement = mutation({
+  args: {
+    postId: v.id("posts"),
+    notes: v.string(),
+  },
+  handler: async (ctx, { postId, notes }) => {
+    const post = await ctx.db.get(postId)
+    if (!post || post.type !== "missionary_announcement") {
+      throw new Error("Missionary announcement not found")
+    }
+
+    if (post.status !== "pending_review") {
+      throw new Error("Missionary announcement is not pending review")
+    }
+
+    await requireWardPermission(ctx, post.wardId, "missionary_post:approve")
+
+    await ctx.db.patch(postId, {
+      status: "rejected",
+      moderationNotes: notes,
     })
   },
 })

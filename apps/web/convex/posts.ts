@@ -200,7 +200,7 @@ export const listForAdmin = query({
         const author = await resolvePostAuthor(ctx, post);
         return {
           ...post,
-          author: author ? { name: author.name } : null,
+          author,
         };
       })
     );
