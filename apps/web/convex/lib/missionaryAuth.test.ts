@@ -4,6 +4,7 @@ import { describe, test } from "node:test"
 import {
   buildMissionaryAccess,
   canManageMissionaryCalendarGroup,
+  getTransferDestinationWardIds,
   getTransferAuthorizationWardIds,
 } from "./missionaryAuth"
 
@@ -103,6 +104,17 @@ describe("getTransferAuthorizationWardIds", () => {
 
   test("deduplicates transfer authorization when wards match", () => {
     assert.deepEqual(getTransferAuthorizationWardIds("same", "same"), ["same"])
+  })
+
+  test("returns only destination wards the caller can manage", () => {
+    assert.deepEqual(
+      getTransferDestinationWardIds({
+        sourceWardId: "ward-a",
+        sameStakeWardIds: ["ward-a", "ward-b", "ward-c"],
+        manageableWardIds: ["ward-a", "ward-c"],
+      }),
+      ["ward-c"],
+    )
   })
 })
 

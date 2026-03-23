@@ -9,6 +9,7 @@ import {
   getAuthenticatedMissionary,
   getMissionaryAccessForWard,
   getTransferAuthorizationWardIds,
+  getTransferDestinationWardIds,
   hasWardPermission,
   requireWardMissionLeader,
   requireWardPermission,
@@ -105,6 +106,92 @@ export const listForWard = query({
         }
       }),
     ).then((missionaries) => missionaries.filter((missionary) => missionary !== null))
+  },
+})
+
+export const listCandidateMembersForWard = query({
+  args: { wardId: v.id("wards") },
+  handler: async (ctx, { wardId }) => {
+    await requireWardPermission(ctx, wardId, "missionary:manage")
+    await requireWardPermission(ctx, wardId, "missionary_assignment:manage")
+
+    const members = await ctx.db
+      .query("members")
+      .withIndex("byWardIdAndStatus", (q) =>
+        q.eq("wardId", wardId).eq("status", "active"),
+      )
+      .collect()
+
+    const candidates = await Promise.all(
+      members.map(async (member) => {
+        const [user, existingMissionary] = await Promise.all([
+          ctx.db.get(member.userId),
+          ctx.db
+            .query("missionaries")
+            .withIndex("byUserId", (q) => q.eq("userId", member.userId))
+            .unique(),
+        ])
+
+        if (!user || existingMissionary) {
+          return null
+        }
+
+        return {
+          userId: user._id,
+          memberId: member._id,
+          name: user.name,
+          email: user.email,
+          imageUrl: user.imageUrl,
+        }
+      }),
+    )
+
+    return candidates
+      .filter((candidate) => candidate !== null)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  },
+})
+
+export const listTransferDestinationsForWard = query({
+  args: { wardId: v.id("wards") },
+  handler: async (ctx, { wardId }) => {
+    await requireWardPermission(ctx, wardId, "missionary_assignment:manage")
+
+    const ward = await ctx.db.get(wardId)
+    if (!ward) {
+      throw new Error("Ward not found")
+    }
+
+    const stakeWards = await ctx.db
+      .query("wards")
+      .withIndex("byStakeId", (q) => q.eq("stakeId", ward.stakeId))
+      .collect()
+
+    const manageableWardIds = await Promise.all(
+      stakeWards.map(async (stakeWard) => {
+        const canManageAssignments = await hasWardPermission(
+          ctx,
+          stakeWard._id,
+          "missionary_assignment:manage",
+        )
+
+        return canManageAssignments ? stakeWard._id : null
+      }),
+    )
+
+    const destinationWardIds = new Set(
+      getTransferDestinationWardIds({
+        sourceWardId: wardId,
+        sameStakeWardIds: stakeWards.map((stakeWard) => stakeWard._id),
+        manageableWardIds: manageableWardIds.filter(
+          (manageableWardId) => manageableWardId !== null,
+        ),
+      }),
+    )
+
+    return stakeWards
+      .filter((stakeWard) => destinationWardIds.has(stakeWard._id))
+      .sort((a, b) => a.name.localeCompare(b.name))
   },
 })
 

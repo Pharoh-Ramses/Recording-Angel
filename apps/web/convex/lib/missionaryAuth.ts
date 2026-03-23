@@ -54,6 +54,22 @@ export function getTransferAuthorizationWardIds(
     : [sourceWardId, destinationWardId]
 }
 
+export function getTransferDestinationWardIds({
+  sourceWardId,
+  sameStakeWardIds,
+  manageableWardIds,
+}: {
+  sourceWardId: string
+  sameStakeWardIds: string[]
+  manageableWardIds: string[]
+}) {
+  const manageableWardIdSet = new Set(manageableWardIds)
+
+  return sameStakeWardIds.filter(
+    (wardId) => wardId !== sourceWardId && manageableWardIdSet.has(wardId),
+  )
+}
+
 export function canManageMissionaryCalendarGroup({
   isWardMissionLeader,
   hasActiveAssignmentInWard,

@@ -116,17 +116,18 @@ export function MissionaryAdminPage({ wardId }: { wardId: WardId }) {
 function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
   const ward = useQuery(api.wards.getById, { wardId });
   const missionaries = useQuery(api.missionaries.listForWard, { wardId });
-  const activeMembers = useQuery(api.members.listActive, { wardId });
+  const candidateMembers = useQuery(api.missionaries.listCandidateMembersForWard, {
+    wardId,
+  });
   const companionships = useQuery(api.missionaryCalendars.listCompanionshipsForWard, {
     wardId,
   });
   const calendarGroups = useQuery(api.missionaryCalendars.listCalendarGroupsForWard, {
     wardId,
   });
-  const stakeWards = useQuery(
-    api.wards.listByStake,
-    ward?.stakeId ? { stakeId: ward.stakeId } : "skip",
-  );
+  const transferDestinations = useQuery(api.missionaries.listTransferDestinationsForWard, {
+    wardId,
+  });
   const pendingAnnouncements = usePaginatedQuery(
     api.missionaries.listPendingAnnouncements,
     { wardId },
@@ -177,40 +178,25 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
     [missionaries],
   );
 
-  const availableMemberOptions = useMemo(() => {
-    const missionaryUserIds = new Set(
-      (missionaries ?? []).map((missionary) => missionary.user?._id).filter(Boolean),
-    );
-
-    return (activeMembers ?? []).filter(
-      (member) => member.userId && !missionaryUserIds.has(member.userId),
-    );
-  }, [activeMembers, missionaries]);
-
-  const transferOptions = useMemo(
-    () => (stakeWards ?? []).filter((stakeWard) => stakeWard._id !== wardId),
-    [stakeWards, wardId],
-  );
-
   if (
     ward === undefined ||
     missionaries === undefined ||
-    activeMembers === undefined ||
+    candidateMembers === undefined ||
     companionships === undefined ||
     calendarGroups === undefined ||
-    (ward?.stakeId && stakeWards === undefined)
+    transferDestinations === undefined
   ) {
     return <p className="text-muted-foreground">Loading missionary admin...</p>;
   }
 
   const handleMemberSelection = (userId: string) => {
-    const selectedMember = availableMemberOptions.find((member) => member.userId === userId);
+    const selectedMember = candidateMembers.find((member) => member.userId === userId);
 
     setProfileForm({
       missionaryId: null,
       userId: userId as Id<"users">,
-      name: selectedMember?.user?.name ?? "",
-      email: selectedMember?.user?.email ?? "",
+      name: selectedMember?.name ?? "",
+      email: selectedMember?.email ?? "",
       phoneNumber: "",
     });
   };
@@ -398,14 +384,14 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                         <SelectValue placeholder="Select a ward member" />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableMemberOptions.length === 0 ? (
+                        {candidateMembers.length === 0 ? (
                           <SelectItem value="no-members" disabled>
                             No eligible ward members
                           </SelectItem>
                         ) : (
-                          availableMemberOptions.map((member) => (
+                          candidateMembers.map((member) => (
                             <SelectItem key={member.userId} value={member.userId}>
-                              {member.user?.name ?? member.user?.email ?? "Unnamed member"}
+                              {member.name ?? member.email ?? "Unnamed member"}
                             </SelectItem>
                           ))
                         )}
@@ -481,8 +467,7 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
             <CardHeader>
               <CardTitle className="text-base">Active missionaries</CardTitle>
               <CardDescription>
-                {missionaries.length} missionary{missionaries.length === 1 ? "" : "ies"} in
-                the current ward.
+                {missionaries.length} {missionaries.length === 1 ? "missionary" : "missionaries"} in the current ward.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -544,6 +529,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
               <p className="text-sm text-muted-foreground">No active assignments.</p>
             ) : (
               <div className="space-y-3">
+                {transferDestinations.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    You can only transfer missionaries into wards where you also have
+                    missionary assignment management access.
+                  </p>
+                ) : null}
                 {missionaries.map((missionary) => (
                   <div
                     key={missionary._id}
@@ -571,12 +562,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                         <SelectValue placeholder="Select destination ward" />
                       </SelectTrigger>
                       <SelectContent>
-                        {transferOptions.length === 0 ? (
+                        {transferDestinations.length === 0 ? (
                           <SelectItem value="no-transfer-wards" disabled>
-                            No other wards in this stake
+                            No authorized destination wards
                           </SelectItem>
                         ) : (
-                          transferOptions.map((stakeWard) => (
+                          transferDestinations.map((stakeWard) => (
                             <SelectItem key={stakeWard._id} value={stakeWard._id}>
                               {stakeWard.name}
                             </SelectItem>
@@ -587,7 +578,10 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={transferingMissionaryId === missionary._id}
+                      disabled={
+                        transferingMissionaryId === missionary._id ||
+                        transferDestinations.length === 0
+                      }
                       onClick={() => handleTransferMissionary(missionary._id)}
                     >
                       {transferingMissionaryId === missionary._id
