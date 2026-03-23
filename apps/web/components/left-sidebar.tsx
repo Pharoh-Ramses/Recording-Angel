@@ -14,14 +14,17 @@ import {
   Shield,
   Globe,
   Radio,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { canAccessMissionaryHub } from "@/lib/missionary-integration";
 import { ThemeToggle } from "./theme-toggle";
 
 const FEED_FILTERS = [
   { label: "All", value: undefined, icon: LayoutList },
   { label: "Announcements", value: "announcement", icon: Megaphone },
+  { label: "Missionary", value: "missionary_announcement", icon: Megaphone },
   { label: "Events", value: "event", icon: CalendarDays },
   { label: "Polls", value: "poll", icon: BarChart3 },
   { label: "Classifieds", value: "classifieds", icon: ShoppingBag },
@@ -64,6 +67,10 @@ export function LeftSidebar({
   );
   const permissions = useQuery(
     api.roles.myPermissions,
+    activeWard ? { wardId: activeWard._id } : "skip",
+  );
+  const missionaryAccess = useQuery(
+    api.missionaries.myWardAccess,
     activeWard ? { wardId: activeWard._id } : "skip",
   );
   const currentUser = useQuery(api.users.currentUser);
@@ -154,6 +161,23 @@ export function LeftSidebar({
           })}
         </nav>
       </div>
+
+      {activeWard && canAccessMissionaryHub(missionaryAccess) && (
+        <div className="px-2 pt-6">
+          <p className="px-3 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Missionary
+          </p>
+          <nav className="space-y-0.5">
+            <Link
+              href={`/stake/${params.stakeSlug}/ward/${params.wardSlug}/missionaries`}
+              className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            >
+              <Users className="h-4 w-4" />
+              Missionaries
+            </Link>
+          </nav>
+        </div>
+      )}
 
       {/* Admin link */}
       {(permissions?.includes("member:approve") ||
