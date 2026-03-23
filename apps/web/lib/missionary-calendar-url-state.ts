@@ -1,4 +1,5 @@
 export type MissionaryCalendarUrlState = {
+  group?: string
   month: string
   view: "month" | "week"
   week: string
@@ -18,6 +19,11 @@ function getFallbackMonth() {
 
 function getMonthAnchor(month: string) {
   return `${month}-01`
+}
+
+function normalizeGroup(group: string | null | undefined) {
+  const trimmedGroup = group?.trim()
+  return trimmedGroup ? trimmedGroup : undefined
 }
 
 function normalizeMonth(month: string | null | undefined) {
@@ -68,6 +74,7 @@ export function parseMissionaryCalendarQuery(
   const view = normalizeView(searchParams?.get("view"))
 
   return {
+    group: normalizeGroup(searchParams?.get("group")),
     month,
     view,
     week: normalizeWeek(searchParams?.get("week")) ?? getMonthAnchor(month),
@@ -81,6 +88,11 @@ export function buildMissionaryCalendarQuery(
   const month = normalizeMonth(state.month) ?? getFallbackMonth()
   const view = normalizeView(state.view)
   const week = normalizeWeek(state.week) ?? getMonthAnchor(month)
+  const group = normalizeGroup(state.group)
+
+  if (group) {
+    searchParams.set("group", group)
+  }
 
   searchParams.set("month", month)
   searchParams.set("view", view)

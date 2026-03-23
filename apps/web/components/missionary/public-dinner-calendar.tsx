@@ -3,7 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -141,14 +141,23 @@ export function PublicDinnerCalendar({
 
   const calendarDates = useMemo(() => listDatesInRange(range), [range]);
 
-  function replaceUrlState(nextState: Partial<typeof urlState>) {
+  const replaceUrlState = useCallback((nextState: Partial<typeof urlState>) => {
     const query = buildMissionaryCalendarQuery({
       ...urlState,
+      group: token,
       ...nextState,
     });
 
     router.replace(`${pathname}?${query}`, { scroll: false });
-  }
+  }, [pathname, router, token, urlState]);
+
+  useEffect(() => {
+    if (urlState.group === token) {
+      return;
+    }
+
+    replaceUrlState({ group: token });
+  }, [replaceUrlState, token, urlState.group]);
 
   function handleMove(direction: "previous" | "next") {
     if (urlState.view === "week") {

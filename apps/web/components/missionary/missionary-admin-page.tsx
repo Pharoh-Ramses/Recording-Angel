@@ -142,8 +142,8 @@ function MissionaryAdminManager({
     api.missionaries.listForWard,
     shouldLoadMissionaries ? { wardId } : "skip",
   );
-  const candidateMembers = useQuery(
-    api.missionaries.listCandidateMembersForWard,
+  const linkableUsers = useQuery(
+    api.missionaries.listLinkableUsersForMissionary,
     canCreateMissionaries ? { wardId } : "skip",
   );
   const companionships = useQuery(
@@ -196,7 +196,7 @@ function MissionaryAdminManager({
   if (
     ward === undefined ||
     (shouldLoadMissionaries && missionaries === undefined) ||
-    (canCreateMissionaries && candidateMembers === undefined) ||
+    (canCreateMissionaries && linkableUsers === undefined) ||
     (shouldLoadCompanionships && companionships === undefined) ||
     (canShowCalendarGroupsSection && calendarGroups === undefined) ||
     (canShowTransfersSection && transferDestinations === undefined)
@@ -205,19 +205,19 @@ function MissionaryAdminManager({
   }
 
   const safeMissionaries = missionaries ?? [];
-  const safeCandidateMembers = candidateMembers ?? [];
+  const safeLinkableUsers = linkableUsers ?? [];
   const safeCompanionships = companionships ?? [];
   const safeCalendarGroups = calendarGroups ?? [];
   const safeTransferDestinations = transferDestinations ?? [];
 
-  const handleMemberSelection = (userId: string) => {
-    const selectedMember = safeCandidateMembers.find((member) => member.userId === userId);
+  const handleUserSelection = (userId: string) => {
+    const selectedUser = safeLinkableUsers.find((user) => user.userId === userId);
 
     setProfileForm({
       missionaryId: null,
       userId: userId as Id<"users">,
-      name: selectedMember?.name ?? "",
-      email: selectedMember?.email ?? "",
+      name: selectedUser?.name ?? "",
+      email: selectedUser?.email ?? "",
       phoneNumber: "",
     });
   };
@@ -247,7 +247,7 @@ function MissionaryAdminManager({
         toast.success("Missionary profile updated");
       } else {
         if (!profileForm.userId) {
-          toast.error("Select a ward member first");
+          toast.error("Select an app user first");
           return;
         }
 
@@ -379,8 +379,7 @@ function MissionaryAdminManager({
         <div>
           <h2 className="text-lg font-semibold">Missionary profiles</h2>
           <p className="text-sm text-muted-foreground">
-            Create missionary records from active ward members and keep profile details
-            current.
+            Link existing app accounts to missionary profiles and keep profile details current.
           </p>
         </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
@@ -391,7 +390,7 @@ function MissionaryAdminManager({
               </CardTitle>
               <CardDescription>
                 {canCreateMissionaries
-                  ? "Reuse an existing ward member account for the missionary profile."
+                  ? "Link an existing app user to a missionary profile. Ward membership is not required."
                   : "You can review missionary profiles available in this ward."}
               </CardDescription>
             </CardHeader>
@@ -400,23 +399,23 @@ function MissionaryAdminManager({
               <form className="space-y-4" onSubmit={handleProfileSubmit}>
                 {!profileForm.missionaryId && canCreateMissionaries ? (
                   <div className="space-y-2">
-                    <Label htmlFor="missionary-user">Ward member</Label>
+                    <Label htmlFor="missionary-user">App user</Label>
                     <Select
                       value={profileForm.userId || undefined}
-                      onValueChange={handleMemberSelection}
+                      onValueChange={handleUserSelection}
                     >
                       <SelectTrigger id="missionary-user">
-                        <SelectValue placeholder="Select a ward member" />
+                        <SelectValue placeholder="Select an app user" />
                       </SelectTrigger>
                       <SelectContent>
-                        {safeCandidateMembers.length === 0 ? (
+                        {safeLinkableUsers.length === 0 ? (
                           <SelectItem value="no-members" disabled>
-                            No eligible ward members
+                            No linkable app users
                           </SelectItem>
                         ) : (
-                          safeCandidateMembers.map((member) => (
-                            <SelectItem key={member.userId} value={member.userId}>
-                              {member.name ?? member.email ?? "Unnamed member"}
+                          safeLinkableUsers.map((user) => (
+                            <SelectItem key={user.userId} value={user.userId}>
+                              {user.name ?? user.email ?? "Unnamed user"}
                             </SelectItem>
                           ))
                         )}

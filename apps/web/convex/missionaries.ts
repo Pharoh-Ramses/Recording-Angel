@@ -109,46 +109,28 @@ export const listForWard = query({
   },
 })
 
-export const listCandidateMembersForWard = query({
+export const listLinkableUsersForMissionary = query({
   args: { wardId: v.id("wards") },
   handler: async (ctx, { wardId }) => {
     await requireWardPermission(ctx, wardId, "missionary:manage")
     await requireWardPermission(ctx, wardId, "missionary_assignment:manage")
 
-    const members = await ctx.db
-      .query("members")
-      .withIndex("byWardIdAndStatus", (q) =>
-        q.eq("wardId", wardId).eq("status", "active"),
-      )
-      .collect()
+    const [users, missionaries] = await Promise.all([
+      ctx.db.query("users").collect(),
+      ctx.db.query("missionaries").collect(),
+    ])
 
-    const candidates = await Promise.all(
-      members.map(async (member) => {
-        const [user, existingMissionary] = await Promise.all([
-          ctx.db.get(member.userId),
-          ctx.db
-            .query("missionaries")
-            .withIndex("byUserId", (q) => q.eq("userId", member.userId))
-            .unique(),
-        ])
+    const missionaryUserIds = new Set(missionaries.map((missionary) => missionary.userId))
 
-        if (!user || existingMissionary) {
-          return null
-        }
-
-        return {
-          userId: user._id,
-          memberId: member._id,
-          name: user.name,
-          email: user.email,
-          imageUrl: user.imageUrl,
-        }
-      }),
-    )
-
-    return candidates
-      .filter((candidate) => candidate !== null)
-      .sort((a, b) => a.name.localeCompare(b.name))
+    return users
+      .filter((user) => !missionaryUserIds.has(user._id))
+      .map((user) => ({
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        imageUrl: user.imageUrl,
+      }))
+      .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
   },
 })
 

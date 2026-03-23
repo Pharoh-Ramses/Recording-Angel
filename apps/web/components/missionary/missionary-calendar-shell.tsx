@@ -3,7 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { MissionaryAnnouncementComposer } from "@/components/missionary/missionary-announcement-composer";
@@ -135,26 +135,13 @@ export function MissionaryCalendarShell({
   );
   const assignment = useQuery(api.missionaries.myActiveAssignment, { wardId });
   const groups = useQuery(api.missionaryCalendars.listAccessibleCalendarGroupsForWard, { wardId });
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [editorState, setEditorState] = useState<SlotEditorState>(EMPTY_EDITOR_STATE);
   const [isSavingSlot, setIsSavingSlot] = useState(false);
   const [deletingSlotId, setDeletingSlotId] = useState<string | null>(null);
   const saveDinnerSlot = useMutation(api.missionaryCalendars.saveDinnerSlot);
   const deleteDinnerSlot = useMutation(api.missionaryCalendars.deleteDinnerSlot);
 
-  useEffect(() => {
-    if (!groups || groups.length === 0) {
-      return;
-    }
-
-    if (!selectedGroupId || !groups.some((group) => group._id === selectedGroupId)) {
-      const firstGroup = groups[0];
-      if (firstGroup) {
-        setSelectedGroupId(firstGroup._id);
-      }
-    }
-  }, [groups, selectedGroupId]);
-
+  const selectedGroupId = urlState.group ?? "";
   const selectedGroup = groups?.find((group) => group._id === selectedGroupId) as
     | MissionaryCalendarGroup
     | undefined;
@@ -188,14 +175,27 @@ export function MissionaryCalendarShell({
 
   const calendarDates = useMemo(() => listDatesInRange(range), [range]);
 
-  function replaceUrlState(nextState: Partial<typeof urlState>) {
+  const replaceUrlState = useCallback((nextState: Partial<typeof urlState>) => {
     const query = buildMissionaryCalendarQuery({
       ...urlState,
       ...nextState,
     });
 
     router.replace(`${pathname}?${query}`, { scroll: false });
-  }
+  }, [pathname, router, urlState]);
+
+  useEffect(() => {
+    if (!groups || groups.length === 0) {
+      return;
+    }
+
+    if (!urlState.group || !groups.some((group) => group._id === urlState.group)) {
+      const firstGroup = groups[0];
+      if (firstGroup) {
+        replaceUrlState({ group: firstGroup._id });
+      }
+    }
+  }, [groups, replaceUrlState, urlState.group]);
 
   function handleMove(direction: "previous" | "next") {
     if (urlState.view === "week") {
@@ -324,7 +324,10 @@ export function MissionaryCalendarShell({
             <div className="flex flex-col gap-1">
               <span className="font-medium text-foreground">Share link</span>
               <span className="text-muted-foreground">
-                {`/missionary-calendar/${selectedGroup.shareToken}`}
+                {`/missionary-calendar/${selectedGroup.shareToken}?${buildMissionaryCalendarQuery({
+                  ...urlState,
+                  group: selectedGroup.shareToken,
+                })}`}
               </span>
             </div>
           ) : null}
@@ -346,7 +349,7 @@ export function MissionaryCalendarShell({
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {groups.length > 0 ? (
-                <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                <Select value={selectedGroupId || undefined} onValueChange={(groupId) => replaceUrlState({ group: groupId })}>
                   <SelectTrigger className="w-full sm:w-[240px]">
                     <SelectValue placeholder="Select calendar group" />
                   </SelectTrigger>
