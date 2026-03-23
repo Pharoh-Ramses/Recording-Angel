@@ -10,6 +10,8 @@ export type MissionaryAccess = {
   canManageMissionaries: boolean
   canManageCalendars: boolean
   canCreateMissionaryAnnouncements: boolean
+  canApproveMissionaryAnnouncements: boolean
+  canPublishMissionaryAnnouncements: boolean
 }
 
 export function buildMissionaryAccess({
@@ -17,11 +19,15 @@ export function buildMissionaryAccess({
   canManageMissionaries,
   canManageAssignments,
   canManageCalendars,
+  canApproveMissionaryAnnouncements,
+  canPublishMissionaryAnnouncements,
 }: {
   isAssignedMissionary: boolean
   canManageMissionaries: boolean
   canManageAssignments: boolean
   canManageCalendars: boolean
+  canApproveMissionaryAnnouncements: boolean
+  canPublishMissionaryAnnouncements: boolean
 }): MissionaryAccess {
   const isWardMissionLeader =
     canManageMissionaries || canManageAssignments || canManageCalendars
@@ -32,6 +38,10 @@ export function buildMissionaryAccess({
     canManageMissionaries,
     canManageCalendars: canManageCalendars || isAssignedMissionary,
     canCreateMissionaryAnnouncements: isAssignedMissionary,
+    canApproveMissionaryAnnouncements:
+      isWardMissionLeader && canApproveMissionaryAnnouncements,
+    canPublishMissionaryAnnouncements:
+      isAssignedMissionary && canPublishMissionaryAnnouncements,
   }
 }
 
@@ -158,11 +168,20 @@ export async function getMissionaryAccessForWard(
   ctx: AuthCtx,
   wardId: Id<"wards">,
 ) {
-  const [assignment, canManageMissionaries, canManageAssignments, canManageCalendars] = await Promise.all([
+  const [
+    assignment,
+    canManageMissionaries,
+    canManageAssignments,
+    canManageCalendars,
+    canApproveMissionaryAnnouncements,
+    canPublishMissionaryAnnouncements,
+  ] = await Promise.all([
     getActiveMissionaryAssignment(ctx, wardId),
     hasWardPermission(ctx, wardId, "missionary:manage"),
     hasWardPermission(ctx, wardId, "missionary_assignment:manage"),
     hasWardPermission(ctx, wardId, "missionary_calendar:manage"),
+    hasWardPermission(ctx, wardId, "missionary_post:approve"),
+    hasWardPermission(ctx, wardId, "missionary_post:publish_directly"),
   ])
 
   return buildMissionaryAccess({
@@ -170,5 +189,7 @@ export async function getMissionaryAccessForWard(
     canManageMissionaries,
     canManageAssignments,
     canManageCalendars,
+    canApproveMissionaryAnnouncements,
+    canPublishMissionaryAnnouncements,
   })
 }

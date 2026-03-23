@@ -15,6 +15,8 @@ describe("buildMissionaryAccess", () => {
         canManageMissionaries: false,
         canManageAssignments: false,
         canManageCalendars: false,
+        canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: false,
       }),
       {
         isWardMissionLeader: false,
@@ -22,6 +24,8 @@ describe("buildMissionaryAccess", () => {
         canManageMissionaries: false,
         canManageCalendars: true,
         canCreateMissionaryAnnouncements: true,
+        canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: false,
       },
     )
   })
@@ -33,6 +37,8 @@ describe("buildMissionaryAccess", () => {
         canManageMissionaries: true,
         canManageAssignments: true,
         canManageCalendars: true,
+        canApproveMissionaryAnnouncements: true,
+        canPublishMissionaryAnnouncements: false,
       }),
       {
         isWardMissionLeader: true,
@@ -40,6 +46,8 @@ describe("buildMissionaryAccess", () => {
         canManageMissionaries: true,
         canManageCalendars: true,
         canCreateMissionaryAnnouncements: false,
+        canApproveMissionaryAnnouncements: true,
+        canPublishMissionaryAnnouncements: false,
       },
     )
   })
@@ -51,6 +59,8 @@ describe("buildMissionaryAccess", () => {
         canManageMissionaries: false,
         canManageAssignments: false,
         canManageCalendars: false,
+        canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: false,
       }),
       {
         isWardMissionLeader: false,
@@ -58,6 +68,30 @@ describe("buildMissionaryAccess", () => {
         canManageMissionaries: false,
         canManageCalendars: false,
         canCreateMissionaryAnnouncements: false,
+        canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: false,
+      },
+    )
+  })
+
+  test("allows direct publish only for assigned missionaries with explicit publish capability", () => {
+    assert.deepEqual(
+      buildMissionaryAccess({
+        isAssignedMissionary: true,
+        canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCalendars: false,
+        canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: true,
+      }),
+      {
+        isWardMissionLeader: false,
+        isAssignedMissionary: true,
+        canManageMissionaries: false,
+        canManageCalendars: true,
+        canCreateMissionaryAnnouncements: true,
+        canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: true,
       },
     )
   })

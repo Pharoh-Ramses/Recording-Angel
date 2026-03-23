@@ -312,20 +312,15 @@ export const createAnnouncement = mutation({
     content: v.string(),
   },
   handler: async (ctx, { wardId, title, content }) => {
-    const [missionary, assignment] = await Promise.all([
+    const [missionary, assignment, access] = await Promise.all([
       getAuthenticatedMissionary(ctx),
       getActiveMissionaryAssignment(ctx, wardId),
+      getMissionaryAccessForWard(ctx, wardId),
     ])
 
-    if (!missionary || !assignment) {
+    if (!missionary || !assignment || !access.canCreateMissionaryAnnouncements) {
       throw new Error("Assigned missionary access required")
     }
-
-    const canPublishDirectly = await hasWardPermission(
-      ctx,
-      wardId,
-      "missionary_post:publish_directly",
-    )
 
     const postId = await ctx.db.insert("posts", {
       authorType: "missionary",
@@ -336,10 +331,12 @@ export const createAnnouncement = mutation({
       type: "missionary_announcement",
       title,
       content,
-      status: canPublishDirectly ? "approved" : "pending_review",
+      status: access.canPublishMissionaryAnnouncements
+        ? "approved"
+        : "pending_review",
     })
 
-    if (canPublishDirectly) {
+    if (access.canPublishMissionaryAnnouncements) {
       await ctx.scheduler.runAfter(0, internal.translations.translatePost, {
         postId,
       })
@@ -356,6 +353,7 @@ export const listPendingAnnouncements = query({
   },
   handler: async (ctx, { wardId, paginationOpts }) => {
     await requireWardMissionLeader(ctx, wardId)
+    await requireWardPermission(ctx, wardId, "missionary_post:approve")
 
     const results = await ctx.db
       .query("posts")
@@ -396,6 +394,7 @@ export const approveAnnouncement = mutation({
     }
 
     await requireWardMissionLeader(ctx, post.wardId)
+    await requireWardPermission(ctx, post.wardId, "missionary_post:approve")
 
     await ctx.db.patch(postId, {
       status: "approved",
@@ -424,6 +423,7 @@ export const rejectAnnouncement = mutation({
     }
 
     await requireWardMissionLeader(ctx, post.wardId)
+    await requireWardPermission(ctx, post.wardId, "missionary_post:approve")
 
     await ctx.db.patch(postId, {
       status: "rejected",
