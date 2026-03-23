@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import {
   ALL_PERMISSIONS,
+  type Permission,
   getMemberPermissions,
   requirePermission,
   getAuthenticatedMember,
@@ -40,7 +41,7 @@ export const createCustomRole = mutation({
 
     // Validate permissions
     for (const p of permissions) {
-      if (!ALL_PERMISSIONS.includes(p as any)) {
+      if (!ALL_PERMISSIONS.includes(p as Permission)) {
         throw new Error(`Invalid permission: ${p}`);
       }
     }
@@ -153,7 +154,7 @@ export const setMemberPermissions = mutation({
 
     // Validate permissions
     for (const p of permissions) {
-      if (!ALL_PERMISSIONS.includes(p as any)) {
+      if (!ALL_PERMISSIONS.includes(p as Permission)) {
         throw new Error(`Invalid permission: ${p}`);
       }
     }

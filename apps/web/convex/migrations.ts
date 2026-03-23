@@ -1,19 +1,14 @@
 import { mutation } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 
-type LegacyPost = {
-  _id: string;
-  _creationTime: number;
-  authorId?: string;
-  authorType?: "member" | "missionary";
-  authorMemberId?: string;
-  authorMissionaryId?: string;
-  [key: string]: unknown;
+type LegacyPost = Doc<"posts"> & {
+  authorId?: Id<"members">;
 };
 
 export const backfillPostAuthors = mutation({
   args: {},
   handler: async (ctx) => {
-    const posts = (await ctx.db.query("posts").collect()) as unknown as LegacyPost[];
+    const posts = (await ctx.db.query("posts").collect()) as LegacyPost[];
 
     let migrated = 0;
     let alreadyCompatible = 0;
@@ -29,33 +24,34 @@ export const backfillPostAuthors = mutation({
       }
 
       const { _id, _creationTime, authorId, ...rest } = post;
+      void _creationTime;
 
       if (authorId) {
-        await ctx.db.replace(_id as any, {
+        await ctx.db.replace(_id, {
           ...rest,
           authorType: "member",
-          authorMemberId: authorId as any,
-        } as any);
+          authorMemberId: authorId,
+        });
         migrated += 1;
         continue;
       }
 
       if (post.authorMemberId) {
-        await ctx.db.replace(_id as any, {
+        await ctx.db.replace(_id, {
           ...rest,
           authorType: "member",
-          authorMemberId: post.authorMemberId as any,
-        } as any);
+          authorMemberId: post.authorMemberId,
+        });
         migrated += 1;
         continue;
       }
 
       if (post.authorMissionaryId) {
-        await ctx.db.replace(_id as any, {
+        await ctx.db.replace(_id, {
           ...rest,
           authorType: "missionary",
-          authorMissionaryId: post.authorMissionaryId as any,
-        } as any);
+          authorMissionaryId: post.authorMissionaryId,
+        });
         migrated += 1;
         continue;
       }

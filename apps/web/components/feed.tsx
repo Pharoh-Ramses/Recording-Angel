@@ -6,6 +6,24 @@ import { PostCard } from "./post-card";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
 
+type PostCardWard = { name: string; slug?: string };
+
+function getPostWard(post: unknown): PostCardWard | undefined {
+  if (!post || typeof post !== "object" || !("ward" in post)) {
+    return undefined;
+  }
+
+  const ward = post.ward;
+  if (!ward || typeof ward !== "object" || !("name" in ward)) {
+    return undefined;
+  }
+
+  return {
+    name: String(ward.name),
+    slug: "slug" in ward && typeof ward.slug === "string" ? ward.slug : undefined,
+  };
+}
+
 interface FeedProps {
   wardId?: Id<"wards">;
   stakeId?: Id<"stakes">;
@@ -54,23 +72,27 @@ export function Feed({ wardId, stakeId, mode, typeFilter, isMember }: FeedProps)
 
   return (
     <div>
-      {filteredResults.map((post) => (
-        <PostCard
-          key={post._id}
-          postId={post._id}
-          title={post.title}
-          content={post.content}
-          type={post.type}
-          author={post.author ?? null}
-          ward={"ward" in post ? (post as any).ward : undefined}
-          createdAt={post._creationTime}
-          eventDate={post.eventDate}
-          eventLocation={post.eventLocation}
-          preferredLanguage={preferredLanguage}
-          isMember={isMember ?? true}
-          pollCloseDate={post.pollCloseDate}
-        />
-      ))}
+      {filteredResults.map((post) => {
+        const ward = getPostWard(post);
+
+        return (
+          <PostCard
+            key={post._id}
+            postId={post._id}
+            title={post.title}
+            content={post.content}
+            type={post.type}
+            author={post.author ?? null}
+            ward={ward}
+            createdAt={post._creationTime}
+            eventDate={post.eventDate}
+            eventLocation={post.eventLocation}
+            preferredLanguage={preferredLanguage}
+            isMember={isMember ?? true}
+            pollCloseDate={post.pollCloseDate}
+          />
+        );
+      })}
       {feed.status === "CanLoadMore" && (
         <div className="flex justify-center py-4">
           <Button

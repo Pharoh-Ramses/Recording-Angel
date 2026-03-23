@@ -12,7 +12,6 @@ interface RichTextEditorProps {
 export function RichTextEditor({
   content,
   onChange,
-  placeholder,
 }: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,

@@ -1,6 +1,13 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "CLERK_JWT_ISSUER_DOMAIN",
+    "CLERK_WEBHOOK_SECRET",
+    "OPENAI_API_KEY",
+    "RECORDING_ANGEL_API_KEY",
+    "RECORDING_ANGEL_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
