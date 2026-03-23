@@ -5,9 +5,13 @@ import { Permission, getAuthenticatedMember, hasPermission } from "./permissions
 type AuthCtx = QueryCtx | MutationCtx
 
 export type MissionaryAccess = {
+  canAccessMissionaryAdmin: boolean
   isWardMissionLeader: boolean
   isAssignedMissionary: boolean
+  canViewMissionaries: boolean
   canManageMissionaries: boolean
+  canManageAssignments: boolean
+  canManageCompanionships: boolean
   canManageCalendars: boolean
   canCreateMissionaryAnnouncements: boolean
   canApproveMissionaryAnnouncements: boolean
@@ -16,30 +20,48 @@ export type MissionaryAccess = {
 
 export function buildMissionaryAccess({
   isAssignedMissionary,
+  canViewMissionaries,
   canManageMissionaries,
   canManageAssignments,
+  canManageCompanionships,
   canManageCalendars,
   canApproveMissionaryAnnouncements,
   canPublishMissionaryAnnouncements = false,
 }: {
   isAssignedMissionary: boolean
+  canViewMissionaries: boolean
   canManageMissionaries: boolean
   canManageAssignments: boolean
+  canManageCompanionships: boolean
   canManageCalendars: boolean
   canApproveMissionaryAnnouncements: boolean
   canPublishMissionaryAnnouncements?: boolean
 }): MissionaryAccess {
   const isWardMissionLeader =
-    canManageMissionaries || canManageAssignments || canManageCalendars
+    canManageMissionaries ||
+    canManageAssignments ||
+    canManageCompanionships ||
+    canManageCalendars
+  const canAccessMissionaryAdmin =
+    isAssignedMissionary ||
+    canViewMissionaries ||
+    canManageMissionaries ||
+    canManageAssignments ||
+    canManageCompanionships ||
+    canManageCalendars ||
+    canApproveMissionaryAnnouncements
 
   return {
+    canAccessMissionaryAdmin,
     isWardMissionLeader,
     isAssignedMissionary,
+    canViewMissionaries,
     canManageMissionaries,
+    canManageAssignments,
+    canManageCompanionships,
     canManageCalendars: canManageCalendars || isAssignedMissionary,
     canCreateMissionaryAnnouncements: isAssignedMissionary,
-    canApproveMissionaryAnnouncements:
-      isWardMissionLeader && canApproveMissionaryAnnouncements,
+    canApproveMissionaryAnnouncements,
     canPublishMissionaryAnnouncements:
       isAssignedMissionary && canPublishMissionaryAnnouncements,
   }
@@ -186,22 +208,28 @@ export async function getMissionaryAccessForWard(
 ) {
   const [
     assignment,
+    canViewMissionaries,
     canManageMissionaries,
     canManageAssignments,
+    canManageCompanionships,
     canManageCalendars,
     canApproveMissionaryAnnouncements,
   ] = await Promise.all([
     getActiveMissionaryAssignment(ctx, wardId),
+    hasWardPermission(ctx, wardId, "missionary:view"),
     hasWardPermission(ctx, wardId, "missionary:manage"),
     hasWardPermission(ctx, wardId, "missionary_assignment:manage"),
+    hasWardPermission(ctx, wardId, "companionship:manage"),
     hasWardPermission(ctx, wardId, "missionary_calendar:manage"),
     hasWardPermission(ctx, wardId, "missionary_post:approve"),
   ])
 
   return buildMissionaryAccess({
     isAssignedMissionary: !!assignment,
+    canViewMissionaries,
     canManageMissionaries,
     canManageAssignments,
+    canManageCompanionships,
     canManageCalendars,
     canApproveMissionaryAnnouncements,
   })

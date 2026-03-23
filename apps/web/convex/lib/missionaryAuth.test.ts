@@ -13,15 +13,21 @@ describe("buildMissionaryAccess", () => {
     assert.deepEqual(
       buildMissionaryAccess({
         isAssignedMissionary: true,
+        canViewMissionaries: false,
         canManageMissionaries: false,
         canManageAssignments: false,
+        canManageCompanionships: false,
         canManageCalendars: false,
         canApproveMissionaryAnnouncements: false,
       }),
       {
+        canAccessMissionaryAdmin: true,
         isWardMissionLeader: false,
         isAssignedMissionary: true,
+        canViewMissionaries: false,
         canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: false,
         canManageCalendars: true,
         canCreateMissionaryAnnouncements: true,
         canApproveMissionaryAnnouncements: false,
@@ -34,15 +40,21 @@ describe("buildMissionaryAccess", () => {
     assert.deepEqual(
       buildMissionaryAccess({
         isAssignedMissionary: false,
+        canViewMissionaries: true,
         canManageMissionaries: true,
         canManageAssignments: true,
+        canManageCompanionships: true,
         canManageCalendars: true,
         canApproveMissionaryAnnouncements: true,
       }),
       {
+        canAccessMissionaryAdmin: true,
         isWardMissionLeader: true,
         isAssignedMissionary: false,
+        canViewMissionaries: true,
         canManageMissionaries: true,
+        canManageAssignments: true,
+        canManageCompanionships: true,
         canManageCalendars: true,
         canCreateMissionaryAnnouncements: false,
         canApproveMissionaryAnnouncements: true,
@@ -55,15 +67,21 @@ describe("buildMissionaryAccess", () => {
     assert.deepEqual(
       buildMissionaryAccess({
         isAssignedMissionary: false,
+        canViewMissionaries: false,
         canManageMissionaries: false,
         canManageAssignments: false,
+        canManageCompanionships: false,
         canManageCalendars: false,
         canApproveMissionaryAnnouncements: false,
       }),
       {
+        canAccessMissionaryAdmin: false,
         isWardMissionLeader: false,
         isAssignedMissionary: false,
+        canViewMissionaries: false,
         canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: false,
         canManageCalendars: false,
         canCreateMissionaryAnnouncements: false,
         canApproveMissionaryAnnouncements: false,
@@ -76,18 +94,51 @@ describe("buildMissionaryAccess", () => {
     assert.deepEqual(
       buildMissionaryAccess({
         isAssignedMissionary: true,
+        canViewMissionaries: false,
         canManageMissionaries: false,
         canManageAssignments: false,
+        canManageCompanionships: false,
         canManageCalendars: false,
         canApproveMissionaryAnnouncements: false,
       }),
       {
+        canAccessMissionaryAdmin: true,
         isWardMissionLeader: false,
         isAssignedMissionary: true,
+        canViewMissionaries: false,
         canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: false,
         canManageCalendars: true,
         canCreateMissionaryAnnouncements: true,
         canApproveMissionaryAnnouncements: false,
+        canPublishMissionaryAnnouncements: false,
+      },
+    )
+  })
+
+  test("allows announcement-only reviewers into the admin page without mission leader status", () => {
+    assert.deepEqual(
+      buildMissionaryAccess({
+        isAssignedMissionary: false,
+        canViewMissionaries: false,
+        canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: false,
+        canManageCalendars: false,
+        canApproveMissionaryAnnouncements: true,
+      }),
+      {
+        canAccessMissionaryAdmin: true,
+        isWardMissionLeader: false,
+        isAssignedMissionary: false,
+        canViewMissionaries: false,
+        canManageMissionaries: false,
+        canManageAssignments: false,
+        canManageCompanionships: false,
+        canManageCalendars: false,
+        canCreateMissionaryAnnouncements: false,
+        canApproveMissionaryAnnouncements: true,
         canPublishMissionaryAnnouncements: false,
       },
     )

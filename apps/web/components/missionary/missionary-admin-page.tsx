@@ -27,6 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import type { MissionaryAccess } from "@/convex/lib/missionaryAuth";
 
 type WardId = Id<"wards">;
 
@@ -97,7 +98,7 @@ export function MissionaryAdminPage({ wardId }: { wardId: WardId }) {
     return <p className="text-muted-foreground">Loading missionary admin...</p>;
   }
 
-  if (!access.isWardMissionLeader) {
+  if (!access.canAccessMissionaryAdmin) {
     return (
       <Card>
         <CardHeader>
@@ -110,28 +111,50 @@ export function MissionaryAdminPage({ wardId }: { wardId: WardId }) {
     );
   }
 
-  return <MissionaryAdminManager wardId={wardId} />;
+  return <MissionaryAdminManager wardId={wardId} access={access} />;
 }
 
-function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
+function MissionaryAdminManager({
+  wardId,
+  access,
+}: {
+  wardId: WardId;
+  access: MissionaryAccess;
+}) {
   const ward = useQuery(api.wards.getById, { wardId });
-  const missionaries = useQuery(api.missionaries.listForWard, { wardId });
-  const candidateMembers = useQuery(api.missionaries.listCandidateMembersForWard, {
-    wardId,
-  });
-  const companionships = useQuery(api.missionaryCalendars.listCompanionshipsForWard, {
-    wardId,
-  });
-  const calendarGroups = useQuery(api.missionaryCalendars.listCalendarGroupsForWard, {
-    wardId,
-  });
-  const transferDestinations = useQuery(api.missionaries.listTransferDestinationsForWard, {
-    wardId,
-  });
-  const pendingAnnouncements = usePaginatedQuery(
-    api.missionaries.listPendingAnnouncements,
-    { wardId },
-    { initialNumItems: 10 },
+  const canCreateMissionaries =
+    access.canManageMissionaries && access.canManageAssignments;
+  const canShowProfilesSection = access.canViewMissionaries || canCreateMissionaries;
+  const canShowTransfersSection =
+    access.canViewMissionaries && access.canManageAssignments;
+  const canShowCompanionshipSection =
+    access.canManageCompanionships && access.canViewMissionaries;
+  const canShowCalendarGroupsSection = access.canManageCalendars;
+  const canShowAnnouncementsSection = access.canApproveMissionaryAnnouncements;
+  const shouldLoadMissionaries =
+    access.canViewMissionaries || canShowCompanionshipSection || canShowTransfersSection;
+  const shouldLoadCompanionships =
+    canShowCompanionshipSection || canShowCalendarGroupsSection;
+
+  const missionaries = useQuery(
+    api.missionaries.listForWard,
+    shouldLoadMissionaries ? { wardId } : "skip",
+  );
+  const candidateMembers = useQuery(
+    api.missionaries.listCandidateMembersForWard,
+    canCreateMissionaries ? { wardId } : "skip",
+  );
+  const companionships = useQuery(
+    api.missionaryCalendars.listCompanionshipsForWard,
+    shouldLoadCompanionships ? { wardId } : "skip",
+  );
+  const calendarGroups = useQuery(
+    api.missionaryCalendars.listCalendarGroupsForWard,
+    canShowCalendarGroupsSection ? { wardId } : "skip",
+  );
+  const transferDestinations = useQuery(
+    api.missionaries.listTransferDestinationsForWard,
+    canShowTransfersSection ? { wardId } : "skip",
   );
 
   const createMissionary = useMutation(api.missionaries.createMissionary);
@@ -145,9 +168,6 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
   const setCalendarGroupCompanionships = useMutation(
     api.missionaryCalendars.setCalendarGroupCompanionships,
   );
-  const approveAnnouncement = useMutation(api.missionaries.approveAnnouncement);
-  const rejectAnnouncement = useMutation(api.missionaries.rejectAnnouncement);
-
   const [profileForm, setProfileForm] = useState<ProfileFormState>(EMPTY_PROFILE_FORM);
   const [companionshipForm, setCompanionshipForm] = useState<CompanionshipFormState>(
     EMPTY_COMPANIONSHIP_FORM,
@@ -158,17 +178,10 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
   const [transferWardByMissionaryId, setTransferWardByMissionaryId] = useState<
     Record<string, string>
   >({});
-  const [approvalNotesByPostId, setApprovalNotesByPostId] = useState<Record<string, string>>(
-    {},
-  );
-  const [rejectionNotesByPostId, setRejectionNotesByPostId] = useState<Record<string, string>>(
-    {},
-  );
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingCompanionship, setIsSavingCompanionship] = useState(false);
   const [isSavingCalendarGroup, setIsSavingCalendarGroup] = useState(false);
   const [transferingMissionaryId, setTransferingMissionaryId] = useState<string | null>(null);
-  const [actingAnnouncementId, setActingAnnouncementId] = useState<string | null>(null);
 
   const missionaryById = useMemo(
     () =>
@@ -180,17 +193,23 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
 
   if (
     ward === undefined ||
-    missionaries === undefined ||
-    candidateMembers === undefined ||
-    companionships === undefined ||
-    calendarGroups === undefined ||
-    transferDestinations === undefined
+    (shouldLoadMissionaries && missionaries === undefined) ||
+    (canCreateMissionaries && candidateMembers === undefined) ||
+    (shouldLoadCompanionships && companionships === undefined) ||
+    (canShowCalendarGroupsSection && calendarGroups === undefined) ||
+    (canShowTransfersSection && transferDestinations === undefined)
   ) {
     return <p className="text-muted-foreground">Loading missionary admin...</p>;
   }
 
+  const safeMissionaries = missionaries ?? [];
+  const safeCandidateMembers = candidateMembers ?? [];
+  const safeCompanionships = companionships ?? [];
+  const safeCalendarGroups = calendarGroups ?? [];
+  const safeTransferDestinations = transferDestinations ?? [];
+
   const handleMemberSelection = (userId: string) => {
-    const selectedMember = candidateMembers.find((member) => member.userId === userId);
+    const selectedMember = safeCandidateMembers.find((member) => member.userId === userId);
 
     setProfileForm({
       missionaryId: null,
@@ -340,7 +359,7 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
   };
 
   const companionshipNameById = new Map(
-    companionships.map((companionship) => [companionship._id, companionship.name]),
+    safeCompanionships.map((companionship) => [companionship._id, companionship.name]),
   );
 
   return (
@@ -353,6 +372,7 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
         </p>
       </div>
 
+      {canShowProfilesSection ? (
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Missionary profiles</h2>
@@ -368,12 +388,15 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                 {profileForm.missionaryId ? "Edit missionary" : "Add missionary"}
               </CardTitle>
               <CardDescription>
-                Reuse an existing ward member account for the missionary profile.
+                {canCreateMissionaries
+                  ? "Reuse an existing ward member account for the missionary profile."
+                  : "You can review missionary profiles available in this ward."}
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {access.canManageMissionaries ? (
               <form className="space-y-4" onSubmit={handleProfileSubmit}>
-                {!profileForm.missionaryId && (
+                {!profileForm.missionaryId && canCreateMissionaries ? (
                   <div className="space-y-2">
                     <Label htmlFor="missionary-user">Ward member</Label>
                     <Select
@@ -384,12 +407,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                         <SelectValue placeholder="Select a ward member" />
                       </SelectTrigger>
                       <SelectContent>
-                        {candidateMembers.length === 0 ? (
+                        {safeCandidateMembers.length === 0 ? (
                           <SelectItem value="no-members" disabled>
                             No eligible ward members
                           </SelectItem>
                         ) : (
-                          candidateMembers.map((member) => (
+                          safeCandidateMembers.map((member) => (
                             <SelectItem key={member.userId} value={member.userId}>
                               {member.name ?? member.email ?? "Unnamed member"}
                             </SelectItem>
@@ -398,7 +421,7 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                ) : null}
 
                 <div className="space-y-2">
                   <Label htmlFor="missionary-name">Name</Label>
@@ -443,8 +466,21 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                   />
                 </div>
 
+                {!canCreateMissionaries && !profileForm.missionaryId ? (
+                  <p className="text-sm text-muted-foreground">
+                    Creating a missionary also requires missionary assignment management
+                    access.
+                  </p>
+                ) : null}
+
                 <div className="flex gap-2">
-                  <Button type="submit" disabled={isSavingProfile}>
+                  <Button
+                    type="submit"
+                    disabled={
+                      isSavingProfile ||
+                      (!canCreateMissionaries && profileForm.missionaryId === null)
+                    }
+                  >
                     {isSavingProfile
                       ? "Saving..."
                       : profileForm.missionaryId
@@ -460,6 +496,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                   </Button>
                 </div>
               </form>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  You can view missionary profiles here, but profile updates require
+                  missionary management access.
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -467,15 +509,19 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
             <CardHeader>
               <CardTitle className="text-base">Active missionaries</CardTitle>
               <CardDescription>
-                {missionaries.length} {missionaries.length === 1 ? "missionary" : "missionaries"} in the current ward.
+                {safeMissionaries.length} {safeMissionaries.length === 1 ? "missionary" : "missionaries"} in the current ward.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {missionaries.length === 0 ? (
+              {!access.canViewMissionaries ? (
+                <p className="text-sm text-muted-foreground">
+                  Missionary viewing permission is required to review current profiles.
+                </p>
+              ) : safeMissionaries.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No missionaries assigned.</p>
               ) : (
                 <div className="space-y-3">
-                  {missionaries.map((missionary) => (
+                  {safeMissionaries.map((missionary) => (
                     <div
                       key={missionary._id}
                       className="flex items-start justify-between gap-4 rounded-lg border p-4"
@@ -490,22 +536,24 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                           {missionary.phoneNumber || "No phone number"}
                         </p>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setProfileForm({
-                            missionaryId: missionary._id,
-                            userId: "",
-                            name: missionary.name,
-                            email: missionary.email,
-                            phoneNumber: missionary.phoneNumber ?? "",
-                          })
-                        }
-                      >
-                        Edit
-                      </Button>
+                      {access.canManageMissionaries ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setProfileForm({
+                              missionaryId: missionary._id,
+                              userId: "",
+                              name: missionary.name,
+                              email: missionary.email,
+                              phoneNumber: missionary.phoneNumber ?? "",
+                            })
+                          }
+                        >
+                          Edit
+                        </Button>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -514,7 +562,9 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
           </Card>
         </div>
       </section>
+      ) : null}
 
+      {canShowTransfersSection ? (
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Transfers / active assignments</h2>
@@ -525,17 +575,17 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
         </div>
         <Card>
           <CardContent className="pt-6">
-            {missionaries.length === 0 ? (
+            {safeMissionaries.length === 0 ? (
               <p className="text-sm text-muted-foreground">No active assignments.</p>
             ) : (
               <div className="space-y-3">
-                {transferDestinations.length === 0 ? (
+                {safeTransferDestinations.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     You can only transfer missionaries into wards where you also have
                     missionary assignment management access.
                   </p>
                 ) : null}
-                {missionaries.map((missionary) => (
+                {safeMissionaries.map((missionary) => (
                   <div
                     key={missionary._id}
                     className="grid gap-3 rounded-lg border p-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-center"
@@ -562,12 +612,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                         <SelectValue placeholder="Select destination ward" />
                       </SelectTrigger>
                       <SelectContent>
-                        {transferDestinations.length === 0 ? (
+                        {safeTransferDestinations.length === 0 ? (
                           <SelectItem value="no-transfer-wards" disabled>
                             No authorized destination wards
                           </SelectItem>
                         ) : (
-                          transferDestinations.map((stakeWard) => (
+                          safeTransferDestinations.map((stakeWard) => (
                             <SelectItem key={stakeWard._id} value={stakeWard._id}>
                               {stakeWard.name}
                             </SelectItem>
@@ -580,7 +630,7 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                       variant="outline"
                       disabled={
                         transferingMissionaryId === missionary._id ||
-                        transferDestinations.length === 0
+                        safeTransferDestinations.length === 0
                       }
                       onClick={() => handleTransferMissionary(missionary._id)}
                     >
@@ -595,7 +645,9 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
+      {canShowCompanionshipSection ? (
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Companionships and phone numbers</h2>
@@ -664,12 +716,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                 <div className="space-y-2">
                   <Label>Missionaries</Label>
                   <div className="space-y-2 rounded-lg border p-3">
-                    {missionaries.length === 0 ? (
+                    {safeMissionaries.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
                         Add missionaries before creating companionships.
                       </p>
                     ) : (
-                      missionaries.map((missionary) => {
+                      safeMissionaries.map((missionary) => {
                         const checked = companionshipForm.missionaryIds.includes(
                           missionary._id,
                         );
@@ -724,11 +776,11 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
               <CardTitle className="text-base">Current companionships</CardTitle>
             </CardHeader>
             <CardContent>
-              {companionships.length === 0 ? (
+              {safeCompanionships.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No companionships yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {companionships.map((companionship) => (
+                  {safeCompanionships.map((companionship) => (
                     <div key={companionship._id} className="rounded-lg border p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
@@ -781,7 +833,9 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
           </Card>
         </div>
       </section>
+      ) : null}
 
+      {canShowCalendarGroupsSection || canShowAnnouncementsSection ? (
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">
@@ -793,6 +847,7 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
           </p>
         </div>
 
+        {canShowCalendarGroupsSection ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
           <Card>
             <CardHeader>
@@ -853,12 +908,12 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
                 <div className="space-y-2">
                   <Label>Included companionships</Label>
                   <div className="space-y-2 rounded-lg border p-3">
-                    {companionships.length === 0 ? (
+                    {safeCompanionships.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
                         Create companionships before building a calendar group.
                       </p>
                     ) : (
-                      companionships.map((companionship) => {
+                      safeCompanionships.map((companionship) => {
                         const checked = calendarGroupForm.companionshipIds.includes(
                           companionship._id,
                         );
@@ -913,11 +968,11 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
               <CardTitle className="text-base">Calendar groups</CardTitle>
             </CardHeader>
             <CardContent>
-              {calendarGroups.length === 0 ? (
+              {safeCalendarGroups.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No calendar groups yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {calendarGroups.map((group) => (
+                  {safeCalendarGroups.map((group) => (
                     <div key={group._id} className="rounded-lg border p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
@@ -968,140 +1023,165 @@ function MissionaryAdminManager({ wardId }: { wardId: WardId }) {
             </CardContent>
           </Card>
         </div>
+        ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Pending missionary announcements</CardTitle>
-            <CardDescription>
-              Approve or reject missionary announcements before they reach the ward feed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {pendingAnnouncements.status === "LoadingFirstPage" ? (
-              <p className="text-sm text-muted-foreground">Loading announcements...</p>
-            ) : pendingAnnouncements.results.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No missionary announcements are pending review.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {pendingAnnouncements.results.map((post) => (
-                  <div key={post._id} className="rounded-lg border p-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{post.title}</p>
-                        <Badge variant="secondary">Pending review</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        By {post.author?.name ?? "Unknown"} on {formatDate(post._creationTime)}
-                      </p>
-                    </div>
-                    <div
-                      className="prose prose-sm mt-3 max-w-none"
-                      dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(post.content),
-                      }}
-                    />
-                    <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor={`approve-${post._id}`}>Approval note</Label>
-                        <Textarea
-                          id={`approve-${post._id}`}
-                          value={approvalNotesByPostId[post._id] ?? ""}
-                          onChange={(event) =>
-                            setApprovalNotesByPostId((current) => ({
-                              ...current,
-                              [post._id]: event.target.value,
-                            }))
-                          }
-                          placeholder="Optional approval note"
-                        />
-                        <Button
-                          type="button"
-                          disabled={actingAnnouncementId === post._id}
-                          onClick={async () => {
-                            setActingAnnouncementId(post._id);
-
-                            try {
-                              await approveAnnouncement({
-                                postId: post._id,
-                                notes: approvalNotesByPostId[post._id]?.trim() || undefined,
-                              });
-                              toast.success("Announcement approved");
-                            } catch (error) {
-                              toast.error(getErrorMessage(error));
-                            } finally {
-                              setActingAnnouncementId(null);
-                            }
-                          }}
-                        >
-                          Approve
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`reject-${post._id}`}>Rejection reason</Label>
-                        <Textarea
-                          id={`reject-${post._id}`}
-                          value={rejectionNotesByPostId[post._id] ?? ""}
-                          onChange={(event) =>
-                            setRejectionNotesByPostId((current) => ({
-                              ...current,
-                              [post._id]: event.target.value,
-                            }))
-                          }
-                          placeholder="Required when rejecting"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          disabled={
-                            actingAnnouncementId === post._id ||
-                            !rejectionNotesByPostId[post._id]?.trim()
-                          }
-                          onClick={async () => {
-                            const rejectionNotes =
-                              rejectionNotesByPostId[post._id]?.trim() ?? "";
-
-                            if (!rejectionNotes) {
-                              return;
-                            }
-
-                            setActingAnnouncementId(post._id);
-
-                            try {
-                              await rejectAnnouncement({
-                                postId: post._id,
-                                notes: rejectionNotes,
-                              });
-                              toast.success("Announcement rejected");
-                            } catch (error) {
-                              toast.error(getErrorMessage(error));
-                            } finally {
-                              setActingAnnouncementId(null);
-                            }
-                          }}
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {pendingAnnouncements.status === "CanLoadMore" && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => pendingAnnouncements.loadMore(10)}
-                  >
-                    Load more
-                  </Button>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {canShowAnnouncementsSection ? (
+          <PendingMissionaryAnnouncementsSection wardId={wardId} />
+        ) : null}
       </section>
+      ) : null}
     </div>
+  );
+}
+
+function PendingMissionaryAnnouncementsSection({ wardId }: { wardId: WardId }) {
+  const pendingAnnouncements = usePaginatedQuery(
+    api.missionaries.listPendingAnnouncements,
+    { wardId },
+    { initialNumItems: 10 },
+  );
+  const approveAnnouncement = useMutation(api.missionaries.approveAnnouncement);
+  const rejectAnnouncement = useMutation(api.missionaries.rejectAnnouncement);
+  const [approvalNotesByPostId, setApprovalNotesByPostId] = useState<Record<string, string>>(
+    {},
+  );
+  const [rejectionNotesByPostId, setRejectionNotesByPostId] = useState<Record<string, string>>(
+    {},
+  );
+  const [actingAnnouncementId, setActingAnnouncementId] = useState<string | null>(null);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Pending missionary announcements</CardTitle>
+        <CardDescription>
+          Approve or reject missionary announcements before they reach the ward feed.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {pendingAnnouncements.status === "LoadingFirstPage" ? (
+          <p className="text-sm text-muted-foreground">Loading announcements...</p>
+        ) : pendingAnnouncements.results.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No missionary announcements are pending review.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {pendingAnnouncements.results.map((post) => (
+              <div key={post._id} className="rounded-lg border p-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{post.title}</p>
+                    <Badge variant="secondary">Pending review</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    By {post.author?.name ?? "Unknown"} on {formatDate(post._creationTime)}
+                  </p>
+                </div>
+                <div
+                  className="prose prose-sm mt-3 max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(post.content),
+                  }}
+                />
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor={`approve-${post._id}`}>Approval note</Label>
+                    <Textarea
+                      id={`approve-${post._id}`}
+                      value={approvalNotesByPostId[post._id] ?? ""}
+                      onChange={(event) =>
+                        setApprovalNotesByPostId((current) => ({
+                          ...current,
+                          [post._id]: event.target.value,
+                        }))
+                      }
+                      placeholder="Optional approval note"
+                    />
+                    <Button
+                      type="button"
+                      disabled={actingAnnouncementId === post._id}
+                      onClick={async () => {
+                        setActingAnnouncementId(post._id);
+
+                        try {
+                          await approveAnnouncement({
+                            postId: post._id,
+                            notes: approvalNotesByPostId[post._id]?.trim() || undefined,
+                          });
+                          toast.success("Announcement approved");
+                        } catch (error) {
+                          toast.error(getErrorMessage(error));
+                        } finally {
+                          setActingAnnouncementId(null);
+                        }
+                      }}
+                    >
+                      Approve
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`reject-${post._id}`}>Rejection reason</Label>
+                    <Textarea
+                      id={`reject-${post._id}`}
+                      value={rejectionNotesByPostId[post._id] ?? ""}
+                      onChange={(event) =>
+                        setRejectionNotesByPostId((current) => ({
+                          ...current,
+                          [post._id]: event.target.value,
+                        }))
+                      }
+                      placeholder="Required when rejecting"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      disabled={
+                        actingAnnouncementId === post._id ||
+                        !rejectionNotesByPostId[post._id]?.trim()
+                      }
+                      onClick={async () => {
+                        const rejectionNotes =
+                          rejectionNotesByPostId[post._id]?.trim() ?? "";
+
+                        if (!rejectionNotes) {
+                          return;
+                        }
+
+                        setActingAnnouncementId(post._id);
+
+                        try {
+                          await rejectAnnouncement({
+                            postId: post._id,
+                            notes: rejectionNotes,
+                          });
+                          toast.success("Announcement rejected");
+                        } catch (error) {
+                          toast.error(getErrorMessage(error));
+                        } finally {
+                          setActingAnnouncementId(null);
+                        }
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {pendingAnnouncements.status === "CanLoadMore" && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => pendingAnnouncements.loadMore(10)}
+              >
+                Load more
+              </Button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
