@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useSearchParams } from "next/navigation";
-import { Id } from "@/convex/_generated/dataModel";
+import { type Doc, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,6 +32,18 @@ const PERMISSION_LABELS: Record<string, string> = {
   "comment:moderate": "Moderate comments",
   "live:manage": "Manage live sessions",
 };
+
+type ActiveMemberRole = {
+  _id: Id<"roles">;
+  name: string;
+  isSystem: boolean;
+};
+
+type AssignableRole = Doc<"roles">;
+
+function isActiveMemberRole(role: ActiveMemberRole | null): role is ActiveMemberRole {
+  return role !== null;
+}
 
 export default function AdminMembersPage() {
   return (
@@ -165,11 +177,11 @@ function MembersContent({ wardId }: { wardId: Id<"wards"> }) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     {member.roles
+                      .filter(isActiveMemberRole)
                       .filter(
-                        (role: any) =>
-                          role.name?.startsWith("custom:") !== true,
+                        (role) => role.name?.startsWith("custom:") !== true,
                       )
-                      .map((role: any) => (
+                      .map((role) => (
                         <Badge
                           key={role._id}
                           variant={role.isSystem ? "secondary" : "outline"}
@@ -193,7 +205,9 @@ function MembersContent({ wardId }: { wardId: Id<"wards"> }) {
                       ))}
                     {canManageRoles && roles && (
                       <RoleAssigner
-                        currentRoleIds={member.roles.map((r: any) => r._id)}
+                        currentRoleIds={member.roles
+                          .filter(isActiveMemberRole)
+                          .map((r) => r._id)}
                         allRoles={roles.filter(
                           (r) => !r.name?.startsWith("custom:"),
                         )}
@@ -222,7 +236,7 @@ function RoleAssigner({
   onAssign,
 }: {
   currentRoleIds: Id<"roles">[];
-  allRoles: any[];
+  allRoles: AssignableRole[];
   onAssign: (roleId: Id<"roles">) => void;
 }) {
   const available = allRoles.filter((r) => !currentRoleIds.includes(r._id));

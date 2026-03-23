@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Globe, MessageCircle, Repeat2, Share } from "lucide-react";
+import { getPostTypeBadgeLabel } from "@/lib/missionary-integration";
 import { relativeTime } from "@/lib/utils";
 import { ReplyDialog } from "./reply-dialog";
 import { PollCard } from "./poll-card";
@@ -110,7 +111,7 @@ export function PostCard({
             </span>
             {type !== "announcement" && (
               <Badge variant="secondary" className="text-xs ml-auto shrink-0">
-                {type}
+                {getPostTypeBadgeLabel(type)}
               </Badge>
             )}
           </div>
@@ -179,7 +180,6 @@ export function PostCard({
           )}
 
           {/* Interaction bar — clicks here must NOT navigate */}
-          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div
             className="flex items-center gap-1 mt-3 -ml-2"
             onClick={(e) => e.stopPropagation()}

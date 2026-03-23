@@ -5,6 +5,25 @@ import { api } from "@/convex/_generated/api";
 import { PostCard } from "./post-card";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
+import { shouldShowFilteredFeedEmptyState } from "@/lib/missionary-integration";
+
+type PostCardWard = { name: string; slug?: string };
+
+function getPostWard(post: unknown): PostCardWard | undefined {
+  if (!post || typeof post !== "object" || !("ward" in post)) {
+    return undefined;
+  }
+
+  const ward = post.ward;
+  if (!ward || typeof ward !== "object" || !("name" in ward)) {
+    return undefined;
+  }
+
+  return {
+    name: String(ward.name),
+    slug: "slug" in ward && typeof ward.slug === "string" ? ward.slug : undefined,
+  };
+}
 
 interface FeedProps {
   wardId?: Id<"wards">;
@@ -44,7 +63,14 @@ export function Feed({ wardId, stakeId, mode, typeFilter, isMember }: FeedProps)
     ? feed.results.filter((post) => post.type === typeFilter)
     : feed.results;
 
-  if (filteredResults.length === 0) {
+  if (
+    shouldShowFilteredFeedEmptyState({
+      filteredResultsCount: filteredResults.length,
+      hasAnyResults: feed.results.length > 0,
+      status: feed.status,
+      typeFilter,
+    })
+  ) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
         No posts yet. Be the first to share something!
@@ -54,23 +80,27 @@ export function Feed({ wardId, stakeId, mode, typeFilter, isMember }: FeedProps)
 
   return (
     <div>
-      {filteredResults.map((post) => (
-        <PostCard
-          key={post._id}
-          postId={post._id}
-          title={post.title}
-          content={post.content}
-          type={post.type}
-          author={post.author ?? null}
-          ward={"ward" in post ? (post as any).ward : undefined}
-          createdAt={post._creationTime}
-          eventDate={post.eventDate}
-          eventLocation={post.eventLocation}
-          preferredLanguage={preferredLanguage}
-          isMember={isMember ?? true}
-          pollCloseDate={post.pollCloseDate}
-        />
-      ))}
+      {filteredResults.map((post) => {
+        const ward = getPostWard(post);
+
+        return (
+          <PostCard
+            key={post._id}
+            postId={post._id}
+            title={post.title}
+            content={post.content}
+            type={post.type}
+            author={post.author ?? null}
+            ward={ward}
+            createdAt={post._creationTime}
+            eventDate={post.eventDate}
+            eventLocation={post.eventLocation}
+            preferredLanguage={preferredLanguage}
+            isMember={isMember ?? true}
+            pollCloseDate={post.pollCloseDate}
+          />
+        );
+      })}
       {feed.status === "CanLoadMore" && (
         <div className="flex justify-center py-4">
           <Button

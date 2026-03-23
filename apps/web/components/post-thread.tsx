@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { relativeTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { getPostTypeBadgeLabel } from "@/lib/missionary-integration";
 import { ReplyDialog } from "./reply-dialog";
 
 interface PostThreadProps {
@@ -63,9 +64,6 @@ export function PostThread({
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
-  const authorHandle =
-    author?.name?.toLowerCase().replace(/\s+/g, "") ?? "unknown";
 
   const userInitials = currentUser?.name
     ?.split(" ")
@@ -116,7 +114,7 @@ export function PostThread({
           </div>
           {type !== "announcement" && (
             <Badge variant="secondary" className="ml-auto text-xs shrink-0">
-              {type}
+              {getPostTypeBadgeLabel(type)}
             </Badge>
           )}
         </div>
@@ -272,14 +270,13 @@ export function PostThread({
                     : undefined
                 }
               />
-              {commentReplies.map((reply, idx) => {
+              {commentReplies.map((reply) => {
                 const isOwnReply = reply.author?._id === currentUser?._id;
                 return (
                   <ThreadReply
                     key={reply._id}
                     comment={reply}
                     isReply
-                    isLastReply={idx === commentReplies.length - 1}
                     onDelete={
                       isOwnReply
                         ? () => removeComment({ commentId: reply._id })
@@ -302,7 +299,6 @@ function ThreadReply({
   comment,
   hasThreadLine,
   isReply,
-  isLastReply,
   onDelete,
 }: {
   comment: {
@@ -314,7 +310,6 @@ function ThreadReply({
   };
   hasThreadLine?: boolean;
   isReply?: boolean;
-  isLastReply?: boolean;
   onDelete?: () => void;
 }) {
   const initials = comment.author?.name

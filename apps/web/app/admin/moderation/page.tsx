@@ -15,7 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Id } from "@/convex/_generated/dataModel";
+import { type Doc, Id } from "@/convex/_generated/dataModel";
+
+type ModerationPost = Doc<"posts"> & {
+  author: { name: string; imageUrl?: string } | null;
+};
 
 export default function AdminModerationPage() {
   return (
@@ -87,7 +91,7 @@ function ModerationCard({
   onApprove,
   onReject,
 }: {
-  post: any;
+  post: ModerationPost;
   onApprove: () => Promise<void>;
   onReject: (notes: string) => Promise<void>;
 }) {

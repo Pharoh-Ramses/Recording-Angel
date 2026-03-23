@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { getAuthenticatedMember, requirePermission, hasPermission } from "./lib/permissions";
+import { resolvePostAuthor } from "./lib/postAuthors";
 import OpenAI from "openai";
 import { paginationOptsValidator } from "convex/server";
 
@@ -137,9 +138,8 @@ export const pendingPosts = query({
 
     const enrichedPage = await Promise.all(
       results.page.map(async (post) => {
-        const member = await ctx.db.get(post.authorId);
-        const user = member ? await ctx.db.get(member.userId) : null;
-        return { ...post, author: user };
+        const author = await resolvePostAuthor(ctx, post);
+        return { ...post, author };
       })
     );
 

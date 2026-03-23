@@ -10,8 +10,15 @@
 
 import type * as comments from "../comments.js";
 import type * as http from "../http.js";
+import type * as lib_missionaryAuth from "../lib/missionaryAuth.js";
+import type * as lib_missionaryCalendars from "../lib/missionaryCalendars.js";
 import type * as lib_permissions from "../lib/permissions.js";
+import type * as lib_postAuthors from "../lib/postAuthors.js";
+import type * as lib_publicMissionaryCalendar from "../lib/publicMissionaryCalendar.js";
 import type * as members from "../members.js";
+import type * as migrations from "../migrations.js";
+import type * as missionaries from "../missionaries.js";
+import type * as missionaryCalendars from "../missionaryCalendars.js";
 import type * as moderation from "../moderation.js";
 import type * as polls from "../polls.js";
 import type * as posts from "../posts.js";
@@ -31,8 +38,15 @@ import type {
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   http: typeof http;
+  "lib/missionaryAuth": typeof lib_missionaryAuth;
+  "lib/missionaryCalendars": typeof lib_missionaryCalendars;
   "lib/permissions": typeof lib_permissions;
+  "lib/postAuthors": typeof lib_postAuthors;
+  "lib/publicMissionaryCalendar": typeof lib_publicMissionaryCalendar;
   members: typeof members;
+  migrations: typeof migrations;
+  missionaries: typeof missionaries;
+  missionaryCalendars: typeof missionaryCalendars;
   moderation: typeof moderation;
   polls: typeof polls;
   posts: typeof posts;

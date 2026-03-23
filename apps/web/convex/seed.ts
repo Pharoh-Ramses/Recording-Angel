@@ -31,6 +31,18 @@ const WARD_SYSTEM_ROLES = [
     name: "member",
     permissions: ["post:create", "comment:create"],
   },
+  {
+    name: "ward_mission_leader",
+    permissions: [
+      "missionary:view",
+      "missionary:manage",
+      "missionary_assignment:manage",
+      "companionship:manage",
+      "missionary_calendar:manage",
+      "missionary_calendar_group:manage",
+      "missionary_post:approve",
+    ],
+  },
 ];
 
 const STAKE_SYSTEM_ROLES = [
@@ -126,6 +138,7 @@ export const syncRolePermissions = internalMutation({
     );
 
     let updated = 0;
+    let created = 0;
     for (const role of allRoles) {
       if (!role.isSystem) continue;
       const expected = lookup[role.name];
@@ -139,6 +152,31 @@ export const syncRolePermissions = internalMutation({
       }
     }
 
-    console.log(`syncRolePermissions: updated ${updated} roles`);
+    const wards = await ctx.db.query("wards").collect();
+    for (const ward of wards) {
+      const wardRoles = await ctx.db
+        .query("roles")
+        .withIndex("byWardId", (q) => q.eq("wardId", ward._id))
+        .collect();
+      const existingSystemRoleNames = new Set(
+        wardRoles.filter((role) => role.isSystem).map((role) => role.name),
+      );
+
+      for (const role of WARD_SYSTEM_ROLES) {
+        if (existingSystemRoleNames.has(role.name)) continue;
+
+        await ctx.db.insert("roles", {
+          ...role,
+          wardId: ward._id,
+          isSystem: true,
+          level: "ward",
+        });
+        created++;
+      }
+    }
+
+    console.log(
+      `syncRolePermissions: updated ${updated} roles, created ${created} roles`,
+    );
   },
 });

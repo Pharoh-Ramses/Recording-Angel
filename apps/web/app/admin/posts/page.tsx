@@ -27,6 +27,8 @@ const STATUS_STYLES: Record<string, string> = {
     "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
 };
 
+type PostStatusFilter = (typeof STATUS_FILTERS)[number]["value"];
+
 export default function AdminPostsPage() {
   return (
     <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
@@ -47,13 +49,11 @@ function AdminPostsContent() {
 }
 
 function PostsContent({ wardId }: { wardId: Id<"wards"> }) {
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(
-    undefined
-  );
+  const [statusFilter, setStatusFilter] = useState<PostStatusFilter>(undefined);
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.posts.listForAdmin,
-    { wardId, status: statusFilter as any },
+    { wardId, status: statusFilter },
     { initialNumItems: 20 }
   );
 

@@ -200,7 +200,6 @@ export default function LiveDashboardPage() {
   // Audio capture
   const {
     micStatus,
-    errorMessage: micError,
     start: startMic,
     stop: stopMic,
   } = useAudioCapture({
