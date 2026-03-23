@@ -11,6 +11,7 @@ import {
 import {
   canManageMissionaryCalendarGroup,
   getActiveMissionaryAssignment,
+  getMissionaryAccessForWard,
   requireWardMissionLeader,
 } from "./lib/missionaryAuth"
 
@@ -340,6 +341,66 @@ export const listCalendarGroupsForWard = query({
     )
 
     return groupsWithCompanionships.sort((a, b) => a.name.localeCompare(b.name))
+  },
+})
+
+export const listAccessibleCalendarGroupsForWard = query({
+  args: { wardId: v.id("wards") },
+  handler: async (ctx, { wardId }) => {
+    const [access, assignment, groups, companionships] = await Promise.all([
+      getMissionaryAccessForWard(ctx, wardId),
+      getActiveMissionaryAssignment(ctx, wardId),
+      ctx.db
+        .query("missionaryCalendarGroups")
+        .withIndex("byWardId", (q) => q.eq("wardId", wardId))
+        .collect(),
+      ctx.db.query("companionships").withIndex("byWardId", (q) => q.eq("wardId", wardId)).collect(),
+    ])
+
+    if (!access.isWardMissionLeader && !assignment) {
+      return []
+    }
+
+    const companionshipById = new Map(
+      companionships.map((companionship) => [companionship._id, companionship]),
+    )
+
+    const activeCompanionshipIds = assignment
+      ? await ctx.db
+          .query("companionshipMissionaries")
+          .withIndex("byMissionaryId", (q) => q.eq("missionaryId", assignment.missionaryId))
+          .collect()
+          .then((memberships) =>
+            memberships
+              .filter((membership) => membership.status === "active")
+              .map((membership) => membership.companionshipId),
+          )
+      : []
+    const activeCompanionshipIdSet = new Set(activeCompanionshipIds)
+
+    const groupsWithContext = await Promise.all(
+      groups.map(async (group) => {
+        const companionshipIds = await getMappedCompanionshipIdsForGroup(ctx, group._id)
+        const mappedCompanionships = companionshipIds
+          .map((companionshipId) => companionshipById.get(companionshipId))
+          .filter((companionship) => companionship !== undefined)
+
+        const canManageSlots =
+          access.isWardMissionLeader ||
+          companionshipIds.some((companionshipId) => activeCompanionshipIdSet.has(companionshipId))
+
+        return {
+          ...group,
+          canManageSlots,
+          companionshipIds,
+          companionships: mappedCompanionships,
+        }
+      }),
+    )
+
+    return groupsWithContext
+      .filter((group) => access.isWardMissionLeader || group.canManageSlots)
+      .sort((a, b) => a.name.localeCompare(b.name))
   },
 })
 

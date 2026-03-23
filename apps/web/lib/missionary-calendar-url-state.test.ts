@@ -15,6 +15,19 @@ describe("missionary calendar URL state", () => {
     assert.deepEqual(state, {
       month: "2026-04",
       view: "month",
+      week: "2026-04-01",
+    })
+  })
+
+  test("parseMissionaryCalendarQuery parses week view params", () => {
+    const state = parseMissionaryCalendarQuery(
+      new URLSearchParams("view=week&month=2026-04&week=2026-04-06"),
+    )
+
+    assert.deepEqual(state, {
+      month: "2026-04",
+      view: "week",
+      week: "2026-04-06",
     })
   })
 
@@ -51,6 +64,7 @@ describe("missionary calendar URL state", () => {
       assert.deepEqual(state, {
         month: "2026-03",
         view: "month",
+        week: "2026-03-01",
       })
     } finally {
       globalThis.Date = OriginalDate
@@ -64,7 +78,20 @@ describe("missionary calendar URL state", () => {
 
     assert.deepEqual(state, {
       month: new Date().toISOString().slice(0, 7),
-      view: "month",
+      view: "week",
+      week: `${new Date().toISOString().slice(0, 7)}-01`,
+    })
+  })
+
+  test("parseMissionaryCalendarQuery falls back to month anchor for invalid week", () => {
+    const state = parseMissionaryCalendarQuery(
+      new URLSearchParams("view=week&month=2026-04&week=2026-04-44"),
+    )
+
+    assert.deepEqual(state, {
+      month: "2026-04",
+      view: "week",
+      week: "2026-04-01",
     })
   })
 
@@ -75,5 +102,15 @@ describe("missionary calendar URL state", () => {
     })
 
     assert.equal(query, "month=2026-04&view=month")
+  })
+
+  test("buildMissionaryCalendarQuery serializes week anchors", () => {
+    const query = buildMissionaryCalendarQuery({
+      month: "2026-04",
+      view: "week",
+      week: "2026-04-06",
+    })
+
+    assert.equal(query, "month=2026-04&view=week&week=2026-04-06")
   })
 })
