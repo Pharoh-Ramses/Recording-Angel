@@ -64,7 +64,9 @@ type MissionaryCalendarGroup = {
   canManageSlots: boolean;
 };
 
-type DinnerSlot = Doc<"missionaryDinnerSlots">;
+type DinnerSlot = Doc<"missionaryDinnerSlots"> & {
+  reservation?: Doc<"missionaryDinnerReservations"> | null;
+};
 
 type SlotEditorState = {
   open: boolean;
@@ -667,6 +669,14 @@ function SlotCard({
         ) : null}
       </div>
       {slot.notes ? <p className="mt-2 text-sm text-muted-foreground">{slot.notes}</p> : null}
+      {slot.reservation ? (
+        <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+          <p>
+            Reserved by <span className="font-medium text-foreground">{slot.reservation.volunteerName}</span>
+          </p>
+          <p>{slot.reservation.volunteerPhone}</p>
+        </div>
+      ) : null}
     </div>
   );
 }

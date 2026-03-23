@@ -2,7 +2,10 @@ import { v } from "convex/values"
 
 import { Id } from "./_generated/dataModel"
 import { MutationCtx, QueryCtx, mutation, query } from "./_generated/server"
-import { planCompanionshipMembershipUpdates } from "./lib/missionaryCalendars"
+import {
+  normalizeMissionaryDinnerSlotDate,
+  planCompanionshipMembershipUpdates,
+} from "./lib/missionaryCalendars"
 import {
   getPublicDinnerClaimError,
   normalizePublicMissionaryCalendarToken,
@@ -353,7 +356,8 @@ export const listAccessibleCalendarGroupsForWard = query({
       ctx.db
         .query("missionaryCalendarGroups")
         .withIndex("byWardId", (q) => q.eq("wardId", wardId))
-        .collect(),
+        .collect()
+        .then((groups) => groups.filter((group) => group.status === "active")),
       ctx.db.query("companionships").withIndex("byWardId", (q) => q.eq("wardId", wardId)).collect(),
     ])
 
@@ -522,7 +526,21 @@ export const listSlotsForGroup = query({
       )
       .collect()
 
-    return slots.sort((a, b) => a.date.localeCompare(b.date))
+    const slotsWithReservations = await Promise.all(
+      slots.map(async (slot) => {
+        const reservation = await ctx.db
+          .query("missionaryDinnerReservations")
+          .withIndex("bySlotId", (q) => q.eq("slotId", slot._id))
+          .unique()
+
+        return {
+          ...slot,
+          reservation,
+        }
+      }),
+    )
+
+    return slotsWithReservations.sort((a, b) => a.date.localeCompare(b.date))
   },
 })
 
@@ -575,9 +593,9 @@ export const saveDinnerSlot = mutation({
   },
   handler: async (ctx, { calendarGroupId, slotId, date, mealType, notes }) => {
     const calendarGroup = await requireCalendarGroupWriteAccess(ctx, calendarGroupId)
-    const normalizedDate = date.trim()
+    const normalizedDate = normalizeMissionaryDinnerSlotDate(date)
     if (!normalizedDate) {
-      throw new Error("Slot date is required")
+      throw new Error("Slot date must use YYYY-MM-DD format")
     }
 
     const patch = {

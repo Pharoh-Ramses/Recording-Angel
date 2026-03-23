@@ -8,6 +8,22 @@ type ActiveMembership<
   missionaryId: MissionaryId
 }
 
+export function normalizeMissionaryDinnerSlotDate(date: string) {
+  const normalizedDate = date.trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)) {
+    return null
+  }
+
+  const parsedDate = new Date(`${normalizedDate}T00:00:00.000Z`)
+  if (Number.isNaN(parsedDate.valueOf())) {
+    return null
+  }
+
+  return parsedDate.toISOString().slice(0, 10) === normalizedDate
+    ? normalizedDate
+    : null
+}
+
 export function planCompanionshipMembershipUpdates<
   MembershipId extends string,
   CompanionshipId extends string,
